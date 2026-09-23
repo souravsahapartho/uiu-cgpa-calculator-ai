@@ -1,137 +1,55 @@
-# UIU CGPA Calculator AI - Academic & CGPA Intelligence (Android)
+# UIU CGPA Calculator AI 🎓
+### *AI-Supported Academic & CGPA Intelligence for United International University (UIU)*
 
-**UIU CGPA Calculator AI** is a production-grade, Google Play Store ready Android mobile application crafted specifically for students of **United International University (UIU)**.
-
-Built with a warm, authentic academic design system inspired by UIU branding, Material 3 components, 18–24px rounded corners, responsive layout architecture, and complete local privacy.
-
----
-
-## 🎨 Design System & Palette
-
-- **Primary**: UIU Orange (`#F57C00` / `#FF9800`)
-- **Secondary**: Warm Amber (`#FFA000`)
-- **Accent**: Deep Academic Navy (`#0D1B2A` / `#1B2A4A`)
-- **Background**: Soft Off-White Slate (`#F8FAFC`)
-- **Card Surfaces**: Pure White (`#FFFFFF`) with 1px border and soft depth
-- **Success**: Emerald (`#10B981`)
-- **Error**: Crimson (`#EF4444`)
-- **Storage Badge**: _"Progress is saved locally on your device."_
+[![Download Direct ZIP](https://img.shields.io/badge/Download-Direct%20ZIP%20(1--Click)-success?style=for-the-badge&logo=github)](https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/archive/refs/heads/main.zip)
+[![Cloudflare Worker](https://img.shields.io/badge/Cloudflare%20Worker-Ready-orange?style=for-the-badge&logo=cloudflare)](https://uiucgpacalculator.uiusvs-event.workers.dev/)
+[![UIU Official](https://img.shields.io/badge/University-United%20International%20University-blue?style=for-the-badge)](https://www.uiu.ac.bd)
 
 ---
 
-## 📱 Core Features & Screens
+## 📥 Direct Download Links
 
-1. **Splash Screen (`splash_screen.dart`)**
-   - UIU-inspired orange background with smooth emblem scaling and fade-in animations.
-   - 100% offline security indicator.
+Anyone can download the full project immediately using either of these links:
 
-2. **Home Dashboard (`home_screen.dart`)**
-   - Hero Cumulative GPA Card (3.78 / 4.00) with animated progress ring.
-   - Dean's List Honor Standing badge.
-   - Degree completion progress bar (76.0 / 138.0 Credits).
-   - 4-grid key stats: Earned credits, Remaining credits, Current term, and Target SGPA.
-   - AI Academic advisor spotlight banner and Quick Actions hub.
-   - Recent term course cards with UIU grade badges.
-
-3. **GPA Calculator & Target Planner (`gpa_calculator_screen.dart`)**
-   - **Target CGPA Planner**: Computes exact required future SGPA per term with attainability warnings (e.g. _Easily Achieved_, _Challenging_, or _Mathematically Impossible > 4.00_).
-   - **Term SGPA Simulator**: Interactive course builder with live grade selectors (A, A-, B+, etc.) showing real-time impact on overall cumulative CGPA.
-   - Convocation honors forecast (_Summa Cum Laude_, _Magna Cum Laude_, _Cum Laude_).
-
-4. **Transcript Import & History (`transcript_import_screen.dart`)**
-   - Drag-and-drop styled PDF / CSV upload cards (UI only).
-   - Instant sample UIU transcript loader (Batch 201).
-   - Filter chips for Trimesters (All, Spring, Summer, Fall).
-   - Expandable `SemesterAccordion` cards showing course codes, titles, credits, grades, and grade points.
-
-5. **AI Academic Advisor (`ai_advisor_screen.dart`) [Hero Feature]**
-   - Academic performance digest and projected graduation CGPA.
-   - Subject mastery domain breakdown (Algorithms, Software Eng, Hardware, Math, GED).
-   - Recommended next semester courses ranked by prerequisite unlock logic.
-   - **Course Conflict Warnings**: Identifies dangerous overlaps (e.g., Heavy Hardware Lab conflict: Microprocessors + Compiler Design).
-   - Real-time Workload & Difficulty Meter.
-   - High-impact GPA improvement tips.
-
-6. **Semester Planner (`semester_planner_screen.dart`)**
-   - Visual drag-and-drop future semester course arrangement.
-   - Live workload meter (_Light_, _Balanced (Recommended)_, _Heavy_).
-   - Prerequisite checking and add/remove catalog courses.
-
-7. **Academic Analytics (`analytics_screen.dart`)**
-   - Custom-painted GPA progression line chart across 7 trimesters with gradient fill.
-   - Grade distribution histogram (A through F frequency).
-   - Credit velocity and completion ring.
-
-8. **Student Profile (`profile_screen.dart`)**
-   - UIU Student ID card layout (Sourav Ahmed, 011 201 042, B.Sc. in CSE).
-   - Academic Advisor details (Dr. Mohammad Nurul Huda).
-   - Local device storage status indicator.
-   - UIU Official Grading Scale bottom sheet viewer.
+- 🚀 **[Direct ZIP Download (1-Click)](https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/archive/refs/heads/main.zip)**
+- 💻 **Git Clone:**
+  ```bash
+  git clone https://github.com/souravsahapartho/uiu-cgpa-calculator-ai.git
+  ```
 
 ---
 
-## 🏛️ Official UIU Grading Scale Embedded
+## 🏛️ Official UIU Grading Scale (Embedded)
 
-| Grade  | Grade Point | Mark Range | Remarks        |
-| ------ | ----------- | ---------- | -------------- |
-| **A**  | 4.00        | 80% - 100% | Outstanding    |
-| **A-** | 3.67        | 75% - 79%  | Excellent      |
-| **B+** | 3.33        | 70% - 74%  | Very Good      |
-| **B**  | 3.00        | 65% - 69%  | Good           |
-| **B-** | 2.67        | 60% - 64%  | Satisfactory   |
-| **C+** | 2.33        | 55% - 59%  | Above Average  |
-| **C**  | 2.00        | 50% - 54%  | Average        |
-| **D+** | 1.67        | 45% - 49%  | Pass           |
-| **D**  | 1.00        | 40% - 44%  | Barely Passing |
-| **F**  | 0.00        | 0% - 39%   | Fail           |
+| Letter Grade | Marks Range | Grade Point | Remarks |
+|---|---|---|---|
+| **A** | **90 - 100** | **4.00** | Plain |
+| **A-** | **86 - 89** | **3.67** | Minus |
+| **B+** | **82 - 85** | **3.33** | Plus |
+| **B** | **78 - 81** | **3.00** | Plain |
+| **B-** | **74 - 77** | **2.67** | Minus |
+| **C+** | **70 - 73** | **2.33** | Plus |
+| **C** | **66 - 69** | **2.00** | Plain |
+| **C-** | **62 - 65** | **1.67** | Minus |
+| **D+** | **58 - 61** | **1.33** | Plus |
+| **D** | **55 - 57** | **1.00** | Plain |
+| **F** | **0 - 54** | **0.00** | Fail |
 
 ---
 
-## 🚀 Directory Structure
+## ⚡ Features & Capabilities
 
-```
-d:/Project/UIU Grade Calculator/
-├── android/
-│   └── app/src/main/AndroidManifest.xml
-├── lib/
-│   ├── core/
-│   │   ├── constants/
-│   │   │   ├── app_constants.dart
-│   │   │   └── uiu_grading_scale.dart
-│   │   └── utils/
-│   │       ├── calculator_utils.dart
-│   │       └── responsive_utils.dart
-│   ├── data/
-│   │   └── uiu_mock_data.dart
-│   ├── models/
-│   │   ├── ai_recommendation.dart
-│   │   ├── course.dart
-│   │   ├── semester_transcript.dart
-│   │   └── student_profile.dart
-│   ├── screens/
-│   │   ├── ai_advisor_screen.dart
-│   │   ├── analytics_screen.dart
-│   │   ├── gpa_calculator_screen.dart
-│   │   ├── home_screen.dart
-│   │   ├── main_navigation_screen.dart
-│   │   ├── profile_screen.dart
-│   │   ├── semester_planner_screen.dart
-│   │   ├── splash_screen.dart
-│   │   └── transcript_import_screen.dart
-│   ├── theme/
-│   │   ├── app_colors.dart
-│   │   ├── app_theme.dart
-│   │   └── app_typography.dart
-│   ├── widgets/
-│   │   ├── course_card.dart
-│   │   ├── custom_charts.dart
-│   │   ├── gpa_progress_ring.dart
-│   │   ├── semester_accordion.dart
-│   │   ├── stat_card.dart
-│   │   ├── uiu_bottom_sheet.dart
-│   │   ├── uiu_header.dart
-│   │   └── workload_indicator.dart
-│   └── main.dart
-├── pubspec.yaml
-└── README.md
-```
+1. **Target CGPA Planner:** Computes exact required future SGPA per trimester to hit target CGPA with attainability warnings.
+2. **AI Academic Advisor (Cloudflare Workers AI):** Analyzes domain mastery, recommends optimal next-term course combinations, and warns against heavy workload conflicts.
+3. **Fail-Safe Reliability:** Equipped with a built-in deterministic academic engine ensuring the AI **never fails** even if network bindings are throttled.
+4. **Interactive Transcript Records:** Browse past 7 trimesters with expandable course cards.
+5. **Modern UI & Ambient Animation:** Smooth floating ambient orbs, UIU warm orange & navy aesthetic, rounded card glassmorphism.
+
+---
+
+## 🌐 Deploy to Cloudflare Workers
+
+1. Copy the contents of [`worker.js`](worker.js).
+2. Open your Cloudflare Workers Dashboard (e.g. `https://uiucgpacalculator.uiusvs-event.workers.dev/`).
+3. Paste into the editor and click **Deploy**.
+4. Enable Workers AI binding (`@cf/meta/llama-3.1-8b-instruct`) in **Settings -> Bindings -> Workers AI** (optional, fallback is automatically active).
