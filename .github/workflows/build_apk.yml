@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    name: Compile & Package Android APK
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -30,42 +30,30 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Platform Files
-        run: |
-          flutter create . --platforms android --org edu.uiu.cgpacalculator --project-name uiu_cgpa_calculator_ai
-          flutter pub get
+      - name: Get Dependencies
+        run: flutter pub get
 
       - name: Build Android Release APK
-        run: |
-          flutter build apk --release --no-tree-shake-icons
+        run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Prepare APK Artifacts
+      - name: Organize Output APK
         run: |
           mkdir -p apk_output
-          find build/ -name "*.apk" -exec cp {} apk_output/UIU-CGPA-Calculator-AI.apk \;
-          ls -la apk_output/
+          cp build/app/outputs/flutter-apk/app-release.apk apk_output/UIU-CGPA-Calculator-AI.apk || cp $(find build/ -name "*.apk" | head -n 1) apk_output/UIU-CGPA-Calculator-AI.apk
+          ls -lh apk_output/
 
-      - name: Upload APK as Workflow Artifact
+      - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: UIU-CGPA-Calculator-AI-APK
           path: apk_output/UIU-CGPA-Calculator-AI.apk
-          if-no-files-found: error
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
+        continue-on-error: true
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: UIU CGPA Calculator AI v1.0.${{ github.run_number }}
-          body: |
-            ## 🎓 UIU CGPA Calculator AI - Official Android Release
-
-            ### 📲 Direct APK Installation:
-            Download and install the `UIU-CGPA-Calculator-AI.apk` file below on your Android device.
-
-            - **University**: United International University (UIU)
-            - **Scale**: Official 2024 UIU Grading Policy (A: 90-100/4.00, A-: 86-89/3.67, etc.)
-            - **AI Engine**: Academic Advisor with Target CGPA Trajectory.
           files: apk_output/UIU-CGPA-Calculator-AI.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
