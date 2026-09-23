@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Simple standard ZIP/APK package builder
 function createZip(entries, outPath) {
@@ -7,9 +7,11 @@ function createZip(entries, outPath) {
   let offset = 0;
 
   for (const entry of entries) {
-    const data = Buffer.isBuffer(entry.data) ? entry.data : Buffer.from(entry.data);
+    const data = Buffer.isBuffer(entry.data)
+      ? entry.data
+      : Buffer.from(entry.data);
     const nameBuf = Buffer.from(entry.name);
-    
+
     // Local file header
     const header = Buffer.alloc(30 + nameBuf.length);
     header.writeUInt32LE(0x04034b50, 0); // signature
@@ -79,23 +81,40 @@ function createZip(entries, outPath) {
 
   const finalBuf = Buffer.concat(parts);
   fs.writeFileSync(outPath, finalBuf);
-  console.log(`Created APK package successfully: ${outPath} (${finalBuf.length} bytes)`);
+  console.log(
+    `Created APK package successfully: ${outPath} (${finalBuf.length} bytes)`,
+  );
 }
 
-if (!fs.existsSync('apk')) fs.mkdirSync('apk', { recursive: true });
-if (!fs.existsSync('web_app/apk')) fs.mkdirSync('web_app/apk', { recursive: true });
+if (!fs.existsSync("apk")) fs.mkdirSync("apk", { recursive: true });
+if (!fs.existsSync("web_app/apk"))
+  fs.mkdirSync("web_app/apk", { recursive: true });
 
-const manifestContent = fs.existsSync('android/app/src/main/AndroidManifest.xml')
-  ? fs.readFileSync('android/app/src/main/AndroidManifest.xml')
+const manifestContent = fs.existsSync(
+  "android/app/src/main/AndroidManifest.xml",
+)
+  ? fs.readFileSync("android/app/src/main/AndroidManifest.xml")
   : Buffer.from('<manifest package="edu.uiu.cgpacalculator.ai"/>');
 
 const entries = [
-  { name: 'AndroidManifest.xml', data: manifestContent },
-  { name: 'META-INF/MANIFEST.MF', data: 'Manifest-Version: 1.0\nCreated-By: UIU Mobile Release System\nPackage: edu.uiu.cgpacalculator.ai\nApp-Name: UIU CGPA Calculator AI\n' },
-  { name: 'META-INF/CERT.SF', data: 'Signature-Version: 1.0\nCreated-By: UIU Android\nSHA-256-Digest-Manifest: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n' },
-  { name: 'res/values/strings.xml', data: '<resources><string name="app_name">UIU CGPA Calculator AI</string></resources>' }
+  { name: "AndroidManifest.xml", data: manifestContent },
+  {
+    name: "META-INF/MANIFEST.MF",
+    data: "Manifest-Version: 1.0\nCreated-By: UIU Mobile Release System\nPackage: edu.uiu.cgpacalculator.ai\nApp-Name: UIU CGPA Calculator AI\n",
+  },
+  {
+    name: "META-INF/CERT.SF",
+    data: "Signature-Version: 1.0\nCreated-By: UIU Android\nSHA-256-Digest-Manifest: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n",
+  },
+  {
+    name: "res/values/strings.xml",
+    data: '<resources><string name="app_name">UIU CGPA Calculator AI</string></resources>',
+  },
 ];
 
-createZip(entries, 'apk/UIU-CGPA-Calculator-AI.apk');
-fs.copyFileSync('apk/UIU-CGPA-Calculator-AI.apk', 'web_app/apk/UIU-CGPA-Calculator-AI.apk');
-console.log('APK ready for direct 1-click download!');
+createZip(entries, "apk/UIU-CGPA-Calculator-AI.apk");
+fs.copyFileSync(
+  "apk/UIU-CGPA-Calculator-AI.apk",
+  "web_app/apk/UIU-CGPA-Calculator-AI.apk",
+);
+console.log("APK ready for direct 1-click download!");

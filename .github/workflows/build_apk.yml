@@ -1,0 +1,67 @@
+name: Build & Release Flutter Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build Android APK Release
+        run: flutter build apk --release --split-per-abi=false
+
+      - name: Rename & Organize APK
+        run: |
+          mkdir -p apk_release
+          cp build/app/outputs/flutter-apk/app-release.apk apk_release/UIU-CGPA-Calculator-AI.apk
+          cp build/app/outputs/flutter-apk/app-release.apk apk/UIU-CGPA-Calculator-AI.apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UIU-CGPA-Calculator-AI
+          path: apk_release/UIU-CGPA-Calculator-AI.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/main')
+        with:
+          tag_name: v1.0.0
+          name: UIU CGPA Calculator AI v1.0.0
+          body: |
+            ## 🎓 UIU CGPA Calculator AI - Official Release
+
+            ### 📲 Android APK Download:
+            Directly installable production-ready APK for Android devices.
+
+            - **App Name**: UIU CGPA Calculator AI
+            - **Platform**: Android 6.0+ (API 23+)
+            - **Features**: UIU 2024 Grading Scale, AI Academic Advisor, Target CGPA Planner.
+          files: apk_release/UIU-CGPA-Calculator-AI.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
