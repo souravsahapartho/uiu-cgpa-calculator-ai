@@ -29,17 +29,19 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Recreate Android Project Scaffold
+        run: flutter create . --platforms android --org edu.uiu --project-name uiu_cgpa_calculator_ai
+
       - name: Get Dependencies
         run: flutter pub get
 
       - name: Build Android APK Release
-        run: flutter build apk --release --split-per-abi=false
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Rename & Organize APK
         run: |
           mkdir -p apk_release
           cp build/app/outputs/flutter-apk/app-release.apk apk_release/UIU-CGPA-Calculator-AI.apk
-          cp build/app/outputs/flutter-apk/app-release.apk apk/UIU-CGPA-Calculator-AI.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -49,7 +51,7 @@ jobs:
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/heads/main')
+        if: github.ref == 'refs/heads/main'
         with:
           tag_name: v1.0.0
           name: UIU CGPA Calculator AI v1.0.0
@@ -57,7 +59,7 @@ jobs:
             ## 🎓 UIU CGPA Calculator AI - Official Release
 
             ### 📲 Android APK Download:
-            Directly installable production-ready APK for Android devices.
+            Production-ready APK for United International University (UIU) Students.
 
             - **App Name**: UIU CGPA Calculator AI
             - **Platform**: Android 6.0+ (API 23+)
