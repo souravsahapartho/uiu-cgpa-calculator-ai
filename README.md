@@ -1,7 +1,8 @@
 # UIU CGPA Calculator AI 🎓
-### *AI-Supported Academic & CGPA Intelligence for United International University (UIU)*
 
-[![Download Direct ZIP](https://img.shields.io/badge/Download-Direct%20ZIP%20(1--Click)-success?style=for-the-badge&logo=github)](https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/archive/refs/heads/main.zip)
+### _AI-Supported Academic & CGPA Intelligence for United International University (UIU)_
+
+[![Download Direct ZIP](<https://img.shields.io/badge/Download-Direct%20ZIP%20(1--Click)-success?style=for-the-badge&logo=github>)](https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/archive/refs/heads/main.zip)
 [![Cloudflare Worker](https://img.shields.io/badge/Cloudflare%20Worker-Ready-orange?style=for-the-badge&logo=cloudflare)](https://uiucgpacalculator.uiusvs-event.workers.dev/)
 [![UIU Official](https://img.shields.io/badge/University-United%20International%20University-blue?style=for-the-badge)](https://www.uiu.ac.bd)
 
@@ -21,19 +22,19 @@ Anyone can download the full project immediately using either of these links:
 
 ## 🏛️ Official UIU Grading Scale (Embedded)
 
-| Letter Grade | Marks Range | Grade Point | Remarks |
-|---|---|---|---|
-| **A** | **90 - 100** | **4.00** | Plain |
-| **A-** | **86 - 89** | **3.67** | Minus |
-| **B+** | **82 - 85** | **3.33** | Plus |
-| **B** | **78 - 81** | **3.00** | Plain |
-| **B-** | **74 - 77** | **2.67** | Minus |
-| **C+** | **70 - 73** | **2.33** | Plus |
-| **C** | **66 - 69** | **2.00** | Plain |
-| **C-** | **62 - 65** | **1.67** | Minus |
-| **D+** | **58 - 61** | **1.33** | Plus |
-| **D** | **55 - 57** | **1.00** | Plain |
-| **F** | **0 - 54** | **0.00** | Fail |
+| Letter Grade | Marks Range  | Grade Point | Remarks |
+| ------------ | ------------ | ----------- | ------- |
+| **A**        | **90 - 100** | **4.00**    | Plain   |
+| **A-**       | **86 - 89**  | **3.67**    | Minus   |
+| **B+**       | **82 - 85**  | **3.33**    | Plus    |
+| **B**        | **78 - 81**  | **3.00**    | Plain   |
+| **B-**       | **74 - 77**  | **2.67**    | Minus   |
+| **C+**       | **70 - 73**  | **2.33**    | Plus    |
+| **C**        | **66 - 69**  | **2.00**    | Plain   |
+| **C-**       | **62 - 65**  | **1.67**    | Minus   |
+| **D+**       | **58 - 61**  | **1.33**    | Plus    |
+| **D**        | **55 - 57**  | **1.00**    | Plain   |
+| **F**        | **0 - 54**   | **0.00**    | Fail    |
 
 ---
 

@@ -157,13 +157,18 @@ export default {
               "Content-Type": "application/json",
               "Access-Control-Allow-Origin": "*",
             },
-          },
+          }
         );
       } catch (err) {
         return new Response(JSON.stringify({ error: "Invalid input" }), {
           status: 400,
         });
       }
+    }
+
+    // 4. Direct APK Download Redirect
+    if (url.pathname === "/download-apk" || url.pathname === "/UIU-CGPA-Calculator-AI.apk") {
+      return Response.redirect("https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/raw/main/apk/UIU-CGPA-Calculator-AI.apk", 302);
     }
 
     // 4. Default: Serve full Single Page Application
@@ -453,8 +458,8 @@ function getHtmlContent() {
       <!-- HOME -->
       <div id="screen-home" class="screen active">
         <div class="download-cta-banner">
-          <div><div style="font-weight: 800; font-size: 13px;">Download UIU CGPA App</div><div style="font-size: 11px; opacity: 0.9;">1-Click Direct ZIP Download</div></div>
-          <a href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/archive/refs/heads/main.zip" class="btn-download-direct"><i class="bi bi-download"></i> Direct ZIP</a>
+          <div><div style="font-weight: 800; font-size: 13px;">Download UIU CGPA Android App</div><div style="font-size: 11px; opacity: 0.9;">1-Click Direct APK File Download</div></div>
+          <a href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/raw/main/apk/UIU-CGPA-Calculator-AI.apk" class="btn-download-direct" download="UIU-CGPA-Calculator-AI.apk"><i class="bi bi-android2"></i> Direct APK</a>
         </div>
         <div class="header-row">
           <div><div class="header-title">Hi, Sourav 👋</div><div class="header-sub">B.Sc. in CSE • UIU ID: 011 201 042</div></div>
@@ -508,7 +513,7 @@ function getHtmlContent() {
       <div id="screen-profile" class="screen">
         <div class="header-row"><div><div class="header-title">Student Profile</div><div class="header-sub">United International University</div></div></div>
         <div class="hero-card"><div style="display: flex; gap: 16px; align-items: center;"><div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: white;">SA</div><div><div style="font-size: 19px; font-weight: 800;">Sourav Ahmed</div><div style="font-size: 12px; opacity: 0.85;">UIU Student ID: 011 201 042</div><div style="font-size: 11px; color: #FFD54F; font-weight: 700; margin-top: 2px;">Batch 201 • B.Sc. in CSE</div></div></div><div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 11px; opacity: 0.85;">Department of Computer Science & Engineering</div></div>
-        <div class="stat-card" style="padding: 0; overflow: hidden;"><div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openScaleModal()"><div style="display: flex; align-items: center; gap: 12px;"><i class="bi bi-mortarboard-fill" style="color: var(--navy); font-size: 18px;"></i><span style="font-weight: 700; font-size: 13px;">UIU Official Grading Scale</span></div><i class="bi bi-chevron-right" style="color: var(--text-tertiary);"></i></div><a href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/archive/refs/heads/main.zip" style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit;"><div style="display: flex; align-items: center; gap: 12px;"><i class="bi bi-download" style="color: var(--primary); font-size: 18px;"></i><span style="font-weight: 700; font-size: 13px;">Download App Source (ZIP)</span></div><i class="bi bi-box-arrow-up-right" style="color: var(--text-tertiary);"></i></a></div>
+        <div class="stat-card" style="padding: 0; overflow: hidden;"><div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openScaleModal()"><div style="display: flex; align-items: center; gap: 12px;"><i class="bi bi-mortarboard-fill" style="color: var(--navy); font-size: 18px;"></i><span style="font-weight: 700; font-size: 13px;">UIU Official Grading Scale</span></div><i class="bi bi-chevron-right" style="color: var(--text-tertiary);"></i></div><a href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/raw/main/apk/UIU-CGPA-Calculator-AI.apk" download="UIU-CGPA-Calculator-AI.apk" style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit;"><div style="display: flex; align-items: center; gap: 12px;"><i class="bi bi-android2" style="color: #10B981; font-size: 18px;"></i><span style="font-weight: 700; font-size: 13px;">Download Android App (.APK)</span></div><i class="bi bi-download" style="color: var(--primary); font-size: 14px;"></i></a></div>
       </div>
     </div>
     <!-- BOTTOM NAV -->
