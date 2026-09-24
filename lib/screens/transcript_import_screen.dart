@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
 import '../data/uiu_mock_data.dart';
-import '../widgets/uiu_header.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_typography.dart';
+import '../theme/app_shadows.dart';
+import '../widgets/subtle_background.dart';
 import '../widgets/semester_accordion.dart';
+import '../widgets/uiu_header.dart';
 import '../widgets/uiu_bottom_sheet.dart';
-import '../core/utils/responsive_utils.dart';
 
 class TranscriptImportScreen extends StatefulWidget {
   const TranscriptImportScreen({super.key});
@@ -15,284 +18,185 @@ class TranscriptImportScreen extends StatefulWidget {
 }
 
 class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
-  bool _isTranscriptLoaded = true;
-  String _selectedFilter = 'All';
+  int _selectedFilterIndex = 0;
+  final List<String> _filters = ['All Trimesters', 'Year 1', 'Year 2', 'Year 3', 'Year 4'];
 
   @override
   Widget build(BuildContext context) {
-    final horizontalPadding = ResponsiveUtils.getHorizontalPadding(context);
     final semesters = UIUMockData.transcriptSemesters;
-
-    final filteredSemesters = _selectedFilter == 'All'
-        ? semesters
-        : semesters.where((s) => s.semesterName.contains(_selectedFilter)).toList();
+    final totalCompletedCredits = semesters.fold(0.0, (sum, s) => sum + s.creditsEarned);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: ResponsiveUtils.getMaxContentWidth(context)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  UIUHeader(
-                    title: 'Transcript & Records',
-                    subtitle: 'UIU Official Academic History & Course Breakdown',
-                    trailing: IconButton(
-                      onPressed: () => UIUBottomSheets.showGradingScale(context),
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 20),
-                      ),
-                      tooltip: 'UIU Scale Info',
-                    ),
+      backgroundColor: AppColors.scaffold,
+      body: SubtleBackground(
+        child: SafeArea(
+          bottom: false,
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Header
+              SliverToBoxAdapter(
+                child: UIUHeader(
+                  title: 'Academic Records',
+                  subtitle: '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed',
+                  trailing: IconButton(
+                    onPressed: () => UIUBottomSheet.showGradingScale(context),
+                    icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
                   ),
-                  const SizedBox(height: 18),
+                ),
+              ),
 
-                  // Drag & Drop Upload Zone (UI Only)
-                  _buildUploadSection(),
-                  const SizedBox(height: 20),
-
-                  if (_isTranscriptLoaded) ...[
-                    // Summary Banner
-                    _buildTranscriptStatsHeader(semesters),
-                    const SizedBox(height: 18),
-
-                    // Filter Chips (All, Spring, Summer, Fall)
-                    Row(
+              // Upload Action Banner (CSV / PDF Import)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
+                  child: Container(
+                    padding: AppSpacing.edgeInsetsCard,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: AppRadius.borderXl,
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: AppShadows.soft,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildFilterChip('All'),
-                        const SizedBox(width: 8),
-                        _buildFilterChip('Spring'),
-                        const SizedBox(width: 8),
-                        _buildFilterChip('Summer'),
-                        const SizedBox(width: 8),
-                        _buildFilterChip('Fall'),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: AppRadius.borderMd,
+                              ),
+                              child: const Icon(Icons.cloud_upload_rounded, color: AppColors.primary, size: 22),
+                            ),
+                            const SizedBox(width: AppSpacing.s12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Import Transcript',
+                                    style: AppTypography.titleLarge.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Auto-parse UCAM Grade Sheet / PDF export',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('UCAM PDF transcript parsing ready')),
+                                  );
+                                },
+                                icon: const Icon(Icons.picture_as_pdf_rounded, size: 16),
+                                label: const Text('Upload PDF'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  side: const BorderSide(color: AppColors.border),
+                                  shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('CSV grade record parsing ready')),
+                                  );
+                                },
+                                icon: const Icon(Icons.table_chart_rounded, size: 16),
+                                label: const Text('Upload CSV'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  side: const BorderSide(color: AppColors.border),
+                                  shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                  ),
+                ),
+              ),
 
-                    // Semester Cards
-                    Text(
-                      'Completed Trimesters (${filteredSemesters.length})',
-                      style: AppTypography.headlineLarge.copyWith(fontSize: 18),
-                    ),
-                    const SizedBox(height: 12),
+              // Filter Chips
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 38,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+                    itemCount: _filters.length,
+                    itemBuilder: (context, index) {
+                      final isSelected = _selectedFilterIndex == index;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedFilterIndex = index),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.primary : AppColors.surface,
+                            borderRadius: AppRadius.borderFull,
+                            border: Border.all(
+                              color: isSelected ? AppColors.primary : AppColors.border,
+                            ),
+                            boxShadow: isSelected ? AppShadows.primary : AppShadows.soft,
+                          ),
+                          child: Text(
+                            _filters[index],
+                            style: AppTypography.labelSmall.copyWith(
+                              color: isSelected ? Colors.white : AppColors.textSecondary,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
 
-                    ...filteredSemesters.map((semester) {
+              // Trimester Transcript Accordions
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, 90),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final semester = semesters[semesters.length - 1 - index]; // Newest first
                       return SemesterAccordion(
                         semester: semester,
-                        initialExpanded: semester.semesterIndex == semesters.length,
-                        onCourseTap: (course) => UIUBottomSheets.showCourseDetails(context, course),
+                        isInitiallyExpanded: index == 0,
                       );
-                    }).toList(),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUploadSection() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.primary.withOpacity(0.35), style: BorderStyle.solid, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.primarySubtle,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.cloud_upload_rounded,
-                  color: AppColors.primary,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 14),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Import UIU Transcript',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Upload UCAM PDF, CSV, or Grade Sheet',
-                      style: AppTypography.bodySmall,
-                    ),
-                  ],
+                    },
+                    childCount: semesters.length,
+                  ),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('UI Demo: PDF Parser is ready. Transcript loaded from sample!'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
-                  label: const Text('Upload PDF'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('UI Demo: CSV Parser is ready. Transcript loaded!'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.table_view_rounded, size: 18),
-                  label: const Text('Upload CSV'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          TextButton.icon(
-            onPressed: () {
-              setState(() => _isTranscriptLoaded = true);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('UIU Sample Transcript Reset!'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            icon: const Icon(Icons.refresh_rounded, size: 16),
-            label: const Text('Reload UIU Sample Transcript (Batch 201)'),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.textSecondary,
-              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTranscriptStatsHeader(List<dynamic> semesters) {
-    int totalCourses = 0;
-    int aGrades = 0;
-    for (var sem in semesters) {
-      totalCourses += (sem.courses as List).length;
-      for (var c in sem.courses) {
-        if (c.grade == 'A' || c.grade == 'A-') aGrades++;
-      }
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.navy,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem('Total Courses', '$totalCourses Taken'),
-          Container(width: 1, height: 36, color: Colors.white.withOpacity(0.15)),
-          _buildStatItem('A & A- Grades', '$aGrades Courses'),
-          Container(width: 1, height: 36, color: Colors.white.withOpacity(0.15)),
-          _buildStatItem('Retake Eligible', '1 Course (B)'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.65),
-            fontSize: 11,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFilterChip(String label) {
-    final isSelected = _selectedFilter == label;
-    return InkWell(
-      onTap: () => setState(() => _selectedFilter = label),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            color: isSelected ? Colors.white : AppColors.textSecondary,
           ),
         ),
       ),
     );
   }
 }
-

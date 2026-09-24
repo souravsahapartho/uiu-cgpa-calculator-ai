@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
 import '../core/constants/uiu_grading_scale.dart';
 import '../models/course.dart';
 
-class UIUBottomSheets {
+class UIUBottomSheet {
   static void showGradingScale(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: AppRadius.radiusXl),
+      ),
       builder: (context) {
         return DraggableScrollableSheet(
           initialChildSize: 0.75,
@@ -17,10 +22,21 @@ class UIUBottomSheets {
           expand: false,
           builder: (context, scrollController) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: AppRadius.borderFull,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -29,8 +45,8 @@ class UIUBottomSheets {
                         children: [
                           Text(
                             'UIU Grading Policy',
-                            style: AppTypography.headlineLarge.copyWith(
-                              fontWeight: FontWeight.w800,
+                            style: AppTypography.headlineMedium.copyWith(
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -51,19 +67,19 @@ class UIUBottomSheets {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: AppColors.primarySubtle,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                      borderRadius: AppRadius.borderBase,
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline_rounded, color: AppColors.primaryDark, size: 18),
+                        const Icon(Icons.verified_rounded, color: AppColors.primaryDark, size: 18),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            '4.00 Scale. Minimum passing grade for CSE courses is D (1.00). Retake allowed for grades <= B.',
+                            '4.00 Scale. Passing grade is D (1.00). Retake allowed for grades <= B.',
                             style: AppTypography.bodySmall.copyWith(
                               color: AppColors.primaryDark,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -75,11 +91,11 @@ class UIUBottomSheets {
                     child: ListView.separated(
                       controller: scrollController,
                       itemCount: UIUGradingScale.scale.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      separatorBuilder: (_, __) => const Divider(color: AppColors.border, height: 1),
                       itemBuilder: (context, index) {
                         final item = UIUGradingScale.scale[index];
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Row(
                             children: [
                               Container(
@@ -87,11 +103,11 @@ class UIUBottomSheets {
                                 height: 38,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: item.color.withOpacity(0.12),
-                                  borderRadius: BorderRadius.circular(10),
+                                  color: item.color.withValues(alpha: 0.12),
+                                  borderRadius: AppRadius.borderMd,
                                 ),
                                 child: Text(
-                                  item.grade,
+                                  item.letterGrade,
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w900,
@@ -111,7 +127,7 @@ class UIUBottomSheets {
                                       ),
                                     ),
                                     Text(
-                                      'Marks: ${item.markRange}',
+                                      'Marks: ${item.marksRange}',
                                       style: AppTypography.bodySmall,
                                     ),
                                   ],
@@ -120,8 +136,8 @@ class UIUBottomSheets {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: item.color.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: item.color.withValues(alpha: 0.1),
+                                  borderRadius: AppRadius.borderSm,
                                 ),
                                 child: Text(
                                   item.remarks,
@@ -150,10 +166,13 @@ class UIUBottomSheets {
   static void showCourseDetails(BuildContext context, Course course) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: AppRadius.radiusXl),
+      ),
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,85 +180,41 @@ class UIUBottomSheets {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.primarySubtle,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      course.code,
-                      style: AppTypography.labelLarge.copyWith(
-                        color: AppColors.primaryDark,
-                        fontWeight: FontWeight.w800,
+                  Text(
+                    course.code,
+                    style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w900),
+                  ),
+                  if (course.grade != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: 0.1),
+                        borderRadius: AppRadius.borderMd,
+                      ),
+                      child: Text(
+                        'Grade ${course.grade}',
+                        style: AppTypography.labelLarge.copyWith(color: AppColors.success),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
                 ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                course.title,
+                style: AppTypography.titleLarge,
               ),
               const SizedBox(height: 12),
               Text(
-                course.title,
-                style: AppTypography.headlineMedium.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceMuted,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    _buildDetailRow('Credit Value', '${course.credit.toStringAsFixed(1)} Credits'),
-                    const Divider(height: 16),
-                    _buildDetailRow('Course Type', course.categoryName),
-                    const Divider(height: 16),
-                    _buildDetailRow('Difficulty Rating', course.difficultyName),
-                    if (course.prerequisite != null) ...[
-                      const Divider(height: 16),
-                      _buildDetailRow('Prerequisite', course.prerequisite!),
-                    ],
-                    if (course.grade != null) ...[
-                      const Divider(height: 16),
-                      _buildDetailRow('Achieved Grade', '${course.grade} (${course.gradePoint?.toStringAsFixed(2)})'),
-                    ],
-                  ],
-                ),
+                'Credits: ${course.credit.toStringAsFixed(1)} • Category: ${course.category.name.toUpperCase()}',
+                style: AppTypography.bodyMedium,
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.check_circle_outline_rounded),
-                  label: const Text('Close'),
-                ),
-              ),
             ],
           ),
         );
       },
     );
   }
-
-  static Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: AppTypography.bodyMedium),
-        Text(
-          value,
-          style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ],
-    );
-  }
 }
 
+typedef UIUBottomSheets = UIUBottomSheet;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../theme/app_radius.dart';
 import '../core/constants/app_constants.dart';
 import 'main_navigation_screen.dart';
 
@@ -26,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1400),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.75, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
     );
 
@@ -36,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animController.forward();
 
-    Timer(const Duration(milliseconds: 2400), () {
+    Timer(const Duration(milliseconds: 2200), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -45,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen>
             transitionsBuilder: (context, anim1, anim2, child) {
               return FadeTransition(opacity: anim1, child: child);
             },
-            transitionDuration: const Duration(milliseconds: 500),
+            transitionDuration: const Duration(milliseconds: 400),
           ),
         );
       }
@@ -61,19 +62,24 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.scaffold,
       body: Stack(
         children: [
-          // Background decorative radial glow
+          // Background ambient gradient circles
           Positioned(
             top: -100,
             right: -100,
             child: Container(
-              width: 320,
-              height: 320,
+              width: 340,
+              height: 340,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.secondary.withOpacity(0.3),
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.12),
+                    AppColors.primary.withValues(alpha: 0.0),
+                  ],
+                ),
               ),
             ),
           ),
@@ -81,11 +87,16 @@ class _SplashScreenState extends State<SplashScreen>
             bottom: -80,
             left: -80,
             child: Container(
-              width: 260,
-              height: 260,
+              width: 300,
+              height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primaryDark.withOpacity(0.4),
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.accent.withValues(alpha: 0.08),
+                    AppColors.accent.withValues(alpha: 0.0),
+                  ],
+                ),
               ),
             ),
           ),
@@ -106,84 +117,60 @@ class _SplashScreenState extends State<SplashScreen>
                 children: [
                   // App Icon Emblem
                   Container(
-                    width: 104,
-                    height: 104,
+                    width: 96,
+                    height: 96,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: AppRadius.borderXl,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.18),
+                          color: AppColors.primary.withValues(alpha: 0.25),
                           blurRadius: 30,
                           offset: const Offset(0, 12),
                         ),
                       ],
                     ),
-                    child: Center(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(
-                            Icons.psychology_rounded,
-                            size: 58,
-                            color: AppColors.primary,
-                          ),
-                          Positioned(
-                            top: 14,
-                            right: 14,
-                            child: Container(
-                              width: 14,
-                              height: 14,
-                              decoration: const BoxDecoration(
-                                color: AppColors.navy,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.school_rounded,
-                                size: 8,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
+                    child: const Center(
+                      child: Icon(
+                        Icons.school_rounded,
+                        size: 48,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
                   // Title
-                  const Text(
+                  Text(
                     AppConstants.appName,
-                    style: TextStyle(
-                      fontSize: 34,
+                    style: AppTypography.displayMedium.copyWith(
+                      fontSize: 26,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: -1.0,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.8,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: AppRadius.borderFull,
                     ),
                     child: Text(
                       AppConstants.universityName,
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.primary,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        letterSpacing: 0.4,
+                        fontSize: 11,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Text(
                     AppConstants.appTagline,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.85),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -197,20 +184,20 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               children: [
                 SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 22,
+                  height: 22,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary.withValues(alpha: 0.8)),
                   ),
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  '100% Offline & Private • UIU Edition',
-                  style: TextStyle(
-                    fontSize: 12,
+                  'Academic Excellence • UIU Edition',
+                  style: AppTypography.bodySmall.copyWith(
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white.withOpacity(0.8),
+                    color: AppColors.textTertiary,
                   ),
                 ),
               ],
@@ -221,4 +208,3 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
-

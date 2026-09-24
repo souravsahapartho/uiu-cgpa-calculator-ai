@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
 import '../data/uiu_mock_data.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_typography.dart';
+import '../theme/app_shadows.dart';
+import '../widgets/subtle_background.dart';
 import '../widgets/uiu_header.dart';
 import '../widgets/uiu_bottom_sheet.dart';
-import '../core/constants/app_constants.dart';
-import '../core/utils/responsive_utils.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -13,273 +15,314 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final student = UIUMockData.student;
-    final horizontalPadding = ResponsiveUtils.getHorizontalPadding(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: ResponsiveUtils.getMaxContentWidth(context)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  UIUHeader(
-                    title: 'Student Profile',
-                    subtitle: 'UIU Student Portal & Device Storage Settings',
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.successLight,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.check_circle_rounded, color: AppColors.successDark, size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            'Active Student',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.successDark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
+      backgroundColor: AppColors.scaffold,
+      body: SubtleBackground(
+        child: SafeArea(
+          bottom: false,
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Header
+              const SliverToBoxAdapter(
+                child: UIUHeader(
+                  title: 'Student Profile',
+                  subtitle: 'Academic Identity & Local Settings',
+                ),
+              ),
 
-                  // Student ID Badge Card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(22),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.heroCardGradient,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.navy.withOpacity(0.25),
-                          blurRadius: 18,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundColor: AppColors.primary,
-                              child: Text(
-                                student.name.split(" ").map((n) => n[0]).take(2).join(),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    student.name,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Student ID: ${student.studentId}',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Batch ${student.batch} • ${student.currentTrimester}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.secondaryLight,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        const Divider(color: Colors.white12, height: 1),
-                        const SizedBox(height: 14),
-                        Text(
-                          student.department,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          AppConstants.universityName,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Academic Advisor Card
-                  Container(
-                    padding: const EdgeInsets.all(16),
+              // Large Avatar & Info Card
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: AppRadius.borderXl,
                       border: Border.all(color: AppColors.border),
+                      boxShadow: AppShadows.soft,
                     ),
-                    child: Row(
+                    child: Column(
                       children: [
+                        // Avatar
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          width: 80,
+                          height: 80,
                           decoration: BoxDecoration(
-                            color: AppColors.primarySubtle,
-                            borderRadius: BorderRadius.circular(14),
+                            gradient: AppColors.primaryGradient,
+                            shape: BoxShape.circle,
+                            boxShadow: AppShadows.primary,
                           ),
-                          child: const Icon(Icons.school_outlined, color: AppColors.primary, size: 24),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Appointed Academic Advisor',
-                                style: AppTypography.bodySmall,
-                              ),
-                              Text(
-                                student.advisorName,
-                                style: AppTypography.headlineSmall.copyWith(fontSize: 15),
-                              ),
-                              Text(
-                                student.advisorEmail,
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: AppColors.primaryDark,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Settings & Local Storage Section
-                  Text(
-                    'Local Storage & Security',
-                    style: AppTypography.headlineLarge.copyWith(fontSize: 17),
-                  ),
-                  const SizedBox(height: 12),
-
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.phonelink_lock_rounded, color: AppColors.success),
-                          title: const Text('Offline Local Storage', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                          subtitle: Text(student.lastBackupTime, style: AppTypography.bodySmall),
-                          trailing: const Icon(Icons.check_rounded, color: AppColors.success),
-                        ),
-                        const Divider(height: 1, indent: 56),
-                        ListTile(
-                          leading: const Icon(Icons.menu_book_rounded, color: AppColors.navy),
-                          title: const Text('UIU Official Grading Policy', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                          subtitle: const Text('View 4.00 grade boundary criteria', style: AppTypography.bodySmall),
-                          trailing: const Icon(Icons.chevron_right_rounded),
-                          onTap: () => UIUBottomSheets.showGradingScale(context),
-                        ),
-                        const Divider(height: 1, indent: 56),
-                        ListTile(
-                          leading: const Icon(Icons.file_download_outlined, color: AppColors.primary),
-                          title: const Text('Export Transcript Summary', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                          subtitle: const Text('Save PDF/CSV report to phone storage', style: AppTypography.bodySmall),
-                          trailing: const Icon(Icons.chevron_right_rounded),
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Exported UIU CGPA Transcript PDF to Downloads folder!'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // About UIU CGPA Calculator AI Play Store Info
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceMuted,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.psychology_rounded, color: AppColors.primary, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${AppConstants.appName} for Android',
-                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                          child: const Center(
+                            child: Icon(
+                              Icons.person_rounded,
+                              size: 44,
+                              color: Colors.white,
                             ),
-                          ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          student.name,
+                          style: AppTypography.headlineMedium.copyWith(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'ID: ${student.studentId} • Batch ${student.batch}',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'Version 1.0.0 (Build 1) • Production Play Store Ready',
-                          style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.section,
+                            borderRadius: AppRadius.borderFull,
+                          ),
+                          child: Text(
+                            student.department,
+                            style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          AppConstants.storageLabel,
-                          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                        const SizedBox(height: 16),
+                        // Mini stats row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildProfileStat('Current CGPA', student.currentCGPA.toStringAsFixed(2), AppColors.primary),
+                            Container(width: 1, height: 24, color: AppColors.border),
+                            _buildProfileStat('Credits Done', '${student.completedCredits.toInt()} Cr', AppColors.success),
+                            Container(width: 1, height: 24, color: AppColors.border),
+                            _buildProfileStat('Target CGPA', student.targetCGPA.toStringAsFixed(2), AppColors.accent),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                ],
+                ),
               ),
-            ),
+
+              // Achievement Badges
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s8, AppSpacing.s16, AppSpacing.s4),
+                  child: Text(
+                    'ACADEMIC ACHIEVEMENTS',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildBadgeCard(
+                          icon: Icons.emoji_events_rounded,
+                          title: "Dean's List",
+                          subtitle: '4 Trimesters',
+                          color: AppColors.accent,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildBadgeCard(
+                          icon: Icons.code_rounded,
+                          title: 'Code Master',
+                          subtitle: '4.00 in all labs',
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildBadgeCard(
+                          icon: Icons.speed_rounded,
+                          title: 'Fast Track',
+                          subtitle: 'Top 5% batch',
+                          color: AppColors.success,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Settings & Shortcuts
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s4),
+                  child: Text(
+                    'SETTINGS & PREFERENCES',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.s16, 0, AppSpacing.s16, 90),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildSettingItem(
+                      icon: Icons.policy_rounded,
+                      title: 'UIU Official Grading Scale',
+                      subtitle: 'View letter grades, marks, and grade points',
+                      onTap: () => UIUBottomSheet.showGradingScale(context),
+                    ),
+                    _buildSettingItem(
+                      icon: Icons.sync_rounded,
+                      title: 'Data Storage Status',
+                      subtitle: 'Progress is saved locally on your device',
+                      trailing: const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 18),
+                    ),
+                    _buildSettingItem(
+                      icon: Icons.info_outline_rounded,
+                      title: 'About UIU CGPA Calculator AI',
+                      subtitle: 'Version 1.0.0 • United International University',
+                    ),
+                  ]),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-}
 
+  Widget _buildProfileStat(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: AppTypography.bodySmall.copyWith(
+            fontSize: 10,
+            color: AppColors.textTertiary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: AppTypography.titleLarge.copyWith(
+            fontWeight: FontWeight.w900,
+            fontSize: 15,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBadgeCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.soft,
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: AppTypography.labelSmall.copyWith(
+              fontWeight: FontWeight.w800,
+              fontSize: 11,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            subtitle,
+            style: AppTypography.bodySmall.copyWith(
+              fontSize: 9,
+              color: AppColors.textTertiary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.soft,
+      ),
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.section,
+            borderRadius: AppRadius.borderMd,
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 20),
+        ),
+        title: Text(
+          title,
+          style: AppTypography.titleMedium.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: AppTypography.bodySmall.copyWith(
+            fontSize: 11,
+          ),
+        ),
+        trailing: trailing ?? const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary, size: 20),
+      ),
+    );
+  }
+}

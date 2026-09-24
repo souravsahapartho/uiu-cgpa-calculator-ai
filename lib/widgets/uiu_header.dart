@@ -1,85 +1,98 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
-import '../core/constants/app_constants.dart';
 
 class UIUHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget? trailing;
-  final bool showStorageBadge;
+  final bool showBack;
+  final VoidCallback? onBack;
 
   const UIUHeader({
     super.key,
     required this.title,
     this.subtitle,
     this.trailing,
-    this.showStorageBadge = true,
+    this.showBack = false,
+    this.onBack,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (showStorageBadge)
-          Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppColors.primarySubtle,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primary.withOpacity(0.25)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.lock_outline_rounded,
-                  size: 13,
-                  color: AppColors.primaryDark,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              if (showBack) ...[
+                IconButton(
+                  onPressed: onBack ?? () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
-                const SizedBox(width: 5),
-                Text(
-                  AppConstants.storageLabel,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primaryDark,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                const SizedBox(width: AppSpacing.s12),
               ],
-            ),
-          ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: AppTypography.displaySmall.copyWith(
-                      color: AppColors.navy,
-                      fontWeight: FontWeight.w800,
+                    style: AppTypography.headlineLarge.copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: AppTypography.bodyMedium,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ],
               ),
+            ],
+          ),
+          if (trailing != null)
+            trailing!
+          else
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: AppRadius.borderMd,
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.15), width: 1),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.school_rounded, size: 14, color: AppColors.primary),
+                  const SizedBox(width: 4),
+                  Text(
+                    'UIU',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            if (trailing != null) trailing!,
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
-

@@ -1,25 +1,23 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
+import '../theme/app_radius.dart';
 
 class GPAProgressRing extends StatefulWidget {
   final double currentGPA;
   final double maxGPA;
   final double? targetGPA;
   final double size;
-  final double strokeWidth;
-  final Color? progressColor;
   final String label;
 
   const GPAProgressRing({
     super.key,
     required this.currentGPA,
-    this.maxGPA = 4.00,
+    this.maxGPA = 4.0,
     this.targetGPA,
-    this.size = 140,
-    this.strokeWidth = 12,
-    this.progressColor,
-    this.label = 'CGPA',
+    this.size = 190,
+    this.label = 'Current CGPA',
   });
 
   @override
@@ -38,9 +36,12 @@ class _GPAProgressRingState extends State<GPAProgressRing>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-    _animation = Tween<double>(begin: 0.0, end: widget.currentGPA).animate(
+
+    final targetPercent = (widget.currentGPA / widget.maxGPA).clamp(0.0, 1.0);
+    _animation = Tween<double>(begin: 0.0, end: targetPercent).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
+
     _controller.forward();
   }
 
@@ -48,14 +49,16 @@ class _GPAProgressRingState extends State<GPAProgressRing>
   void didUpdateWidget(covariant GPAProgressRing oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currentGPA != widget.currentGPA) {
+      final targetPercent = (widget.currentGPA / widget.maxGPA).clamp(0.0, 1.0);
       _animation = Tween<double>(
-        begin: oldWidget.currentGPA,
-        end: widget.currentGPA,
+        begin: _animation.value,
+        end: targetPercent,
       ).animate(
         CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
       );
-      _controller.reset();
-      _controller.forward();
+      _controller
+        ..reset()
+        ..forward();
     }
   }
 
@@ -65,46 +68,77 @@ class _GPAProgressRingState extends State<GPAProgressRing>
     super.dispose();
   }
 
+  Color _getColorForGPA(double gpa) {
+    if (gpa >= 3.67) return AppColors.success;
+    if (gpa >= 3.00) return AppColors.primary;
+    if (gpa >= 2.50) return AppColors.accent;
+    return AppColors.danger;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ringColor = _getColorForGPA(widget.currentGPA);
+
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        final animatedVal = _animation.value;
+        final animatedGPA = _animation.value * widget.maxGPA;
+
         return SizedBox(
           width: widget.size,
           height: widget.size,
           child: Stack(
             alignment: Alignment.center,
             children: [
+              // Custom Painted Dual Ring
               CustomPaint(
                 size: Size(widget.size, widget.size),
-                painter: _GPARingPainter(
-                  currentGPA: animatedVal,
-                  maxGPA: widget.maxGPA,
-                  targetGPA: widget.targetGPA,
-                  strokeWidth: widget.strokeWidth,
-                  color: widget.progressColor ?? AppColors.primary,
+                painter: _RingPainter(
+                  progress: _animation.value,
+                  targetProgress: widget.targetGPA != null
+                      ? (widget.targetGPA! / widget.maxGPA).clamp(0.0, 1.0)
+                      : null,
+                  ringColor: ringColor,
+                  backgroundColor: AppColors.border,
                 ),
               ),
+              // Center GPA Value and Labels
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    animatedVal.toStringAsFixed(2),
-                    style: TextStyle(
-                      fontSize: widget.size * 0.24,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.8,
-                      color: AppColors.textPrimary,
+                    widget.label.toUpperCase(),
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 10,
+                      letterSpacing: 0.5,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
-                    'out of ${widget.maxGPA.toStringAsFixed(1)}',
-                    style: TextStyle(
-                      fontSize: widget.size * 0.09,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textTertiary,
+                    animatedGPA.toStringAsFixed(2),
+                    style: AppTypography.displayLarge.copyWith(
+                      fontSize: widget.size * 0.22,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: ringColor.withValues(alpha: 0.1),
+                      borderRadius: AppRadius.borderFull,
+                    ),
+                    child: Text(
+                      'Out of ${widget.maxGPA.toStringAsFixed(2)}',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: ringColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -117,89 +151,70 @@ class _GPAProgressRingState extends State<GPAProgressRing>
   }
 }
 
-class _GPARingPainter extends CustomPainter {
-  final double currentGPA;
-  final double maxGPA;
-  final double? targetGPA;
-  final double strokeWidth;
-  final Color color;
+class _RingPainter extends CustomPainter {
+  final double progress;
+  final double? targetProgress;
+  final Color ringColor;
+  final Color backgroundColor;
 
-  _GPARingPainter({
-    required this.currentGPA,
-    required this.maxGPA,
-    this.targetGPA,
-    required this.strokeWidth,
-    required this.color,
+  _RingPainter({
+    required this.progress,
+    this.targetProgress,
+    required this.ringColor,
+    required this.backgroundColor,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - strokeWidth) / 2;
+    final radius = (size.width - 24) / 2;
+    const strokeWidth = 14.0;
 
-    // Track Paint
-    final trackPaint = Paint()
-      ..color = AppColors.border.withOpacity(0.6)
+    // Background track
+    final bgPaint = Paint()
+      ..color = backgroundColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    // Background circle
-    canvas.drawCircle(center, radius, trackPaint);
+    canvas.drawCircle(center, radius, bgPaint);
 
-    final sweepAngle = (currentGPA / maxGPA).clamp(0.0, 1.0) * 2 * math.pi;
+    // Target marker if present
+    if (targetProgress != null) {
+      final targetAngle = -math.pi / 2 + (targetProgress! * 2 * math.pi);
+      final targetPaint = Paint()
+        ..color = AppColors.accent
+        ..style = PaintingStyle.fill;
 
-    // Progress Arc Paint
+      final markerX = center.dx + radius * math.cos(targetAngle);
+      final markerY = center.dy + radius * math.sin(targetAngle);
+      canvas.drawCircle(Offset(markerX, markerY), 7, targetPaint);
+    }
+
+    // Active progress arc with gradient
     final progressPaint = Paint()
-      ..shader = SweepGradient(
-        startAngle: -math.pi / 2,
-        endAngle: (3 * math.pi) / 2,
-        colors: [
-          color.withOpacity(0.8),
-          color,
-          AppColors.primaryDark,
-        ],
-        stops: const [0.0, 0.7, 1.0],
+      ..shader = LinearGradient(
+        colors: [ringColor.withValues(alpha: 0.8), ringColor],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
       ).createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    // Draw active arc starting from 12 o'clock (-pi/2)
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       -math.pi / 2,
-      sweepAngle,
+      progress * 2 * math.pi,
       false,
       progressPaint,
     );
-
-    // Draw Target Indicator if provided
-    if (targetGPA != null && targetGPA! > 0) {
-      final targetAngle = -math.pi / 2 + (targetGPA! / maxGPA).clamp(0.0, 1.0) * 2 * math.pi;
-      final targetPoint = Offset(
-        center.dx + radius * math.cos(targetAngle),
-        center.dy + radius * math.sin(targetAngle),
-      );
-
-      final targetPaint = Paint()
-        ..color = AppColors.navy
-        ..style = PaintingStyle.fill;
-
-      canvas.drawCircle(targetPoint, strokeWidth * 0.45, targetPaint);
-
-      final targetInnerPaint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(targetPoint, strokeWidth * 0.22, targetInnerPaint);
-    }
   }
 
   @override
-  bool shouldRepaint(covariant _GPARingPainter oldDelegate) {
-    return oldDelegate.currentGPA != currentGPA ||
-        oldDelegate.targetGPA != targetGPA ||
-        oldDelegate.color != color;
+  bool shouldRepaint(covariant _RingPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.targetProgress != targetProgress ||
+        oldDelegate.ringColor != ringColor;
   }
 }
-

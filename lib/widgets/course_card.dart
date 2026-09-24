@@ -1,217 +1,187 @@
 import 'package:flutter/material.dart';
 import '../models/course.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
-import '../core/constants/uiu_grading_scale.dart';
+import '../theme/app_shadows.dart';
 
-class CourseCard extends StatelessWidget {
+class CourseCard extends StatefulWidget {
   final Course course;
   final VoidCallback? onTap;
-  final Widget? trailing;
-  final bool isDraggable;
-  final bool showGrade;
+  final bool showCategory;
+  final bool compact;
 
   const CourseCard({
     super.key,
     required this.course,
     this.onTap,
-    this.trailing,
-    this.isDraggable = false,
-    this.showGrade = true,
+    this.showCategory = true,
+    this.compact = false,
   });
+
+  @override
+  State<CourseCard> createState() => _CourseCardState();
+}
+
+class _CourseCardState extends State<CourseCard> {
+  bool _isPressed = false;
+
+  Color _getGradeColor(String? grade) {
+    if (grade == null) return AppColors.textSecondary;
+    if (grade.startsWith('A')) return AppColors.success;
+    if (grade.startsWith('B')) return AppColors.secondary;
+    if (grade.startsWith('C')) return AppColors.accent;
+    if (grade.startsWith('D')) return const Color(0xFFEA580C);
+    return AppColors.danger;
+  }
 
   Color _getCategoryColor(CourseCategory category) {
     switch (category) {
       case CourseCategory.core:
-        return AppColors.navy;
-      case CourseCategory.lab:
         return AppColors.primary;
-      case CourseCategory.ged:
-        return Color(0xFF0284C7);
-      case CourseCategory.elective:
-        return Color(0xFF8B5CF6);
+      case CourseCategory.lab:
+        return AppColors.secondary;
       case CourseCategory.math:
-        return Color(0xFFD97706);
+        return const Color(0xFF7C3AED);
+      case CourseCategory.ged:
+        return const Color(0xFF0D9488);
+      case CourseCategory.elective:
+        return AppColors.accent;
       case CourseCategory.physics:
-        return Color(0xFF059669);
+        return const Color(0xFFDB2777);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final gradeColor = course.grade != null
-        ? UIUGradingScale.getGradeColor(course.grade!)
-        : AppColors.textTertiary;
+    final gradeColor = _getGradeColor(widget.course.grade);
+    final catColor = _getCategoryColor(widget.course.category);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.015),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return AnimatedScale(
+      scale: _isPressed ? 0.98 : 1.0,
+      duration: const Duration(milliseconds: 150),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        onTap: widget.onTap,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: AppSpacing.s8),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: AppRadius.borderBase,
+            border: Border.all(color: AppColors.border, width: 1),
+            boxShadow: AppShadows.soft,
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(18),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                if (isDraggable) ...[
-                  const Icon(
-                    Icons.drag_indicator_rounded,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                // Course Code Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: _getCategoryColor(course.category).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        course.code,
-                        style: AppTypography.labelMedium.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: _getCategoryColor(course.category),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${course.credit.toStringAsFixed(1)} Cr',
-                        style: AppTypography.labelSmall.copyWith(
-                          fontSize: 10,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
+          child: Row(
+            children: [
+              // Course Code Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: catColor.withValues(alpha: 0.08),
+                  borderRadius: AppRadius.borderMd,
+                  border: Border.all(color: catColor.withValues(alpha: 0.15), width: 1),
                 ),
-                const SizedBox(width: 14),
-                // Title and details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        course.title,
-                        style: AppTypography.headlineSmall.copyWith(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.course.code,
+                      style: AppTypography.labelLarge.copyWith(
+                        color: catColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${widget.course.credit.toStringAsFixed(1)} Cr',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textTertiary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s12),
+              // Course Title & Category Tag
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.course.title,
+                      style: AppTypography.titleMedium.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (widget.showCategory) ...[
+                      const SizedBox(height: 4),
+                      Row(
                         children: [
-                          _buildMiniBadge(
-                            course.categoryName,
-                            _getCategoryColor(course.category),
-                          ),
-                          _buildMiniBadge(
-                            course.difficultyName,
-                            _getDifficultyColor(course.difficulty),
-                          ),
-                          if (course.prerequisite != null)
-                            _buildMiniBadge(
-                              'Pre: ${course.prerequisite!}',
-                              AppColors.navyMuted,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.section,
+                              borderRadius: BorderRadius.circular(6),
                             ),
+                            child: Text(
+                              widget.course.category.name.toUpperCase(),
+                              style: AppTypography.labelSmall.copyWith(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                          if (widget.course.gradePoint != null) ...[
+                            const SizedBox(width: 6),
+                            Text(
+                              '•  Point: ${widget.course.gradePoint!.toStringAsFixed(2)}',
+                              style: AppTypography.bodySmall.copyWith(
+                                fontSize: 10,
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s8),
+              // Letter Grade Chip
+              if (widget.course.grade != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: gradeColor.withValues(alpha: 0.1),
+                    borderRadius: AppRadius.borderMd,
+                    border: Border.all(color: gradeColor.withValues(alpha: 0.25), width: 1),
+                  ),
+                  child: Text(
+                    widget.course.grade!,
+                    style: AppTypography.titleLarge.copyWith(
+                      color: gradeColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                if (trailing != null)
-                  trailing!
-                else if (showGrade && course.grade != null) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: gradeColor.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: gradeColor.withOpacity(0.3)),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          course.grade!,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                            color: gradeColor,
-                          ),
-                        ),
-                        Text(
-                          course.gradePoint?.toStringAsFixed(2) ?? '0.00',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: gradeColor.withOpacity(0.8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
+            ],
           ),
         ),
       ),
     );
   }
-
-  Widget _buildMiniBadge(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-    );
-  }
-
-  Color _getDifficultyColor(CourseDifficulty difficulty) {
-    switch (difficulty) {
-      case CourseDifficulty.easy:
-        return AppColors.success;
-      case CourseDifficulty.medium:
-        return AppColors.secondary;
-      case CourseDifficulty.hard:
-        return Color(0xFFEA580C);
-      case CourseDifficulty.veryHard:
-        return AppColors.error;
-    }
-  }
 }
-

@@ -9,6 +9,9 @@ class UIUGradingItem {
   final String remarks;
   final Color color;
 
+  String get letterGrade => grade;
+  String get marksRange => markRange;
+
   const UIUGradingItem({
     required this.grade,
     required this.gradePoint,
@@ -67,7 +70,7 @@ class UIUGradingScale {
       gradePoint: 2.00,
       markRange: '66 - 69',
       remarks: 'Plain',
-      color: AppColors.warning,
+      color: AppColors.accent,
     ),
     UIUGradingItem(
       grade: 'C-',
@@ -95,7 +98,7 @@ class UIUGradingScale {
       gradePoint: 0.00,
       markRange: '0 - 54',
       remarks: 'Fail',
-      color: AppColors.error,
+      color: AppColors.danger,
     ),
   ];
 

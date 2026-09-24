@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_shadows.dart';
 import 'home_screen.dart';
 import 'gpa_calculator_screen.dart';
-import 'ai_advisor_screen.dart';
 import 'transcript_import_screen.dart';
+import 'ai_advisor_screen.dart';
 import 'profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -25,8 +26,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = const [
     HomeScreen(),
     GPACalculatorScreen(),
-    AIAdvisorScreen(),
     TranscriptImportScreen(),
+    AIAdvisorScreen(),
     ProfileScreen(),
   ];
 
@@ -45,61 +46,52 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      backgroundColor: AppColors.scaffold,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-          border: const Border(
-            top: BorderSide(color: AppColors.border, width: 1),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: AppRadius.borderXl,
+            border: Border.all(color: AppColors.border, width: 1),
+            boxShadow: AppShadows.floating,
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  index: 0,
-                  icon: Icons.dashboard_outlined,
-                  activeIcon: Icons.dashboard_rounded,
-                  label: 'Home',
-                ),
-                _buildNavItem(
-                  index: 1,
-                  icon: Icons.calculate_outlined,
-                  activeIcon: Icons.calculate_rounded,
-                  label: 'GPA',
-                ),
-                _buildHeroNavItem(
-                  index: 2,
-                  icon: Icons.auto_awesome_rounded,
-                  label: 'AI Advisor',
-                ),
-                _buildNavItem(
-                  index: 3,
-                  icon: Icons.description_outlined,
-                  activeIcon: Icons.description_rounded,
-                  label: 'Transcript',
-                ),
-                _buildNavItem(
-                  index: 4,
-                  icon: Icons.person_outline_rounded,
-                  activeIcon: Icons.person_rounded,
-                  label: 'Profile',
-                ),
-              ],
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(
+                index: 0,
+                icon: Icons.grid_view_rounded,
+                label: 'Home',
+              ),
+              _buildNavItem(
+                index: 1,
+                icon: Icons.calculate_rounded,
+                label: 'GPA',
+              ),
+              _buildNavItem(
+                index: 2,
+                icon: Icons.description_rounded,
+                label: 'Transcript',
+              ),
+              _buildNavItem(
+                index: 3,
+                icon: Icons.auto_awesome_rounded,
+                label: 'AI Advisor',
+                isHero: true,
+              ),
+              _buildNavItem(
+                index: 4,
+                icon: Icons.person_rounded,
+                label: 'Profile',
+              ),
+            ],
           ),
         ),
       ),
@@ -109,77 +101,75 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget _buildNavItem({
     required int index,
     required IconData icon,
-    required IconData activeIcon,
     required String label,
+    bool isHero = false,
   }) {
     final isSelected = _currentIndex == index;
-    return InkWell(
-      onTap: () => _onTabSelected(index),
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? activeIcon : icon,
-              color: isSelected ? AppColors.primary : AppColors.textTertiary,
-              size: 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                color: isSelected ? AppColors.primaryDark : AppColors.textTertiary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildHeroNavItem({
-    required int index,
-    required IconData icon,
-    required String label,
-  }) {
-    final isSelected = _currentIndex == index;
-    return InkWell(
-      onTap: () => _onTabSelected(index),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.primarySubtle,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.35),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+    if (isHero) {
+      return GestureDetector(
+        onTap: () => _onTabSelected(index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: isSelected ? AppColors.primaryGradient : null,
+            color: isSelected ? null : AppColors.primarySubtle,
+            borderRadius: AppRadius.borderBase,
+            boxShadow: isSelected ? AppShadows.primary : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? Colors.white : AppColors.primary,
+                size: 20,
+              ),
+              if (isSelected) ...[
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
                   ),
-                ]
-              : null,
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => _onTabSelected(index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.section : Colors.transparent,
+          borderRadius: AppRadius.borderBase,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : AppColors.primaryDark,
-              size: 24,
+              color: isSelected ? AppColors.primary : AppColors.textTertiary,
+              size: 22,
             ),
             const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: isSelected ? Colors.white : AppColors.primaryDark,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected ? AppColors.primary : AppColors.textTertiary,
               ),
             ),
           ],
@@ -188,4 +178,3 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 }
-

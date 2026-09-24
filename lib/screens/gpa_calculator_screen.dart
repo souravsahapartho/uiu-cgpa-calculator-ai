@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
-import '../data/uiu_mock_data.dart';
-import '../core/utils/calculator_utils.dart';
 import '../core/constants/uiu_grading_scale.dart';
-import '../core/utils/responsive_utils.dart';
-import '../widgets/uiu_header.dart';
+import '../models/course.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_typography.dart';
+import '../theme/app_shadows.dart';
+import '../widgets/subtle_background.dart';
 import '../widgets/gpa_progress_ring.dart';
+import '../widgets/uiu_header.dart';
 import '../widgets/uiu_bottom_sheet.dart';
 
 class GPACalculatorScreen extends StatefulWidget {
@@ -16,645 +18,453 @@ class GPACalculatorScreen extends StatefulWidget {
   State<GPACalculatorScreen> createState() => _GPACalculatorScreenState();
 }
 
-class _GPACalculatorScreenState extends State<GPACalculatorScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _GPACalculatorScreenState extends State<GPACalculatorScreen> {
+  // Target Planner state
+  double _currentCGPA = 3.78;
+  double _completedCredits = 76.0;
+  double _targetCGPA = 3.85;
+  double _remainingCredits = 62.0;
 
-  // Target Planner State
-  double _currentCGPA = UIUMockData.student.currentCGPA;
-  double _completedCredits = UIUMockData.student.completedCredits;
-  double _targetCGPA = UIUMockData.student.targetCGPA;
-  double _remainingCredits = UIUMockData.student.remainingCredits;
-
-  // Semester SGPA Calculator State
-  final List<Map<String, dynamic>> _simulatedCourses = [
-    {'title': 'Microprocessors & Microcontrollers', 'credit': 3.0, 'grade': 'A', 'gradePoint': 4.00},
-    {'title': 'Microprocessors Lab', 'credit': 1.0, 'grade': 'A', 'gradePoint': 4.00},
-    {'title': 'Machine Learning', 'credit': 3.0, 'grade': 'A-', 'gradePoint': 3.67},
-    {'title': 'Machine Learning Lab', 'credit': 1.0, 'grade': 'A', 'gradePoint': 4.00},
-    {'title': 'Developing English Language Skills II', 'credit': 3.0, 'grade': 'A', 'gradePoint': 4.00},
+  // Trimester Simulator state
+  final List<Course> _currentSemesterCourses = [
+    const Course(code: 'CSE 4325', title: 'Microprocessors', credit: 3.0, grade: 'A', gradePoint: 4.00, category: CourseCategory.core),
+    const Course(code: 'CSE 4326', title: 'Microprocessors Lab', credit: 1.0, grade: 'A', gradePoint: 4.00, category: CourseCategory.lab),
+    const Course(code: 'CSE 4889', title: 'Machine Learning', credit: 3.0, grade: 'A-', gradePoint: 3.67, category: CourseCategory.elective),
+    const Course(code: 'ENG 1013', title: 'Professional English', credit: 3.0, grade: 'A', gradePoint: 4.00, category: CourseCategory.ged),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+  double get _calculatedTrimesterSGPA {
+    double totalPoints = 0;
+    double totalCredits = 0;
+    for (final c in _currentSemesterCourses) {
+      if (c.gradePoint != null) {
+        totalPoints += (c.gradePoint! * c.credit);
+        totalCredits += c.credit;
+      }
+    }
+    return totalCredits > 0 ? (totalPoints / totalCredits) : 0.0;
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  double get _requiredSGPAForTarget {
+    final totalCredits = _completedCredits + _remainingCredits;
+    final reqPoints = (_targetCGPA * totalCredits) - (_currentCGPA * _completedCredits);
+    return _remainingCredits > 0 ? (reqPoints / _remainingCredits) : 0.0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final horizontalPadding = ResponsiveUtils.getHorizontalPadding(context);
-
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: ResponsiveUtils.getMaxContentWidth(context)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  UIUHeader(
-                    title: 'GPA Calculator',
-                    subtitle: 'UIU Accurate Grade Forecasting & Target Planner',
-                    trailing: IconButton(
-                      onPressed: () => UIUBottomSheets.showGradingScale(context),
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 20),
-                      ),
-                      tooltip: 'UIU Grading Scale',
-                    ),
+      backgroundColor: AppColors.scaffold,
+      body: SubtleBackground(
+        child: SafeArea(
+          bottom: false,
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Header
+              SliverToBoxAdapter(
+                child: UIUHeader(
+                  title: 'GPA Intelligence',
+                  subtitle: 'Target Planner & Trimester Simulator',
+                  trailing: IconButton(
+                    onPressed: () => UIUBottomSheet.showGradingScale(context),
+                    icon: const Icon(Icons.info_outline_rounded, color: AppColors.primary),
                   ),
-                  const SizedBox(height: 16),
+                ),
+              ),
 
-                  // Mode Tab Bar
-                  Container(
+              // Hero Circular Progress Ring Card
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceMuted,
-                      borderRadius: BorderRadius.circular(16),
+                      color: AppColors.surface,
+                      borderRadius: AppRadius.borderXl,
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: AppShadows.soft,
                     ),
-                    padding: const EdgeInsets.all(4),
-                    child: TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      labelColor: AppColors.primaryDark,
-                      unselectedLabelColor: AppColors.textTertiary,
-                      labelStyle: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700),
-                      tabs: const [
-                        Tab(text: 'Target CGPA Planner'),
-                        Tab(text: 'Term SGPA Simulator'),
+                    child: Column(
+                      children: [
+                        GPAProgressRing(
+                          currentGPA: _currentCGPA,
+                          maxGPA: 4.00,
+                          targetGPA: _targetCGPA,
+                          size: 175,
+                          label: 'Current Standing',
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildMiniSummary(
+                              title: 'Completed',
+                              value: '${_completedCredits.toInt()} Cr',
+                              color: AppColors.primary,
+                            ),
+                            Container(width: 1, height: 28, color: AppColors.border),
+                            _buildMiniSummary(
+                              title: 'Target CGPA',
+                              value: _targetCGPA.toStringAsFixed(2),
+                              color: AppColors.accent,
+                            ),
+                            Container(width: 1, height: 28, color: AppColors.border),
+                            _buildMiniSummary(
+                              title: 'Remaining',
+                              value: '${_remainingCredits.toInt()} Cr',
+                              color: AppColors.secondary,
+                            ),
+                          ],
+                        ),
                       ],
-                      onTap: (_) => setState(() {}),
                     ),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Tab Content
-                  _tabController.index == 0
-                      ? _buildTargetPlannerView()
-                      : _buildTermSGPASimulatorView(),
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildTargetPlannerView() {
-    final result = CalculatorUtils.calculateRequiredGPA(
-      currentCGPA: _currentCGPA,
-      completedCredits: _completedCredits,
-      targetCGPA: _targetCGPA,
-      remainingCredits: _remainingCredits,
-    );
-
-    return Column(
-      children: [
-        // Hero Result Card
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: result.statusColor.withOpacity(0.35), width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: result.statusColor.withOpacity(0.08),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
+              // Required GPA Highlight Card
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
+                  child: Container(
+                    padding: AppSpacing.edgeInsetsCard,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primarySubtle,
+                          AppColors.secondarySubtle,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: AppRadius.borderXl,
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.primaryGradient,
+                            borderRadius: AppRadius.borderMd,
+                            boxShadow: AppShadows.primary,
+                          ),
+                          child: const Icon(Icons.stars_rounded, color: Colors.white, size: 26),
+                        ),
+                        const SizedBox(width: AppSpacing.s12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Required Average SGPA',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _requiredSGPAForTarget.toStringAsFixed(2),
+                                style: AppTypography.displayLarge.copyWith(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w900,
+                                  color: _requiredSGPAForTarget <= 4.0 ? AppColors.primary : AppColors.danger,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              Text(
+                                _requiredSGPAForTarget <= 3.30
+                                    ? 'Easily Attainable • Maintain B+ Average'
+                                    : _requiredSGPAForTarget <= 3.75
+                                        ? 'Challenging • Aim for A- & A Grades'
+                                        : _requiredSGPAForTarget <= 4.00
+                                            ? 'Demanding • Near Straight 4.00s'
+                                            : 'Impossible (>4.00 Max Limit)',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: _requiredSGPAForTarget <= 4.0 ? AppColors.success : AppColors.danger,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
+
+              // Interactive Target Sliders Card
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
+                  child: Container(
+                    padding: AppSpacing.edgeInsetsCard,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: AppRadius.borderXl,
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: AppShadows.soft,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'REQUIRED FUTURE SGPA',
+                          'ADJUST TARGET PARAMETERS',
                           style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.textSecondary,
                             fontWeight: FontWeight.w800,
-                            letterSpacing: 1.0,
-                            color: AppColors.textTertiary,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
+                        const SizedBox(height: 12),
+                        _buildSlider(
+                          label: 'Target CGPA',
+                          value: _targetCGPA,
+                          min: 2.0,
+                          max: 4.0,
+                          divisions: 200,
+                          onChanged: (val) => setState(() => _targetCGPA = val),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildSlider(
+                          label: 'Remaining Credits',
+                          value: _remainingCredits,
+                          min: 3.0,
+                          max: 138.0,
+                          divisions: 135,
+                          isInteger: true,
+                          onChanged: (val) => setState(() => _remainingCredits = val),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Trimester Simulator Section
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, AppSpacing.s4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'CURRENT TRIMESTER SIMULATOR',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: AppRadius.borderMd,
+                        ),
+                        child: Text(
+                          'Estimated SGPA: ${_calculatedTrimesterSGPA.toStringAsFixed(2)}',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Current Semester Simulated Courses
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.s16, 0, AppSpacing.s16, 90),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final course = _currentSemesterCourses[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: AppRadius.borderLg,
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              result.requiredGPA.toStringAsFixed(2),
-                              style: TextStyle(
-                                fontSize: 44,
-                                fontWeight: FontWeight.w900,
-                                color: result.statusColor,
-                                letterSpacing: -1.2,
-                                height: 1.0,
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: AppColors.section,
+                                borderRadius: AppRadius.borderMd,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${course.credit.toInt()} Cr',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'per term avg',
-                              style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    course.code,
+                                    style: AppTypography.labelLarge.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  Text(
+                                    course.title,
+                                    style: AppTypography.bodySmall.copyWith(
+                                      fontSize: 11,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Grade Selector Dropdown
+                            DropdownButton<String>(
+                              value: course.grade,
+                              underline: const SizedBox(),
+                              borderRadius: AppRadius.borderLg,
+                              items: UIUGradingScale.scale.map((item) {
+                                return DropdownMenuItem<String>(
+                                  value: item.letterGrade,
+                                  child: Text(
+                                    '${item.letterGrade} (${item.gradePoint.toStringAsFixed(2)})',
+                                    style: AppTypography.titleMedium.copyWith(
+                                      color: item.color,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (newGrade) {
+                                if (newGrade != null) {
+                                  final match = UIUGradingScale.scale.firstWhere((e) => e.letterGrade == newGrade);
+                                  setState(() {
+                                    _currentSemesterCourses[index] = course.copyWith(
+                                      grade: match.letterGrade,
+                                      gradePoint: match.gradePoint,
+                                    );
+                                  });
+                                }
+                              },
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: result.statusColor.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            result.message,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: result.statusColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
+                    childCount: _currentSemesterCourses.length,
                   ),
-                  const SizedBox(width: 12),
-                  GPAProgressRing(
-                    currentGPA: result.requiredGPA.clamp(0.0, 4.0),
-                    maxGPA: 4.00,
-                    size: 88,
-                    strokeWidth: 8,
-                    progressColor: result.statusColor,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Interactive Input Controls
-        _buildSliderCard(
-          title: 'Target CGPA Goal',
-          value: _targetCGPA,
-          min: 2.0,
-          max: 4.0,
-          divisions: 200,
-          unit: '',
-          color: AppColors.primary,
-          onChanged: (val) => setState(() => _targetCGPA = double.parse(val.toStringAsFixed(2))),
-        ),
-        const SizedBox(height: 12),
-
-        _buildSliderCard(
-          title: 'Current CGPA',
-          value: _currentCGPA,
-          min: 2.0,
-          max: 4.0,
-          divisions: 200,
-          unit: '',
-          color: AppColors.navy,
-          onChanged: (val) => setState(() => _currentCGPA = double.parse(val.toStringAsFixed(2))),
-        ),
-        const SizedBox(height: 12),
-
-        Row(
-          children: [
-            Expanded(
-              child: _buildNumberInputCard(
-                title: 'Completed Credits',
-                value: _completedCredits,
-                step: 1.0,
-                onChanged: (val) => setState(() => _completedCredits = val.clamp(0.0, 138.0)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildNumberInputCard(
-                title: 'Remaining Credits',
-                value: _remainingCredits,
-                step: 1.0,
-                onChanged: (val) => setState(() => _remainingCredits = val.clamp(1.0, 138.0)),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // UIU Honors Forecast
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceMuted,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.workspace_premium_rounded, color: AppColors.primary, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Projected Convocation Standing',
-                      style: AppTypography.labelMedium.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    Text(
-                      CalculatorUtils.getGraduationDistinction(_targetCGPA),
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.primaryDark,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildTermSGPASimulatorView() {
-    final sgpa = CalculatorUtils.calculateSGPA(_simulatedCourses);
-    final totalTermCredits = _simulatedCourses.fold(0.0, (sum, item) => sum + (item['credit'] as double));
-
-    // Calculate updated CGPA
-    final totalQualityPoints = (_currentCGPA * _completedCredits) + (sgpa * totalTermCredits);
-    final newTotalCredits = _completedCredits + totalTermCredits;
-    final projectedCGPA = totalQualityPoints / newTotalCredits;
-
+  Widget _buildMiniSummary({
+    required String title,
+    required String value,
+    required Color color,
+  }) {
     return Column(
       children: [
-        // Live SGPA & Impact Banner
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.25),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'SIMULATED TERM SGPA',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white.withOpacity(0.8),
-                      letterSpacing: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    sgpa.toStringAsFixed(2),
-                    style: const TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: -1.0,
-                    ),
-                  ),
-                  Text(
-                    '$totalTermCredits Credits Enrolled',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'New Projected CGPA',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.white.withOpacity(0.9),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      projectedCGPA.toStringAsFixed(2),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      projectedCGPA >= _currentCGPA
-                          ? '+${(projectedCGPA - _currentCGPA).toStringAsFixed(2)} Boost'
-                          : '${(projectedCGPA - _currentCGPA).toStringAsFixed(2)} Drop',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: projectedCGPA >= _currentCGPA ? AppColors.secondaryLight : Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        Text(
+          title,
+          style: AppTypography.bodySmall.copyWith(
+            fontSize: 11,
+            color: AppColors.textTertiary,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 20),
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Enrolled Courses (${_simulatedCourses.length})',
-              style: AppTypography.headlineMedium.copyWith(fontSize: 16),
-            ),
-            TextButton.icon(
-              onPressed: _addNewSimulatedCourse,
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text('Add Course'),
-            ),
-          ],
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: AppTypography.titleLarge.copyWith(
+            fontWeight: FontWeight.w800,
+            color: color,
+            fontSize: 15,
+          ),
         ),
-        const SizedBox(height: 10),
-
-        ..._simulatedCourses.asMap().entries.map((entry) {
-          final index = entry.key;
-          final course = entry.value;
-          return _buildSimulatedCourseRow(index, course);
-        }).toList(),
       ],
     );
   }
 
-  Widget _buildSimulatedCourseRow(int index, Map<String, dynamic> course) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  course['title'],
-                  style: AppTypography.headlineSmall.copyWith(fontSize: 14),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${(course['credit'] as double).toStringAsFixed(1)} Credits',
-                  style: AppTypography.bodySmall,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Grade Selector Dropdown
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: course['grade'],
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
-                isDense: true,
-                items: UIUGradingScale.scale.map((item) {
-                  return DropdownMenuItem<String>(
-                    value: item.grade,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          item.grade,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: item.color,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '(${item.gradePoint.toStringAsFixed(1)})',
-                          style: AppTypography.bodySmall.copyWith(fontSize: 11),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (newGrade) {
-                  if (newGrade != null) {
-                    setState(() {
-                      _simulatedCourses[index]['grade'] = newGrade;
-                      _simulatedCourses[index]['gradePoint'] = UIUGradingScale.getGradePoint(newGrade);
-                    });
-                  }
-                },
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () {
-              if (_simulatedCourses.length > 1) {
-                setState(() => _simulatedCourses.removeAt(index));
-              }
-            },
-            icon: const Icon(Icons.remove_circle_outline_rounded, color: AppColors.textTertiary, size: 20),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _addNewSimulatedCourse() {
-    setState(() {
-      _simulatedCourses.add({
-        'title': 'New Elective / Core Course',
-        'credit': 3.0,
-        'grade': 'A',
-        'gradePoint': 4.00,
-      });
-    });
-  }
-
-  Widget _buildSliderCard({
-    required String title,
+  Widget _buildSlider({
+    required String label,
     required double value,
     required double min,
     required double max,
     required int divisions,
-    required String unit,
-    required Color color,
     required ValueChanged<double> onChanged,
+    bool isInteger = false,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: AppTypography.bodyLarge.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${value.toStringAsFixed(2)}$unit',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: color,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: color,
-              thumbColor: color,
-              inactiveTrackColor: AppColors.border,
-              trackHeight: 6,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
             ),
-            child: Slider(
-              value: value,
-              min: min,
-              max: max,
-              divisions: divisions,
-              onChanged: onChanged,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.section,
+                borderRadius: AppRadius.borderMd,
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Text(
+                isInteger ? '${value.toInt()} Credits' : value.toStringAsFixed(2),
+                style: AppTypography.labelSmall.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              ),
             ),
+          ],
+        ),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: AppColors.primary,
+            inactiveTrackColor: AppColors.border,
+            thumbColor: AppColors.primary,
+            overlayColor: AppColors.primary.withValues(alpha: 0.1),
+            trackHeight: 4,
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNumberInputCard({
-    required String title,
-    required double value,
-    required double step,
-    required ValueChanged<double> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: AppTypography.labelMedium.copyWith(color: AppColors.textSecondary),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          child: Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            onChanged: onChanged,
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: () => onChanged(value - step),
-                icon: const Icon(Icons.remove_rounded, size: 18),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.surfaceMuted,
-                  padding: const EdgeInsets.all(6),
-                ),
-              ),
-              Text(
-                value.toStringAsFixed(0),
-                style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w800),
-              ),
-              IconButton(
-                onPressed: () => onChanged(value + step),
-                icon: const Icon(Icons.add_rounded, size: 18),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.surfaceMuted,
-                  padding: const EdgeInsets.all(6),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
-

@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import '../models/semester_transcript.dart';
-import '../models/course.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
+import '../theme/app_shadows.dart';
 import 'course_card.dart';
 
 class SemesterAccordion extends StatefulWidget {
   final SemesterTranscript semester;
-  final bool initialExpanded;
-  final Function(Course course)? onCourseTap;
+  final bool isInitiallyExpanded;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const SemesterAccordion({
     super.key,
     required this.semester,
-    this.initialExpanded = false,
-    this.onCourseTap,
+    this.isInitiallyExpanded = false,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -27,165 +31,145 @@ class _SemesterAccordionState extends State<SemesterAccordion> {
   @override
   void initState() {
     super.initState();
-    _isExpanded = widget.initialExpanded;
+    _isExpanded = widget.isInitiallyExpanded;
+  }
+
+  Color _getSGPAColor(double sgpa) {
+    if (sgpa >= 3.67) return AppColors.success;
+    if (sgpa >= 3.00) return AppColors.primary;
+    if (sgpa >= 2.50) return AppColors.accent;
+    return AppColors.danger;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+    final sgpaColor = _getSGPAColor(widget.semester.sgpa);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
+      margin: const EdgeInsets.only(bottom: AppSpacing.s12),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadius.borderLg,
         border: Border.all(
-          color: _isExpanded ? AppColors.primary.withOpacity(0.35) : AppColors.border,
+          color: _isExpanded ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border,
           width: _isExpanded ? 1.5 : 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+        boxShadow: _isExpanded ? AppShadows.card : AppShadows.soft,
+      ),
+      child: Column(
+        children: [
+          // Header Tile
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            borderRadius: AppRadius.borderLg,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s12),
+              child: Row(
+                children: [
+                  // Trimester Icon Indicator
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: AppRadius.borderMd,
+                    ),
+                    child: const Icon(
+                      Icons.school_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s12),
+                  // Semester Title & Credits
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.semester.semesterName,
+                          style: AppTypography.titleLarge.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${widget.semester.courses.length} Courses • ${widget.semester.creditsEarned.toStringAsFixed(1)} Credits',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // SGPA Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: sgpaColor.withValues(alpha: 0.1),
+                      borderRadius: AppRadius.borderMd,
+                      border: Border.all(color: sgpaColor.withValues(alpha: 0.25), width: 1),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'SGPA ${widget.semester.sgpa.toStringAsFixed(2)}',
+                          style: AppTypography.labelLarge.copyWith(
+                            color: sgpaColor,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          'CGPA ${widget.semester.cgpa.toStringAsFixed(2)}',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textTertiary,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s8),
+                  // Animated Chevron
+                  AnimatedRotation(
+                    turns: _isExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 250),
+                    child: const Icon(
+                      Icons.expand_more_rounded,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Expanded Course List
+          AnimatedCrossFade(
+            firstChild: const SizedBox(width: double.infinity),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.s16, 0, AppSpacing.s16, AppSpacing.s12),
+              child: Column(
+                children: [
+                  const Divider(color: AppColors.border, height: 16),
+                  ...widget.semester.courses.map((course) => CourseCard(
+                    course: course,
+                    compact: true,
+                  )),
+                ],
+              ),
+            ),
+            crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 250),
           ),
         ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Column(
-          children: [
-            InkWell(
-              onTap: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.navy.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '#${widget.semester.semesterIndex}',
-                        style: AppTypography.labelMedium.copyWith(
-                          color: AppColors.navy,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.semester.semesterName,
-                            style: AppTypography.headlineMedium.copyWith(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${widget.semester.courseCount} Courses • ${widget.semester.creditsEarned.toStringAsFixed(1)} Credits',
-                            style: AppTypography.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // SGPA Pill
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'SGPA ',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 10,
-                            ),
-                          ),
-                          Text(
-                            widget.semester.sgpa.toStringAsFixed(2),
-                            style: AppTypography.labelLarge.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                      color: AppColors.textTertiary,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            AnimatedCrossFade(
-              firstChild: const SizedBox(width: double.infinity, height: 0),
-              secondChild: Container(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                decoration: const BoxDecoration(
-                  color: AppColors.surface,
-                ),
-                child: Column(
-                  children: [
-                    const Divider(height: 1, color: AppColors.border),
-                    const SizedBox(height: 12),
-                    ...widget.semester.courses.map((course) {
-                      return CourseCard(
-                        course: course,
-                        onTap: () => widget.onCourseTap?.call(course),
-                      );
-                    }).toList(),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceMuted,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Cumulative CGPA after term:',
-                            style: AppTypography.bodySmall.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            widget.semester.cgpa.toStringAsFixed(2),
-                            style: AppTypography.labelLarge.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.primaryDark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-              duration: const Duration(milliseconds: 250),
-            ),
-          ],
-        ),
       ),
     );
   }
 }
-
