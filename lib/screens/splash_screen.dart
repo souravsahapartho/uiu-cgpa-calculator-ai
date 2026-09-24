@@ -4,6 +4,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_radius.dart';
 import '../core/constants/app_constants.dart';
+import '../main.dart';
+import 'onboarding_screen.dart';
 import 'main_navigation_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -38,18 +40,21 @@ class _SplashScreenState extends State<SplashScreen>
     _animController.forward();
 
     Timer(const Duration(milliseconds: 2200), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, anim1, anim2) => const MainNavigationScreen(),
-            transitionsBuilder: (context, anim1, anim2, child) {
-              return FadeTransition(opacity: anim1, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 400),
-          ),
-        );
-      }
+      if (!mounted) return;
+      final provider = ProfileProviderScope.of(context);
+      final nextScreen = provider.isOnboarded
+          ? const MainNavigationScreen()
+          : const OnboardingScreen();
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, anim1, anim2) => nextScreen,
+          transitionsBuilder: (context, anim1, anim2, child) {
+            return FadeTransition(opacity: anim1, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
     });
   }
 

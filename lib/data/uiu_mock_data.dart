@@ -239,7 +239,7 @@ class UIUMockData {
       ),
     ],
     gpaBoosterTips: [
-      'Retake Strategy: Your lowest grade is Economics (B - 3.00, 3 credits). Retaking it for an A would immediately boost your CGPA by +0.022.',
+      'CGPA Improvement: Focus on improving scores in GED subjects (Economics, Accounting) where competition is lower than core CS courses.',
       'Lab Perfection: You currently hold a 4.00 GPA in all CSE labs. Keep prioritizing 1.0-credit labs as low-effort GPA anchors.',
       'Credit Balancing: Keep trimesters between 10.0 - 12.0 credits for optimal A-grade probability.',
       'Midterm Defense: UIU grading weights midterms heavily (30%). Secure 26+ marks before finals.',

@@ -11,13 +11,12 @@ class SubtleBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppColors.darkScaffold : AppColors.scaffold;
     return Stack(
       children: [
-        // Base subtle background pattern
         Positioned.fill(
-          child: Container(
-            color: AppColors.scaffold,
-          ),
+          child: Container(color: bg),
         ),
         // Soft glowing circular element 1 (Primary Deep Blue glow)
         Positioned(
@@ -83,3 +82,4 @@ class SubtleBackground extends StatelessWidget {
     );
   }
 }
+

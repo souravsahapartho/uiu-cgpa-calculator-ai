@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../data/uiu_mock_data.dart';
-import '../models/ai_recommendation.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';

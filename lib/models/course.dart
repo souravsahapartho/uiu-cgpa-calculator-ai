@@ -43,8 +43,8 @@ class Course {
     double? credit,
     String? grade,
     double? gradePoint,
-    CourseCategory category,
-    CourseDifficulty difficulty,
+    CourseCategory? category,
+    CourseDifficulty? difficulty,
     String? prerequisite,
     String? semesterTaken,
   }) {
@@ -54,8 +54,8 @@ class Course {
       credit: credit ?? this.credit,
       grade: grade ?? this.grade,
       gradePoint: gradePoint ?? this.gradePoint,
-      category: category,
-      difficulty: difficulty,
+      category: category ?? this.category,
+      difficulty: difficulty ?? this.difficulty,
       prerequisite: prerequisite ?? this.prerequisite,
       semesterTaken: semesterTaken ?? this.semesterTaken,
     );
@@ -91,4 +91,7 @@ class Course {
     }
   }
 }
+
+
+
 

@@ -3,7 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
 import 'home_screen.dart';
-import 'gpa_calculator_screen.dart';
+import 'trimester_gpa_screen.dart';
 import 'transcript_import_screen.dart';
 import 'ai_advisor_screen.dart';
 import 'profile_screen.dart';
@@ -25,7 +25,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    GPACalculatorScreen(),
+    TrimesterGPAScreen(),
     TranscriptImportScreen(),
     AIAdvisorScreen(),
     ProfileScreen(),
@@ -45,9 +45,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final navBg = isDark ? AppColors.darkSurface : AppColors.surface;
+    final navBorder = isDark ? AppColors.darkBorder : AppColors.border;
+
     return Scaffold(
       extendBody: true,
-      backgroundColor: AppColors.scaffold,
+      backgroundColor: isDark ? AppColors.darkScaffold : AppColors.scaffold,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
@@ -57,40 +61,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: navBg,
             borderRadius: AppRadius.borderXl,
-            border: Border.all(color: AppColors.border, width: 1),
+            border: Border.all(color: navBorder, width: 1),
             boxShadow: AppShadows.floating,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(
-                index: 0,
-                icon: Icons.grid_view_rounded,
-                label: 'Home',
-              ),
-              _buildNavItem(
-                index: 1,
-                icon: Icons.calculate_rounded,
-                label: 'GPA',
-              ),
-              _buildNavItem(
-                index: 2,
-                icon: Icons.description_rounded,
-                label: 'Transcript',
-              ),
+              _buildNavItem(index: 0, icon: Icons.grid_view_rounded, label: 'Home'),
+              _buildNavItem(index: 1, icon: Icons.calculate_rounded, label: 'GPA'),
+              _buildNavItem(index: 2, icon: Icons.description_rounded, label: 'Transcript'),
               _buildNavItem(
                 index: 3,
                 icon: Icons.auto_awesome_rounded,
-                label: 'AI Advisor',
+                label: 'AI',
                 isHero: true,
               ),
-              _buildNavItem(
-                index: 4,
-                icon: Icons.person_rounded,
-                label: 'Profile',
-              ),
+              _buildNavItem(index: 4, icon: Icons.person_rounded, label: 'Profile'),
             ],
           ),
         ),
@@ -105,6 +93,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     bool isHero = false,
   }) {
     final isSelected = _currentIndex == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactiveColor = isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
 
     if (isHero) {
       return GestureDetector(
@@ -129,9 +119,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
               if (isSelected) ...[
                 const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: const TextStyle(
+                const Text(
+                  'AI Advisor',
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -152,7 +142,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         curve: Curves.easeInOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.section : Colors.transparent,
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.08)
+              : Colors.transparent,
           borderRadius: AppRadius.borderBase,
         ),
         child: Column(
@@ -160,7 +152,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.primary : AppColors.textTertiary,
+              color: isSelected ? AppColors.primary : inactiveColor,
               size: 22,
             ),
             const SizedBox(height: 3),
@@ -169,7 +161,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? AppColors.primary : AppColors.textTertiary,
+                color: isSelected ? AppColors.primary : inactiveColor,
               ),
             ),
           ],
