@@ -5,9 +5,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// UIU ID format: 011BBBNNNN where BBB = batch (3 digits at positions 3-5, 0-indexed)
 /// e.g. 0112330538 → batch 233, 0112520445 → batch 252
 String extractBatchFromId(String id) {
-  final digits = id.replaceAll(RegExp(r'\D'), '');
-  if (digits.length >= 7) {
-    return digits.substring(3, 6); // digits at index 3,4,5 = batch
+  var digits = id.replaceAll(RegExp(r'\D'), '');
+  if (digits.length == 9 && digits.startsWith('11')) {
+    digits = '0$digits';
+  }
+  if (digits.length >= 6 && digits.startsWith('011')) {
+    return digits.substring(3, 6);
+  } else if (digits.length >= 7) {
+    return digits.substring(3, 6);
   }
   return '';
 }

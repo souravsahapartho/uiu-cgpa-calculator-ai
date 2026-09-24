@@ -57,11 +57,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   final _pageController = PageController();
   int _currentPage = 0;
 
-  // Page 1 – personal info
   final _nameController = TextEditingController();
   final _idController = TextEditingController();
+  final _batchController = TextEditingController();
   String _selectedDept = 'Computer Science & Engineering';
-  String _batchController = '';
   bool _batchEdited = false;
 
   // Page 2 – academic standing
@@ -87,8 +86,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void _onIdChanged() {
     if (_batchEdited) return;
     final batch = extractBatchFromId(_idController.text);
-    if (batch != _batchController) {
-      setState(() => _batchController = batch);
+    if (batch != _batchController.text) {
+      _batchController.text = batch;
+      setState(() {});
     }
   }
 
@@ -97,6 +97,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _pageController.dispose();
     _nameController.dispose();
     _idController.dispose();
+    _batchController.dispose();
     _cgpaController.dispose();
     _creditsController.dispose();
     _targetController.dispose();
@@ -123,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       studentId: _idController.text.trim(),
       department: dept,
       program: _programs[dept] ?? 'B.Sc.',
-      batch: _batchController.isNotEmpty ? _batchController : '—',
+      batch: _batchController.text.trim().isNotEmpty ? _batchController.text.trim() : '—',
       currentCGPA: double.tryParse(_cgpaController.text) ?? 0.0,
       completedCredits: double.tryParse(_creditsController.text) ?? 0.0,
       totalDegreeCredits: totalCredits,
@@ -383,7 +384,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             textPri: textPri,
           ),
           const SizedBox(height: 8),
-          if (_batchController.isNotEmpty)
+          if (_batchController.text.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
@@ -392,7 +393,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   const SizedBox(width: 4),
                   Text('Auto-detected Batch: ',
                       style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11)),
-                  Text(_batchController,
+                  Text(_batchController.text,
                       style: AppTypography.bodySmall.copyWith(
                           color: AppColors.primary, fontWeight: FontWeight.w800, fontSize: 11)),
                 ],
@@ -408,22 +409,21 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               boxShadow: AppShadows.soft,
             ),
             child: TextField(
-              decoration: InputDecoration(
+              controller: _batchController,
+              decoration: const InputDecoration(
                 hintText: 'e.g. 233',
                 border: InputBorder.none,
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 prefixIcon:
-                    const Icon(Icons.groups_2_outlined, color: AppColors.primary, size: 20),
+                    Icon(Icons.groups_2_outlined, color: AppColors.primary, size: 20),
               ),
-              controller: TextEditingController(text: _batchController),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
               style: AppTypography.bodyMedium.copyWith(
                   color: textPri, fontWeight: FontWeight.w700),
               onChanged: (v) {
                 _batchEdited = true;
-                _batchController = v;
               },
             ),
           ),
