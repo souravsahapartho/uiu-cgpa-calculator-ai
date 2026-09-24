@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
 import '../models/semester_transcript.dart';
 
 class GPATrendLineChart extends StatelessWidget {

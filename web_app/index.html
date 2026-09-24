@@ -287,10 +287,14 @@
         transform: scale(0.92);
       }
 
+      /* Hero CGPA Card with Animated Gradient & Glassmorphism */
       /* Hero CGPA Card with Vibrant UIU Signature Gradient */
       .hero-card {
         background: linear-gradient(
           135deg,
+          #0d1b2a 0%,
+          #1b2a4a 60%,
+          #0f2847 100%
           #F57C00 0%,
           #E65100 50%,
           #D97706 100%
@@ -300,8 +304,10 @@
         color: white;
         position: relative;
         overflow: hidden;
+        box-shadow: var(--shadow-card);
         box-shadow: 0 16px 36px rgba(245, 124, 0, 0.35);
         margin-bottom: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border: 1px solid rgba(255, 255, 255, 0.25);
       }
 
@@ -314,6 +320,7 @@
         height: 200%;
         background: radial-gradient(
           circle,
+          rgba(245, 124, 0, 0.18) 0%,
           rgba(255, 255, 255, 0.25) 0%,
           transparent 60%
         );

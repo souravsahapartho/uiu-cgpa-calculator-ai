@@ -34,7 +34,7 @@ class UIUBottomSheets {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
+                          Text(
                             'Official grading scale for undergraduate programs',
                             style: AppTypography.bodySmall,
                           ),

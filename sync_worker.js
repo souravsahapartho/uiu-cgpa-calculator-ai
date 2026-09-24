@@ -14,3 +14,4 @@ if (index !== -1) {
 } else {
   console.error('Marker not found in worker.js');
 }
+
