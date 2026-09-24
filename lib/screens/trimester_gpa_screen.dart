@@ -6,7 +6,6 @@ import '../theme/app_typography.dart';
 import '../theme/app_shadows.dart';
 import '../widgets/subtle_background.dart';
 import '../widgets/uiu_bottom_sheet.dart';
-import '../main.dart';
 
 class _TrimesterCourse {
   String name;
@@ -14,8 +13,6 @@ class _TrimesterCourse {
   String grade;
   double gradePoint;
   bool isRetake;
-  String previousGrade;
-  double previousGradePoint;
 
   _TrimesterCourse({
     this.name = '',
@@ -23,8 +20,7 @@ class _TrimesterCourse {
     this.grade = 'A',
     this.gradePoint = 4.00,
     this.isRetake = false,
-  })  : previousGrade = 'F',
-        previousGradePoint = 0.00;
+  });
 }
 
 class TrimesterGPAScreen extends StatefulWidget {
@@ -37,7 +33,6 @@ class TrimesterGPAScreen extends StatefulWidget {
 class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _initializedWithProfile = false;
 
   // -- CALCULATE tab state --
   double _completedCredits = 0.0;
@@ -48,12 +43,14 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
     _TrimesterCourse(name: 'Course 2', credit: 3.0, grade: 'A', gradePoint: 4.00),
   ];
 
-  double get _trimesterSGPA {
+  double get _trimesterGPA {
     double totalPoints = 0;
     double totalCredits = 0;
     for (final c in _courses) {
-      totalPoints += c.gradePoint * c.credit;
-      totalCredits += c.credit;
+      if (!c.isRetake) {
+        totalPoints += c.gradePoint * c.credit;
+        totalCredits += c.credit;
+      }
     }
     return totalCredits > 0 ? (totalPoints / totalCredits) : 0.0;
   }
@@ -61,53 +58,15 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
   double get _trimesterCredits {
     double total = 0;
     for (final c in _courses) {
-      total += c.credit;
+      if (!c.isRetake) total += c.credit;
     }
     return total;
   }
 
   double get _newCGPA {
-    if (_completedCredits == 0 && _currentCGPA == 0) return _trimesterSGPA;
-    double currentTotalPoints = _currentCGPA * _completedCredits;
-    double newCredits = _completedCredits;
-    double newPoints = currentTotalPoints;
-
-    for (final c in _courses) {
-      if (!c.isRetake) {
-        newCredits += c.credit;
-        newPoints += c.gradePoint * c.credit;
-      } else {
-        // Retake course
-        if (c.previousGrade == 'F') {
-          if (c.grade != 'F') {
-            newCredits += c.credit;
-          }
-          newPoints += c.gradePoint * c.credit;
-        } else {
-          // Previously earned >= D: credit already counted, replace points
-          newPoints += (c.gradePoint - c.previousGradePoint) * c.credit;
-        }
-      }
-    }
-    if (newCredits <= 0) return 0.0;
-    return (newPoints / newCredits).clamp(0.0, 4.0);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initializedWithProfile) {
-      _initializedWithProfile = true;
-      try {
-        final profile = ProfileProviderScope.of(context).profile;
-        if (profile.completedCredits > 0 || profile.currentCGPA > 0) {
-          setState(() {
-            _completedCredits = profile.completedCredits;
-            _currentCGPA = profile.currentCGPA;
-          });
-        }
-      } catch (_) {}
-    }
+    final newCredits = _completedCredits + _trimesterCredits;
+    if (newCredits == 0) return 0;
+    return ((_currentCGPA * _completedCredits) + (_trimesterGPA * _trimesterCredits)) / newCredits;
   }
 
   @override
@@ -372,11 +331,11 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Trimester SGPA (${_trimesterCredits.toInt()} Cr)',
+                  Text('Trimester GPA',
                       style: AppTypography.labelSmall.copyWith(
                           color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
-                  Text(_trimesterSGPA.toStringAsFixed(2),
+                  Text(_trimesterGPA.toStringAsFixed(2),
                       style: AppTypography.displayLarge.copyWith(
                           color: Colors.white, fontWeight: FontWeight.w900, fontSize: 28)),
                 ],
@@ -449,198 +408,134 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
               ),
             ),
           Padding(
-            padding: EdgeInsets.fromLTRB(10, course.isRetake ? 22 : 8, 8, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.fromLTRB(10, course.isRetake ? 18 : 8, 8, 8),
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    // Course label/number
-                    Expanded(
-                      flex: 2,
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: course.isRetake ? 'Retake ${i + 1}' : '${i + 1}',
-                          labelStyle: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: course.isRetake ? AppColors.accent : AppColors.primary,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadius.borderSm,
-                            borderSide: BorderSide(color: borderColor),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: AppRadius.borderSm,
-                            borderSide: BorderSide(color: borderColor),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<double>(
-                            value: course.credit,
-                            isExpanded: true,
-                            isDense: true,
-                            dropdownColor: surface,
-                            items: credits
-                                .map((c) => DropdownMenuItem(
-                                    value: c,
-                                    child: Text('${c.toInt()} cr',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                            color: textPri))))
-                                .toList(),
-                            onChanged: (v) {
-                              if (v != null) setState(() => course.credit = v);
-                            },
-                          ),
-                        ),
+                // Course label/number
+                Expanded(
+                  flex: 2,
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: course.isRetake ? 'Retake ${i + 1}' : '${i + 1}',
+                      labelStyle: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: course.isRetake ? AppColors.accent : AppColors.primary,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Credit (shown as number that matches label)
-                    Expanded(
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: 'Credit',
-                          labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textTertiary),
-                          border: OutlineInputBorder(borderRadius: AppRadius.borderSm, borderSide: BorderSide(color: borderColor)),
-                          enabledBorder: OutlineInputBorder(borderRadius: AppRadius.borderSm, borderSide: BorderSide(color: borderColor)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<double>(
-                            value: course.credit,
-                            isExpanded: true,
-                            isDense: true,
-                            dropdownColor: surface,
-                            items: credits
-                                .map((c) => DropdownMenuItem(
-                                    value: c,
-                                    child: Text('${c.toInt()}',
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: textPri))))
-                                .toList(),
-                            onChanged: (v) {
-                              if (v != null) setState(() => course.credit = v);
-                            },
-                          ),
-                        ),
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadius.borderSm,
+                        borderSide: BorderSide(color: borderColor),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Grade
-                    Expanded(
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: 'Grade',
-                          labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textTertiary),
-                          border: OutlineInputBorder(borderRadius: AppRadius.borderSm, borderSide: BorderSide(color: borderColor)),
-                          enabledBorder: OutlineInputBorder(borderRadius: AppRadius.borderSm, borderSide: BorderSide(color: borderColor)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: course.grade,
-                            isExpanded: true,
-                            isDense: true,
-                            dropdownColor: surface,
-                            items: UIUGradingScale.scale
-                                .map((item) => DropdownMenuItem(
-                                    value: item.letterGrade,
-                                    child: Text(
-                                      item.letterGrade,
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w800,
-                                          color: item.color),
-                                    )))
-                                .toList(),
-                            onChanged: (v) {
-                              if (v != null) {
-                                final match = UIUGradingScale.scale
-                                    .firstWhere((e) => e.letterGrade == v);
-                                setState(() {
-                                  course.grade = match.letterGrade;
-                                  course.gradePoint = match.gradePoint;
-                                });
-                              }
-                            },
-                          ),
-                        ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: AppRadius.borderSm,
+                        borderSide: BorderSide(color: borderColor),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     ),
-                    const SizedBox(width: 4),
-                    // Delete
-                    GestureDetector(
-                      onTap: _courses.length > 1 ? () => _removeCourse(i) : null,
-                      child: Icon(
-                        Icons.close_rounded,
-                        size: 18,
-                        color: _courses.length > 1 ? AppColors.danger : Colors.transparent,
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<double>(
+                        value: course.credit,
+                        isExpanded: true,
+                        isDense: true,
+                        dropdownColor: surface,
+                        items: credits
+                            .map((c) => DropdownMenuItem(
+                                value: c,
+                                child: Text('${c.toInt()} cr',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: textPri))))
+                            .toList(),
+                        onChanged: (v) {
+                          if (v != null) setState(() => course.credit = v);
+                        },
                       ),
-                    ),
-                  ],
-                ),
-                if (course.isRetake) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.08),
-                      borderRadius: AppRadius.borderSm,
-                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.25)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.history_rounded, size: 14, color: AppColors.accent),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Previous Grade to Replace:',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: textPri,
-                              ),
-                            ),
-                          ],
-                        ),
-                        DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: course.previousGrade,
-                            isDense: true,
-                            dropdownColor: surface,
-                            items: UIUGradingScale.scale.map((item) {
-                              return DropdownMenuItem<String>(
-                                value: item.letterGrade,
-                                child: Text(
-                                  '${item.letterGrade} (${item.gradePoint.toStringAsFixed(2)})',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: item.color,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (v) {
-                              if (v != null) {
-                                final match = UIUGradingScale.scale.firstWhere((e) => e.letterGrade == v);
-                                setState(() {
-                                  course.previousGrade = match.letterGrade;
-                                  course.previousGradePoint = match.gradePoint;
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                      ],
                     ),
                   ),
-                ],
+                ),
+                const SizedBox(width: 8),
+                // Credit (shown as number that matches label)
+                Expanded(
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Credit',
+                      labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textTertiary),
+                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm, borderSide: BorderSide(color: borderColor)),
+                      enabledBorder: OutlineInputBorder(borderRadius: AppRadius.borderSm, borderSide: BorderSide(color: borderColor)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<double>(
+                        value: course.credit,
+                        isExpanded: true,
+                        isDense: true,
+                        dropdownColor: surface,
+                        items: credits
+                            .map((c) => DropdownMenuItem(
+                                value: c,
+                                child: Text('${c.toInt()}',
+                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: textPri))))
+                            .toList(),
+                        onChanged: (v) {
+                          if (v != null) setState(() => course.credit = v);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Grade
+                Expanded(
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Grade',
+                      labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textTertiary),
+                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm, borderSide: BorderSide(color: borderColor)),
+                      enabledBorder: OutlineInputBorder(borderRadius: AppRadius.borderSm, borderSide: BorderSide(color: borderColor)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: course.grade,
+                        isExpanded: true,
+                        isDense: true,
+                        dropdownColor: surface,
+                        items: UIUGradingScale.scale
+                            .map((item) => DropdownMenuItem(
+                                value: item.letterGrade,
+                                child: Text(
+                                  item.letterGrade,
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: item.color),
+                                )))
+                            .toList(),
+                        onChanged: (v) {
+                          if (v != null) {
+                            final match = UIUGradingScale.scale
+                                .firstWhere((e) => e.letterGrade == v);
+                            setState(() {
+                              course.grade = match.letterGrade;
+                              course.gradePoint = match.gradePoint;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                // Delete
+                GestureDetector(
+                  onTap: _courses.length > 1 ? () => _removeCourse(i) : null,
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: _courses.length > 1 ? AppColors.danger : Colors.transparent,
+                  ),
+                ),
               ],
             ),
           ),

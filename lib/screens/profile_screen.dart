@@ -404,17 +404,10 @@ class ProfileScreen extends StatelessWidget {
     final creditsCtrl = TextEditingController(text: student.completedCredits.toStringAsFixed(0));
     final targetCtrl = TextEditingController(text: student.targetCGPA.toStringAsFixed(2));
 
-    bool userEditedBatch = false;
-    batchCtrl.addListener(() {
-      userEditedBatch = true;
-    });
-
     idCtrl.addListener(() {
-      if (!userEditedBatch) {
-        final batch = extractBatchFromId(idCtrl.text);
-        if (batch.isNotEmpty) {
-          batchCtrl.text = batch;
-        }
+      final batch = extractBatchFromId(idCtrl.text);
+      if (batch.isNotEmpty && batchCtrl.text.length != 3) {
+        batchCtrl.text = batch;
       }
     });
 

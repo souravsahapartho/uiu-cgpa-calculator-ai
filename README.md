@@ -2,17 +2,11 @@
 
 ### _AI-Supported Academic & CGPA Intelligence for United International University (UIU)_
 
-[![Download APK](https://img.shields.io/badge/⬇️%20Download%20Android%20APK-v1.0.0%20(53.7%20MB)-brightgreen?style=for-the-badge&logo=android&logoColor=white)](https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/releases/download/v1.0.0/app-release.apk)
-[![Download Direct ZIP](<https://img.shields.io/badge/Download-Source%20ZIP-success?style=for-the-badge&logo=github>)](https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/archive/refs/heads/main.zip)
+[![Download Direct ZIP](<https://img.shields.io/badge/Download-Direct%20ZIP%20(1--Click)-success?style=for-the-badge&logo=github>)](https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/archive/refs/heads/main.zip)
 [![Cloudflare Worker](https://img.shields.io/badge/Cloudflare%20Worker-Ready-orange?style=for-the-badge&logo=cloudflare)](https://uiucgpacalculator.uiusvs-event.workers.dev/)
 [![UIU Official](https://img.shields.io/badge/University-United%20International%20University-blue?style=for-the-badge)](https://www.uiu.ac.bd)
 
 ---
-
-## 📱 [⬇️ Direct Android APK Download Link](https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/releases/download/v1.0.0/app-release.apk)
-> **Direct Download (53.7 MB):** [Click to download `app-release.apk`](https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/releases/download/v1.0.0/app-release.apk)  
-> *No Play Store required. Works directly on any Android phone (Android 5.0+).*
-
 
 ## 📥 Direct Download Links
 

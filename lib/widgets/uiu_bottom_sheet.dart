@@ -76,7 +76,7 @@ class UIUBottomSheet {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            '4.00 Scale. Passing grade is D (1.00). Minimum CGPA for graduation is 2.00.',
+                            '4.00 Scale. Passing grade is D (1.00). Retake allowed for grades <= B.',
                             style: AppTypography.bodySmall.copyWith(
                               color: AppColors.primaryDark,
                               fontWeight: FontWeight.w600,

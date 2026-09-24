@@ -1,4 +1,4 @@
-enum CourseCategory {
+﻿enum CourseCategory {
   core,
   lab,
   ged,
@@ -61,6 +61,40 @@ class Course {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'title': title,
+      'credit': credit,
+      'grade': grade,
+      'gradePoint': gradePoint,
+      'category': category.name,
+      'difficulty': difficulty.name,
+      'prerequisite': prerequisite,
+      'semesterTaken': semesterTaken,
+    };
+  }
+
+  factory Course.fromJson(Map<String, dynamic> json) {
+    return Course(
+      code: json['code'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      credit: (json['credit'] as num?)?.toDouble() ?? 3.0,
+      grade: json['grade'] as String?,
+      gradePoint: (json['gradePoint'] as num?)?.toDouble(),
+      category: CourseCategory.values.firstWhere(
+        (c) => c.name == json['category'],
+        orElse: () => CourseCategory.core,
+      ),
+      difficulty: CourseDifficulty.values.firstWhere(
+        (d) => d.name == json['difficulty'],
+        orElse: () => CourseDifficulty.medium,
+      ),
+      prerequisite: json['prerequisite'] as String?,
+      semesterTaken: json['semesterTaken'] as String?,
+    );
+  }
+
   String get categoryName {
     switch (category) {
       case CourseCategory.core:
@@ -91,7 +125,3 @@ class Course {
     }
   }
 }
-
-
-
-
