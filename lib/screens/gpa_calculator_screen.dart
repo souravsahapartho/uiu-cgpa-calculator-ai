@@ -159,7 +159,7 @@ class _GPACalculatorScreenState extends State<GPACalculatorScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Required Average SGPA',
+                                'Required Average GPA',
                                 style: AppTypography.labelSmall.copyWith(
                                   color: AppColors.textSecondary,
                                   fontWeight: FontWeight.w700,
@@ -268,7 +268,7 @@ class _GPACalculatorScreenState extends State<GPACalculatorScreen> {
                           borderRadius: AppRadius.borderMd,
                         ),
                         child: Text(
-                          'Estimated SGPA: ${_calculatedTrimesterSGPA.toStringAsFixed(2)}',
+                          'Estimated Trimester GPA: ${_calculatedTrimesterSGPA.toStringAsFixed(2)}',
                           style: AppTypography.labelSmall.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w800,

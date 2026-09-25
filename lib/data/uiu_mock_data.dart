@@ -127,7 +127,7 @@ class UIUMockData {
   ];
 
   static const AIAdvisorReport aiReport = AIAdvisorReport(
-    overallSummary: 'Outstanding standing in Core CS, Algorithms & Applied Systems. You are in the top 5% of UIU CSE batch 201. Your path to 3.85+ CGPA requires an average SGPA of 3.93 across your remaining 62 credits.',
+    overallSummary: 'Outstanding standing in Core CS, Algorithms & Applied Systems. You are in the top 5% of UIU CSE batch 201. Your path to 3.85+ CGPA requires an average GPA of 3.93 across your remaining 62 credits.',
     currentPaceCGPA: 3.78,
     projectedFinalCGPA: 3.86,
     suggestedCreditLoad: 11.0,

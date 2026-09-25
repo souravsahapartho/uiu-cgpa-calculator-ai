@@ -2,15 +2,22 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
+import '../theme/app_shadows.dart';
 import '../core/constants/uiu_grading_scale.dart';
 import '../models/course.dart';
 
 class UIUBottomSheet {
   static void showGradingScale(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: AppRadius.radiusXl),
       ),
@@ -31,7 +38,7 @@ class UIUBottomSheet {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.border,
+                        color: borderColor,
                         borderRadius: AppRadius.borderFull,
                       ),
                     ),
@@ -47,18 +54,21 @@ class UIUBottomSheet {
                             'UIU Grading Policy',
                             style: AppTypography.headlineMedium.copyWith(
                               fontWeight: FontWeight.w900,
+                              color: textPri,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'Official grading scale for undergraduate programs',
-                            style: AppTypography.bodySmall,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: textSec,
+                            ),
                           ),
                         ],
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded),
+                        icon: Icon(Icons.close_rounded, color: textPri),
                       ),
                     ],
                   ),
@@ -66,19 +76,19 @@ class UIUBottomSheet {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: AppColors.primarySubtle,
+                      color: isDark ? AppColors.primary.withValues(alpha: 0.15) : AppColors.primarySubtle,
                       borderRadius: AppRadius.borderBase,
-                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: isDark ? 0.35 : 0.2)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.verified_rounded, color: AppColors.primaryDark, size: 18),
+                        const Icon(Icons.verified_rounded, color: AppColors.primary, size: 18),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             '4.00 Scale. Passing grade is D (1.00). Repeat & retake policies per UIU regulations.',
                             style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.primaryDark,
+                              color: isDark ? Colors.white : AppColors.primaryDark,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -91,7 +101,7 @@ class UIUBottomSheet {
                     child: ListView.separated(
                       controller: scrollController,
                       itemCount: UIUGradingScale.scale.length,
-                      separatorBuilder: (_, __) => const Divider(color: AppColors.border, height: 1),
+                      separatorBuilder: (_, __) => Divider(color: borderColor, height: 1),
                       itemBuilder: (context, index) {
                         final item = UIUGradingScale.scale[index];
                         return Padding(
@@ -103,7 +113,7 @@ class UIUBottomSheet {
                                 height: 38,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: item.color.withValues(alpha: 0.12),
+                                  color: item.color.withValues(alpha: isDark ? 0.2 : 0.12),
                                   borderRadius: AppRadius.borderMd,
                                 ),
                                 child: Text(
@@ -124,11 +134,14 @@ class UIUBottomSheet {
                                       'Grade Point: ${item.gradePoint.toStringAsFixed(2)}',
                                       style: AppTypography.labelLarge.copyWith(
                                         fontWeight: FontWeight.w700,
+                                        color: textPri,
                                       ),
                                     ),
                                     Text(
                                       'Marks: ${item.marksRange}',
-                                      style: AppTypography.bodySmall,
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: textSec,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -136,7 +149,7 @@ class UIUBottomSheet {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: item.color.withValues(alpha: 0.1),
+                                  color: item.color.withValues(alpha: isDark ? 0.2 : 0.1),
                                   borderRadius: AppRadius.borderSm,
                                 ),
                                 child: Text(
@@ -164,9 +177,14 @@ class UIUBottomSheet {
   }
 
   static void showCourseDetails(BuildContext context, Course course) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: AppRadius.radiusXl),
       ),
@@ -182,13 +200,13 @@ class UIUBottomSheet {
                 children: [
                   Text(
                     course.code,
-                    style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w900),
+                    style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.w900, color: textPri),
                   ),
                   if (course.grade != null)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.1),
+                        color: AppColors.success.withValues(alpha: isDark ? 0.2 : 0.1),
                         borderRadius: AppRadius.borderMd,
                       ),
                       child: Text(
@@ -201,12 +219,12 @@ class UIUBottomSheet {
               const SizedBox(height: 6),
               Text(
                 course.title,
-                style: AppTypography.titleLarge,
+                style: AppTypography.titleLarge.copyWith(color: textPri),
               ),
               const SizedBox(height: 12),
               Text(
                 'Credits: ${course.credit.toStringAsFixed(1)} • Category: ${course.category.name.toUpperCase()}',
-                style: AppTypography.bodyMedium,
+                style: AppTypography.bodyMedium.copyWith(color: textSec),
               ),
               const SizedBox(height: 20),
             ],
@@ -218,10 +236,10 @@ class UIUBottomSheet {
 
   static void showConvocationHonors(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surface = isDark ? AppColors.surfaceDark : AppColors.surface;
-    final borderColor = isDark ? AppColors.borderDark : AppColors.border;
-    final textPri = isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
-    final textSec = isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
     showModalBottomSheet(
       context: context,
@@ -352,9 +370,9 @@ class UIUBottomSheet {
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: AppColors.primarySubtle,
+                            color: isDark ? AppColors.primary.withValues(alpha: 0.15) : AppColors.primarySubtle,
                             borderRadius: AppRadius.borderMd,
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                            border: Border.all(color: AppColors.primary.withValues(alpha: isDark ? 0.35 : 0.25)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,16 +384,16 @@ class UIUBottomSheet {
                                   Text(
                                     'গুরুত্বপূর্ণ নিয়মাবলী (Important Notes)',
                                     style: AppTypography.labelMedium.copyWith(
-                                      color: AppColors.primaryDark,
+                                      color: isDark ? Colors.white : AppColors.primaryDark,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              _noteBullet('Honors গণনা করা হয় Final CGPA দিয়ে।'),
-                              _noteBullet('Gold Medal > Summa > Magna > Cum Laude — এটাই মর্যাদার ক্রম।'),
-                              _noteBullet('UIU-এর নিয়ম অনুযায়ী Retake করলে Summa Cum Laude পাওয়া যায় না, তবে Magna/Cum Laude পাওয়া সম্ভব।'),
+                              _noteBullet('Honors গণনা করা হয় Final CGPA দিয়ে।', isDark),
+                              _noteBullet('Gold Medal > Summa > Magna > Cum Laude — এটাই মর্যাদার ক্রম।', isDark),
+                              _noteBullet('UIU-এর নিয়ম অনুযায়ী Retake করলে Summa Cum Laude পাওয়া যায় না, তবে Magna/Cum Laude পাওয়া সম্ভব।', isDark),
                             ],
                           ),
                         ),
@@ -392,7 +410,7 @@ class UIUBottomSheet {
     );
   }
 
-  static Widget _noteBullet(String text) {
+  static Widget _noteBullet(String text, [bool isDark = false]) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
@@ -403,7 +421,7 @@ class UIUBottomSheet {
             child: Text(
               text,
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.primaryDark,
+                color: isDark ? AppColors.darkTextPrimary : AppColors.primaryDark,
                 fontWeight: FontWeight.w600,
                 height: 1.3,
               ),

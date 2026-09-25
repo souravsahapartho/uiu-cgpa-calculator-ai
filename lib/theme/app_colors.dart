@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Brand Palette
-  static const Color primary = Color(0xFF0F4C81);
-  static const Color primaryLight = Color(0xFF1E6BA8);
-  static const Color primaryDark = Color(0xFF0A3357);
-  static const Color primarySubtle = Color(0xFFE8F1F8);
+  // UIU Official Brand Palette (From UIU Logo)
+  static const Color primary = Color(0xFFF26522); // Official UIU Orange
+  static const Color primaryLight = Color(0xFFFF7A3D);
+  static const Color primaryDark = Color(0xFFD44F0F);
+  static const Color primarySubtle = Color(0xFFFFF1EB);
 
-  static const Color secondary = Color(0xFF2563EB);
-  static const Color secondaryLight = Color(0xFF3B82F6);
-  static const Color secondaryDark = Color(0xFF1D4ED8);
-  static const Color secondarySubtle = Color(0xFFEFF6FF);
+  static const Color secondary = Color(0xFF1E293B); // UIU Slate Navy / Charcoal
+  static const Color secondaryLight = Color(0xFF334155);
+  static const Color secondaryDark = Color(0xFF0F172A);
+  static const Color secondarySubtle = Color(0xFFF1F5F9);
 
-  static const Color accent = Color(0xFFF59E0B);
-  static const Color accentLight = Color(0xFFFBBF24);
-  static const Color accentDark = Color(0xFFD97706);
-  static const Color accentSubtle = Color(0xFFFEF3C7);
+  static const Color accent = Color(0xFFEA580C);
+  static const Color accentLight = Color(0xFFFB923C);
+  static const Color accentDark = Color(0xFFC2410C);
+  static const Color accentSubtle = Color(0xFFFFF7ED);
 
   static const Color warning = Color(0xFFF59E0B);
   static const Color warningLight = Color(0xFFFEF3C7);
@@ -62,7 +62,7 @@ class AppColors {
   );
 
   static const LinearGradient secondaryGradient = LinearGradient(
-    colors: [secondary, Color(0xFF1D4ED8)],
+    colors: [secondary, Color(0xFF334155)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -74,7 +74,7 @@ class AppColors {
   );
 
   static const LinearGradient heroGradient = LinearGradient(
-    colors: [Color(0xFF0F4C81), Color(0xFF1E6BA8), Color(0xFF2563EB)],
+    colors: [Color(0xFFF26522), Color(0xFFFF7A3D), Color(0xFFD44F0F)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -86,11 +86,11 @@ class AppColors {
   );
 
   // Legacy mappings for backward compatibility
-  static const Color navy = Color(0xFF0F4C81);
-  static const Color navyLight = Color(0xFF1E6BA8);
-  static const Color navyMuted = Color(0xFF1E6BA8);
-  static const Color navySubtle = Color(0xFFE8F1F8);
-  static const Color uiuOrange = Color(0xFFF57C00);
+  static const Color navy = Color(0xFF1E293B);
+  static const Color navyLight = Color(0xFF334155);
+  static const Color navyMuted = Color(0xFF475569);
+  static const Color navySubtle = Color(0xFFF1F5F9);
+  static const Color uiuOrange = Color(0xFFF26522);
   static const Color lightBg = scaffold;
   static const Color lightSurface = surface;
   static const Color lightSurfaceMuted = section;

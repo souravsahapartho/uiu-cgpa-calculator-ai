@@ -178,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       _statCard(
                         title: 'Target CGPA',
                         value: student.targetCGPA.toStringAsFixed(2),
-                        sub: 'Req SGPA: ${requiredSGPA.toStringAsFixed(2)}',
+                        sub: 'Req GPA: ${requiredSGPA.toStringAsFixed(2)}',
                         icon: Icons.track_changes_rounded,
                         iconBg: AppColors.accent,
                         surface: surface,
@@ -264,8 +264,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [AppColors.primary.withValues(alpha: 0.25), AppColors.secondary.withValues(alpha: 0.15)]
-              : [AppColors.primary, AppColors.secondary],
+              ? [AppColors.primary.withValues(alpha: 0.28), AppColors.primaryDark.withValues(alpha: 0.18)]
+              : [AppColors.primary, AppColors.primaryDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -388,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           const SizedBox(width: 10),
           Expanded(
             child: _miniMetricCard(
-              label: 'Req. SGPA',
+              label: 'Req. GPA',
               value: requiredSGPA.toStringAsFixed(2),
               accent: reqColor,
               icon: Icons.auto_graph_rounded,
@@ -671,7 +671,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Required SGPA / Trimester',
+                      Text('Required GPA / Trimester',
                           style: AppTypography.bodySmall.copyWith(
                               color: textSec, fontSize: 11)),
                       const SizedBox(height: 2),

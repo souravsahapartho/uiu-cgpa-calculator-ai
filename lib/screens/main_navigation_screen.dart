@@ -67,18 +67,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             boxShadow: AppShadows.floating,
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(index: 0, icon: Icons.grid_view_rounded, label: 'Home'),
-              _buildNavItem(index: 1, icon: Icons.calculate_rounded, label: 'GPA'),
-              _buildNavItem(index: 2, icon: Icons.description_rounded, label: 'Transcript'),
-              _buildNavItem(
-                index: 3,
-                icon: Icons.auto_awesome_rounded,
-                label: 'AI',
-                isHero: true,
+              Expanded(child: _buildNavItem(index: 0, icon: Icons.grid_view_rounded, label: 'Home')),
+              Expanded(child: _buildNavItem(index: 1, icon: Icons.calculate_rounded, label: 'GPA')),
+              Expanded(child: _buildNavItem(index: 2, icon: Icons.description_rounded, label: 'Transcript')),
+              Expanded(
+                child: _buildNavItem(
+                  index: 3,
+                  icon: Icons.auto_awesome_rounded,
+                  label: 'AI',
+                  isHero: true,
+                ),
               ),
-              _buildNavItem(index: 4, icon: Icons.person_rounded, label: 'Profile'),
+              Expanded(child: _buildNavItem(index: 4, icon: Icons.person_rounded, label: 'Profile')),
             ],
           ),
         ),
@@ -99,36 +100,39 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (isHero) {
       return GestureDetector(
         onTap: () => _onTabSelected(index),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: isSelected ? AppColors.primaryGradient : null,
-            color: isSelected ? null : AppColors.primarySubtle,
-            borderRadius: AppRadius.borderBase,
-            boxShadow: isSelected ? AppShadows.primary : null,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? Colors.white : AppColors.primary,
-                size: 20,
-              ),
-              if (isSelected) ...[
-                const SizedBox(width: 6),
-                const Text(
-                  'AI Advisor',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
+        behavior: HitTestBehavior.opaque,
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              gradient: isSelected ? AppColors.primaryGradient : null,
+              color: isSelected ? null : (isDark ? AppColors.primary.withValues(alpha: 0.15) : AppColors.primarySubtle),
+              borderRadius: AppRadius.borderBase,
+              boxShadow: isSelected ? AppShadows.primary : null,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected ? Colors.white : AppColors.primary,
+                  size: 20,
                 ),
+                if (isSelected) ...[
+                  const SizedBox(width: 4),
+                  const Text(
+                    'AI',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       );
@@ -137,34 +141,38 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return GestureDetector(
       onTap: () => _onTabSelected(index),
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.08)
-              : Colors.transparent,
-          borderRadius: AppRadius.borderBase,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primary : inactiveColor,
-              size: 22,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+      child: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.08)
+                : Colors.transparent,
+            borderRadius: AppRadius.borderBase,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
                 color: isSelected ? AppColors.primary : inactiveColor,
+                size: 22,
               ),
-            ),
-          ],
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  color: isSelected ? AppColors.primary : inactiveColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );

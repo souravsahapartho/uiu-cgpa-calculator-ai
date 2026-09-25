@@ -55,6 +55,14 @@ class _CourseCardState extends State<CourseCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textTert = isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
+    final sectionBg = isDark ? AppColors.darkSection : AppColors.section;
+
     final gradeColor = _getGradeColor(widget.course.grade);
     final catColor = _getCategoryColor(widget.course.category);
 
@@ -70,9 +78,9 @@ class _CourseCardState extends State<CourseCard> {
           margin: const EdgeInsets.only(bottom: AppSpacing.s8),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s12),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: surface,
             borderRadius: AppRadius.borderBase,
-            border: Border.all(color: AppColors.border, width: 1),
+            border: Border.all(color: borderColor, width: 1),
             boxShadow: AppShadows.soft,
           ),
           child: Row(
@@ -81,9 +89,9 @@ class _CourseCardState extends State<CourseCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(
-                  color: catColor.withValues(alpha: 0.08),
+                  color: catColor.withValues(alpha: isDark ? 0.18 : 0.08),
                   borderRadius: AppRadius.borderMd,
-                  border: Border.all(color: catColor.withValues(alpha: 0.15), width: 1),
+                  border: Border.all(color: catColor.withValues(alpha: isDark ? 0.35 : 0.15), width: 1),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -100,7 +108,7 @@ class _CourseCardState extends State<CourseCard> {
                     Text(
                       '${widget.course.credit.toStringAsFixed(1)} Cr',
                       style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textTertiary,
+                        color: textTert,
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                       ),
@@ -119,7 +127,7 @@ class _CourseCardState extends State<CourseCard> {
                       style: AppTypography.titleMedium.copyWith(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: textPri,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -131,7 +139,7 @@ class _CourseCardState extends State<CourseCard> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.section,
+                              color: sectionBg,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -139,7 +147,7 @@ class _CourseCardState extends State<CourseCard> {
                               style: AppTypography.labelSmall.copyWith(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textSecondary,
+                                color: textSec,
                               ),
                             ),
                           ),
@@ -149,7 +157,7 @@ class _CourseCardState extends State<CourseCard> {
                               '•  Point: ${widget.course.gradePoint!.toStringAsFixed(2)}',
                               style: AppTypography.bodySmall.copyWith(
                                 fontSize: 10,
-                                color: AppColors.textTertiary,
+                                color: textTert,
                               ),
                             ),
                           ],
