@@ -1,1757 +1,2094 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
-    <title>UIU CGPA Calculator AI - United International University</title>
-    <meta name="theme-color" content="#F57C00" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
-    <style>
-      :root {
-        --primary: #f57c00;
-        --primary-dark: #e65100;
-        --primary-light: #ff9800;
-        --primary-subtle: #fff3e0;
-        --secondary: #ffa000;
-        --navy: #0d1b2a;
-        --navy-light: #1b2a4a;
-        --navy-deep: #081018;
-        --bg: #f8fafc;
-        --surface: #ffffff;
-        --surface-glass: rgba(255, 255, 255, 0.88);
-        --surface-muted: #f1f5f9;
-        --border: #e2e8f0;
-        --border-glass: rgba(255, 255, 255, 0.3);
-        --text-primary: #0f172a;
-        --text-secondary: #475569;
-        --text-tertiary: #94a3b8;
-        --success: #10b981;
-        --success-light: #d1fae5;
-        --success-dark: #047857;
-        --warning: #f59e0b;
-        --error: #ef4444;
-        --error-light: #fee2e2;
-        --shadow-soft:
-          0 10px 30px -5px rgba(245, 124, 0, 0.08),
-          0 4px 12px -2px rgba(13, 27, 42, 0.04);
-        --shadow-card: 0 14px 34px -8px rgba(13, 27, 42, 0.12);
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>UIU CGPA Calculator AI - United International University</title>
+  <meta name="theme-color" content="#F57C00">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --primary: #F57C00;
+      --primary-dark: #E65100;
+      --primary-light: #FF9800;
+      --primary-subtle: #FFF3E0;
+      --secondary: #FFA000;
+      --navy: #0D1B2A;
+      --navy-light: #1B2A4A;
+      --navy-deep: #081018;
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --surface-glass: rgba(255, 255, 255, 0.92);
+      --surface-muted: #F1F5F9;
+      --border: #E2E8F0;
+      --border-glass: rgba(255, 255, 255, 0.3);
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-tertiary: #94A3B8;
+      --success: #10B981;
+      --success-light: #D1FAE5;
+      --success-dark: #047857;
+      --warning: #F59E0B;
+      --error: #EF4444;
+      --error-light: #FEE2E2;
+      --shadow-soft: 0 10px 30px -5px rgba(245, 124, 0, 0.08), 0 4px 12px -2px rgba(13, 27, 42, 0.04);
+      --shadow-card: 0 14px 34px -8px rgba(13, 27, 42, 0.12);
+    }
 
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: "Plus Jakarta Sans", sans-serif;
-        -webkit-tap-highlight-color: transparent;
-      }
+    body.dark-mode {
+      --bg: #090E17;
+      --surface: #111B27;
+      --surface-glass: rgba(17, 27, 39, 0.92);
+      --surface-muted: #1A2838;
+      --border: #233549;
+      --border-glass: rgba(255, 255, 255, 0.1);
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-tertiary: #64748B;
+      --primary-subtle: rgba(245, 124, 0, 0.15);
+      --success-light: rgba(16, 185, 129, 0.15);
+      --error-light: rgba(239, 68, 68, 0.15);
+      --navy: #F8FAFC;
+    }
 
-      body {
-        background: #060d17;
-        color: var(--text-primary);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        overflow-x: hidden;
-        position: relative;
-      }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-      /* Ambient Animated Mesh Background */
-      .ambient-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        pointer-events: none;
-        z-index: 0;
-        overflow: hidden;
-      }
+    body {
+      background: #060D17;
+      color: var(--text-primary);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
 
-      .orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(80px);
-        opacity: 0.45;
-        animation: floatOrb 16s ease-in-out infinite alternate;
-      }
+    /* Ambient Animated Mesh Background */
+    .ambient-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.45;
+      animation: floatOrb 16s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, #F57C00 0%, #E65100 70%);
+      top: -100px;
+      left: -100px;
+      animation-duration: 14s;
+    }
+    .orb-2 {
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, #0284C7 0%, #1B2A4A 80%);
+      bottom: -80px;
+      right: -80px;
+      animation-duration: 18s;
+    }
+    .orb-3 {
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, #FFA000 0%, transparent 70%);
+      top: 40%;
+      left: 30%;
+      animation-duration: 22s;
+    }
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, 60px) scale(1.12); }
+      100% { transform: translate(-30px, 30px) scale(0.95); }
+    }
 
-      .orb-1 {
-        width: 420px;
-        height: 420px;
-        background: radial-gradient(circle, #f57c00 0%, #e65100 70%);
-        top: -100px;
-        left: -100px;
-        animation-duration: 14s;
-      }
+    /* App Frame */
+    .app-frame {
+      width: 100%;
+      max-width: 460px;
+      height: 100vh;
+      max-height: 940px;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+      z-index: 10;
+      transition: background 0.3s ease;
+    }
 
-      .orb-2 {
-        width: 380px;
-        height: 380px;
-        background: radial-gradient(circle, #0284c7 0%, #1b2a4a 80%);
-        bottom: -80px;
-        right: -80px;
-        animation-duration: 18s;
-      }
-
-      .orb-3 {
-        width: 320px;
-        height: 320px;
-        background: radial-gradient(circle, #ffa000 0%, transparent 70%);
-        top: 40%;
-        left: 30%;
-        animation-duration: 22s;
-      }
-
-      @keyframes floatOrb {
-        0% {
-          transform: translate(0, 0) scale(1);
-        }
-        50% {
-          transform: translate(40px, 60px) scale(1.12);
-        }
-        100% {
-          transform: translate(-30px, 30px) scale(0.95);
-        }
-      }
-
-      /* App Frame */
+    @media (min-width: 480px) {
       .app-frame {
-        width: 100%;
-        max-width: 440px;
-        height: 100vh;
-        max-height: 920px;
-        background: rgba(248, 250, 252, 0.94);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        box-shadow:
-          0 30px 80px rgba(0, 0, 0, 0.6),
-          0 0 0 1px rgba(255, 255, 255, 0.1);
-        z-index: 10;
-        border-radius: 28px;
+        border-radius: 36px;
+        height: 92vh;
       }
+    }
 
-      @media (max-width: 480px) {
-        .app-frame {
-          max-width: 100%;
-          height: 100vh;
-          max-height: 100vh;
-          border-radius: 0;
-        }
-      }
+    /* Screen Views */
+    .screen-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 16px 16px 100px 16px;
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen-container::-webkit-scrollbar {
+      width: 4px;
+    }
+    .screen-container::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
 
-      /* Top Bar */
-      .top-bar {
-        padding: 12px 20px 6px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 11px;
-        font-weight: 800;
-        color: var(--text-secondary);
-        z-index: 20;
-      }
+    .screen {
+      display: none;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    .screen.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-      .uiu-live-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(245, 124, 0, 0.12);
-        border: 1px solid rgba(245, 124, 0, 0.25);
-        border-radius: 20px;
-        padding: 3px 10px;
-        font-size: 10px;
-        font-weight: 800;
-        color: var(--primary-dark);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
+    /* Header Components */
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-top: 4px;
+    }
+    .header-title {
+      font-size: 22px;
+      font-weight: 900;
+      font-family: 'Outfit', sans-serif;
+      color: var(--navy);
+      letter-spacing: -0.5px;
+    }
+    .header-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .header-action-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      cursor: pointer;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s;
+    }
+    .header-action-btn:hover {
+      transform: scale(1.05);
+      background: var(--primary-subtle);
+    }
 
-      .pulse-dot {
-        width: 6px;
-        height: 6px;
-        background: var(--primary);
-        border-radius: 50%;
-        box-shadow: 0 0 8px var(--primary);
-        animation: pulse 1.8s infinite;
-      }
+    /* Hero CGPA Card */
+    .hero-card {
+      background: linear-gradient(135deg, #0D1B2A 0%, #1B2A4A 100%);
+      border-radius: 24px;
+      padding: 20px;
+      color: white;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 16px 36px -10px rgba(13, 27, 42, 0.4);
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(245, 124, 0, 0.45) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .cgpa-ring-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .cgpa-ring {
+      width: 82px;
+      height: 82px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cgpa-ring svg {
+      transform: rotate(-90deg);
+      width: 82px;
+      height: 82px;
+    }
+    .cgpa-ring circle {
+      fill: none;
+      stroke-width: 7;
+      stroke-linecap: round;
+    }
+    .cgpa-ring .bg {
+      stroke: rgba(255, 255, 255, 0.12);
+    }
+    .cgpa-ring .progress {
+      stroke: var(--primary);
+      stroke-dasharray: 226;
+      stroke-dashoffset: 35;
+      transition: stroke-dashoffset 0.8s ease;
+    }
+    .cgpa-val {
+      position: absolute;
+      font-size: 22px;
+      font-weight: 900;
+      font-family: 'Outfit', sans-serif;
+      color: white;
+    }
 
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
-        50% {
-          transform: scale(1.4);
-          opacity: 0.6;
-        }
-      }
+    /* Stat Cards */
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 14px;
+      transition: all 0.2s;
+    }
 
-      /* Screen Container */
-      .screens-container {
-        flex: 1;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding: 10px 18px 90px;
-        -webkit-overflow-scrolling: touch;
-        position: relative;
-      }
+    /* Trimester Card / Accordion */
+    .trimester-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      transition: border-color 0.2s;
+    }
+    .trimester-card.expanded {
+      border-color: rgba(245, 124, 0, 0.4);
+    }
+    .trimester-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+    .trimester-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .trimester-icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--primary-subtle);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .trimester-body {
+      padding: 0 16px 14px 16px;
+      display: none;
+      border-top: 1px solid var(--border);
+      animation: fadeIn 0.2s ease;
+    }
+    .trimester-card.expanded .trimester-body {
+      display: block;
+    }
 
-      .screens-container::-webkit-scrollbar {
-        display: none;
-      }
+    /* Course Row Card */
+    .course-card {
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      gap: 10px;
+    }
+    .code-badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 5px 8px;
+      text-align: center;
+      min-width: 68px;
+      flex-shrink: 0;
+    }
+    .code-text {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+    .cr-text {
+      font-size: 9px;
+      color: var(--text-tertiary);
+      font-weight: 700;
+    }
+    .course-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .course-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .grade-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .grade-a { background: var(--success-light); color: var(--success-dark); }
+    .grade-b { background: #E0F2FE; color: #0369A1; }
+    .grade-c { background: #FEF3C7; color: #B45309; }
+    .grade-d { background: #FFEDD5; color: #C2410C; }
+    .grade-f { background: var(--error-light); color: var(--error); }
 
-      .screen {
-        display: none;
-        animation: screenEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      }
+    /* Button Controls */
+    .btn-primary {
+      background: linear-gradient(135deg, #F57C00 0%, #E65100 100%);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(245, 124, 0, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(245, 124, 0, 0.4);
+    }
+    .btn-outline {
+      background: var(--surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover {
+      background: var(--surface-muted);
+      border-color: var(--primary);
+    }
+    .btn-danger-ghost {
+      background: transparent;
+      color: var(--error);
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    .btn-danger-ghost:hover {
+      background: var(--error-light);
+    }
 
-      .screen.active {
-        display: block;
-      }
-
-      @keyframes screenEnter {
-        from {
-          opacity: 0;
-          transform: translateY(8px) scale(0.99);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-      }
-
-      /* Header */
-      .header-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-      }
-
-      .header-title {
-        font-family: "Outfit", sans-serif;
-        font-size: 24px;
-        font-weight: 800;
-        color: var(--navy);
-        letter-spacing: -0.5px;
-      }
-
-      .header-sub {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin-top: 2px;
-      }
-
-      .header-action-btn {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--primary);
-        cursor: pointer;
-        font-size: 17px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-        transition: transform 0.15s;
-      }
-
-      .header-action-btn:active {
-        transform: scale(0.92);
-      }
-
-      /* Hero CGPA Card with Animated Gradient & Glassmorphism */
-      /* Hero CGPA Card with Vibrant UIU Signature Gradient */
-      .hero-card {
-        background: linear-gradient(
-          135deg,
-          #0d1b2a 0%,
-          #1b2a4a 60%,
-          #0f2847 100%
-          #F57C00 0%,
-          #E65100 50%,
-          #D97706 100%
-        );
-        border-radius: 24px;
-        padding: 22px;
-        color: white;
-        position: relative;
-        overflow: hidden;
-        box-shadow: var(--shadow-card);
-        box-shadow: 0 16px 36px rgba(245, 124, 0, 0.35);
-        margin-bottom: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-      }
-
-      .hero-card::before {
-        content: "";
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(
-          circle,
-          rgba(245, 124, 0, 0.18) 0%,
-          rgba(255, 255, 255, 0.25) 0%,
-          transparent 60%
-        );
-        pointer-events: none;
-      }
-
-      .hero-top-badge {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: relative;
-        z-index: 2;
-      }
-
-      .honor-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(255, 255, 255, 0.12);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 4px 12px;
-        font-size: 11px;
-        font-weight: 700;
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-
-      .gpa-huge {
-        font-family: "Outfit", sans-serif;
-        font-size: 46px;
-        font-weight: 900;
-        letter-spacing: -2px;
-        line-height: 1;
-        background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .ring-container {
-        position: relative;
-        width: 90px;
-        height: 90px;
-      }
-
-      .progress-ring {
-        transform: rotate(-90deg);
-      }
-
-      .progress-ring-circle {
-        stroke-dasharray: 238;
-        stroke-dashoffset: 45;
-        stroke-linecap: round;
-        transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .ring-center-val {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: "Outfit", sans-serif;
-        font-size: 20px;
-        font-weight: 900;
-        color: white;
-      }
-
-      /* Progress bar */
-      .degree-bar-track {
-        background: rgba(255, 255, 255, 0.14);
-        height: 8px;
-        border-radius: 6px;
-        overflow: hidden;
-        margin-top: 8px;
-      }
-
-      .degree-bar-fill {
-        background: linear-gradient(90deg, #f57c00 0%, #ffa000 100%);
-        height: 100%;
-        border-radius: 6px;
-        width: 55.1%;
-        box-shadow: 0 0 10px rgba(245, 124, 0, 0.6);
-      }
-
-      /* 4-Grid Cards */
-      .grid-2x2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-
-      .stat-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 16px;
-        box-shadow: var(--shadow-soft);
-        transition:
-          transform 0.15s,
-          box-shadow 0.15s;
-      }
-
-      .stat-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        margin-bottom: 10px;
-      }
-
-      .stat-val {
-        font-family: "Outfit", sans-serif;
-        font-size: 20px;
-        font-weight: 800;
-        color: var(--text-primary);
-      }
-
-      .stat-lbl {
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--text-secondary);
-      }
-
-      /* AI Banner */
-      .ai-banner {
-        background: linear-gradient(
-          135deg,
-          rgba(245, 124, 0, 0.08) 0%,
-          rgba(255, 152, 0, 0.16) 100%
-        );
-        border: 1.5px solid rgba(245, 124, 0, 0.35);
-        border-radius: 20px;
-        padding: 16px;
-        display: flex;
-        gap: 14px;
-        align-items: center;
-        margin-bottom: 16px;
-        cursor: pointer;
-        box-shadow: 0 6px 16px rgba(245, 124, 0, 0.08);
-        transition: transform 0.15s;
-      }
-
-      .ai-banner:active {
-        transform: scale(0.98);
-      }
-
-      .ai-icon-box {
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 22px;
-        flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(245, 124, 0, 0.35);
-      }
-
-      /* Course Card */
-      .course-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 14px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-      }
-
-      .code-badge {
-        background: rgba(13, 27, 42, 0.07);
-        border-radius: 12px;
-        padding: 8px 10px;
-        text-align: center;
-        min-width: 76px;
-      }
-
-      .code-text {
-        font-family: "Outfit", sans-serif;
-        font-size: 13px;
-        font-weight: 800;
-        color: var(--navy);
-      }
-
-      .cr-text {
-        font-size: 10px;
-        font-weight: 700;
-        color: var(--text-secondary);
-      }
-
-      .course-info {
-        flex: 1;
-        min-width: 0;
-      }
-      .course-title {
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--text-primary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .grade-badge {
-        padding: 5px 12px;
-        border-radius: 12px;
-        text-align: center;
-        font-family: "Outfit", sans-serif;
-        font-weight: 900;
-        font-size: 14px;
-      }
-
-      .grade-a {
-        background: var(--success-light);
-        color: var(--success-dark);
-      }
-      .grade-b {
-        background: #e0f2fe;
-        color: #0284c7;
-      }
-
-      /* Interactive Controls */
-      .control-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 16px;
-        margin-bottom: 12px;
-        box-shadow: var(--shadow-soft);
-      }
-
-      .slider-val {
-        font-family: "Outfit", sans-serif;
-        background: var(--primary-subtle);
-        color: var(--primary-dark);
-        padding: 4px 12px;
-        border-radius: 10px;
-        font-size: 16px;
-        font-weight: 800;
-      }
-
-      input[type="range"] {
-        width: 100%;
-        accent-color: var(--primary);
-        height: 6px;
-        cursor: pointer;
-      }
-
-      /* Bottom Nav Bar */
-      .bottom-nav {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-top: 1px solid var(--border);
-        display: flex;
-        justify-content: space-around;
-        padding: 10px 8px 18px;
-        z-index: 100;
-        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.05);
-      }
-
-      .nav-tab {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3px;
-        font-size: 10px;
-        font-weight: 700;
-        color: var(--text-tertiary);
-        cursor: pointer;
-        padding: 6px 12px;
-        border-radius: 14px;
-        transition: all 0.2s;
-      }
-
-      .nav-tab i {
-        font-size: 20px;
-      }
-      .nav-tab.active {
-        color: var(--primary-dark);
-      }
-      .nav-tab.active i {
-        color: var(--primary);
-        transform: translateY(-1px);
-      }
-
-      .nav-tab.hero-tab {
-        background: var(--primary-subtle);
-        color: var(--primary-dark);
-        border: 1px solid rgba(245, 124, 0, 0.25);
-      }
-
-      .nav-tab.hero-tab.active {
-        background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(245, 124, 0, 0.35);
-      }
-      .nav-tab.hero-tab.active i {
-        color: white;
-      }
-
-      /* Direct Download Floating Banner */
-      .download-cta-banner {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        border-radius: 18px;
-        padding: 14px 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
-      }
-
-      .btn-download-direct {
-        background: white;
-        color: #047857;
-        border: none;
-        border-radius: 12px;
-        padding: 8px 16px;
-        font-weight: 800;
-        font-size: 12px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-      }
-
-      /* Modal */
+    /* Modals & Bottom Sheets */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(8, 16, 24, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    @media (min-width: 480px) {
       .modal-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(8, 16, 24, 0.65);
-        backdrop-filter: blur(8px);
-        z-index: 200;
-        display: none;
-        align-items: flex-end;
+        align-items: center;
+        padding: 20px;
       }
-      .modal-overlay.active {
-        display: flex;
-      }
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: var(--surface);
+      width: 100%;
+      max-width: 460px;
+      max-height: 88vh;
+      border-radius: 28px 28px 0 0;
+      padding: 20px 20px 30px 20px;
+      overflow-y: auto;
+      box-shadow: var(--shadow-card);
+      animation: slideUp 0.25s ease-out forwards;
+      display: flex;
+      flex-direction: column;
+    }
+    @media (min-width: 480px) {
       .modal-content {
-        background: var(--surface);
-        width: 100%;
-        max-height: 85%;
-        border-radius: 28px 28px 0 0;
-        padding: 22px;
-        overflow-y: auto;
-        animation: modalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        border-radius: 28px;
+        max-height: 85vh;
       }
-      @keyframes modalSlide {
-        from {
-          transform: translateY(100%);
-        }
-        to {
-          transform: translateY(0);
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Animated Ambient Orbs -->
-    <div class="ambient-bg">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-    </div>
+    }
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
 
-    <div class="app-frame">
-      <!-- Top Bar -->
-      <div class="top-bar">
-        <div class="uiu-live-badge">
-          <div class="pulse-dot"></div>
-          <span>UIU AI Advisor Live</span>
-        </div>
-        <span style="font-weight: 700; color: var(--navy); font-size: 11px"
-          >Trimester Spring '24</span
-        >
-      </div>
+    /* Course Input Card Inside Add Trimester Modal */
+    .new-course-card {
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .form-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .input-field {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-field:focus {
+      border-color: var(--primary);
+    }
+    .input-field::placeholder {
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+    .select-field {
+      padding: 10px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 700;
+      outline: none;
+      cursor: pointer;
+    }
+    .select-field:focus {
+      border-color: var(--primary);
+    }
 
-      <!-- SCREENS WRAPPER -->
-      <div class="screens-container">
-        <!-- ================= 1. HOME SCREEN ================= -->
-        <div id="screen-home" class="screen active">
-          <!-- Direct 1-Click Download Link Banner -->
-          <div class="download-cta-banner">
-            <div>
-              <div style="font-weight: 800; font-size: 13px">
-                Download UIU CGPA Android App
-              </div>
-              <div style="font-size: 11px; opacity: 0.9">
-                1-Click Direct APK File Download
-              </div>
-            </div>
-            <a
-              href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/raw/main/apk/UIU-CGPA-Calculator-AI.apk"
-              class="btn-download-direct"
-              download="UIU-CGPA-Calculator-AI.apk"
-            >
-              <i class="bi bi-android2"></i> Direct APK
-            </a>
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 72px;
+      background: var(--surface-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px;
+      z-index: 50;
+    }
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      font-size: 10px;
+      font-weight: 700;
+      transition: all 0.2s;
+      flex: 1;
+      padding: 6px 0;
+    }
+    .nav-tab i {
+      font-size: 20px;
+      transition: transform 0.2s;
+    }
+    .nav-tab.active {
+      color: var(--primary);
+    }
+    .nav-tab.active i {
+      transform: translateY(-2px);
+    }
+    .nav-tab.hero-tab {
+      position: relative;
+    }
+    .nav-tab.hero-tab i {
+      background: linear-gradient(135deg, #F57C00 0%, #FFA000 100%);
+      color: white;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(245, 124, 0, 0.35);
+    }
+    .nav-tab.hero-tab.active i {
+      transform: scale(1.08) translateY(-2px);
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: fixed;
+      bottom: 84px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0D1B2A;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Download Banner */
+    .download-cta-banner {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 16px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+    }
+    .btn-download-direct {
+      background: white;
+      color: #047857;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 11px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="app-frame">
+
+    <div class="screen-container">
+
+      <!-- ================= 1. HOME SCREEN ================= -->
+      <div id="screen-home" class="screen active">
+        <div class="header-row">
+          <div>
+            <div class="header-title">StudentBrain</div>
+            <div class="header-sub">UIU Student Assistant & GPA Analyzer</div>
           </div>
-
-          <div class="header-row">
-            <div>
-              <div class="header-title">Hi, Sourav 👋</div>
-              <div class="header-sub">B.Sc. in CSE • UIU ID: 011 201 042</div>
+          <div style="display: flex; gap: 8px;">
+            <div class="header-action-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+              <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
             </div>
-            <div style="display: flex; gap: 8px">
-              <div
-                class="header-action-btn"
-                onclick="openScaleModal()"
-                title="UIU Official Grading Policy"
-              >
-                <i class="bi bi-mortarboard-fill"></i>
-              </div>
-              <div
-                class="header-action-btn"
-                onclick="switchTab('analytics')"
-                title="Analytics"
-              >
-                <i class="bi bi-graph-up-arrow"></i>
-              </div>
-            </div>
-          </div>
-
-          <!-- Hero CGPA Card -->
-          <div class="hero-card">
-            <div class="hero-top-badge">
-              <div class="honor-pill">
-                <i class="bi bi-award-fill" style="color: #ffd54f"></i>
-                <span>Dean's List Honor Standing</span>
-              </div>
-              <span style="color: #ffd54f; font-size: 12px; font-weight: 800"
-                >Goal: 3.85 CGPA</span
-              >
-            </div>
-
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin: 18px 0;
-              "
-            >
-              <div>
-                <div
-                  style="
-                    font-size: 11px;
-                    font-weight: 800;
-                    letter-spacing: 1px;
-                    opacity: 0.8;
-                  "
-                >
-                  CUMULATIVE CGPA
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: baseline;
-                    gap: 6px;
-                    margin-top: 4px;
-                  "
-                >
-                  <span class="gpa-huge">3.78</span>
-                  <span style="font-size: 16px; opacity: 0.65; font-weight: 700"
-                    >/ 4.00</span
-                  >
-                </div>
-              </div>
-
-              <div class="ring-container">
-                <svg width="90" height="90" class="progress-ring">
-                  <circle
-                    stroke="rgba(255,255,255,0.15)"
-                    stroke-width="8"
-                    fill="transparent"
-                    r="36"
-                    cx="45"
-                    cy="45"
-                  />
-                  <circle
-                    class="progress-ring-circle"
-                    stroke="#F57C00"
-                    stroke-width="8"
-                    fill="transparent"
-                    r="36"
-                    cx="45"
-                    cy="45"
-                  />
-                </svg>
-                <div class="ring-center-val">94.5%</div>
-              </div>
-            </div>
-
-            <div>
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  font-size: 11px;
-                  font-weight: 700;
-                  opacity: 0.9;
-                "
-              >
-                <span>Degree Completion</span>
-                <span>76.0 / 138.0 Credits (55%)</span>
-              </div>
-              <div class="degree-bar-track">
-                <div class="degree-bar-fill"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4-Grid Stats -->
-          <div class="grid-2x2">
-            <div class="stat-card">
-              <div
-                class="stat-icon"
-                style="
-                  background: var(--success-light);
-                  color: var(--success-dark);
-                "
-              >
-                <i class="bi bi-check-circle-fill"></i>
-              </div>
-              <div class="stat-val">76.0 Cr</div>
-              <div class="stat-lbl">Earned Credits (7 Terms)</div>
-            </div>
-
-            <div class="stat-card">
-              <div
-                class="stat-icon"
-                style="
-                  background: var(--primary-subtle);
-                  color: var(--primary-dark);
-                "
-              >
-                <i class="bi bi-hourglass-split"></i>
-              </div>
-              <div class="stat-val">62.0 Cr</div>
-              <div class="stat-lbl">Remaining to Graduate</div>
-            </div>
-
-            <div class="stat-card">
-              <div
-                class="stat-icon"
-                style="background: #fff8e1; color: #ffa000"
-              >
-                <i class="bi bi-calendar-check-fill"></i>
-              </div>
-              <div class="stat-val">Spring '24</div>
-              <div class="stat-lbl">Current Trimester</div>
-            </div>
-
-            <div class="stat-card">
-              <div
-                class="stat-icon"
-                style="background: #e0f2fe; color: #0284c7"
-              >
-                <i class="bi bi-bullseye"></i>
-              </div>
-              <div class="stat-val" style="color: var(--primary-dark)">
-                3.93
-              </div>
-              <div class="stat-lbl">Required Future SGPA</div>
-            </div>
-          </div>
-
-          <!-- AI Hero Spotlight -->
-          <div class="ai-banner" onclick="switchTab('advisor')">
-            <div class="ai-icon-box">
-              <i class="bi bi-stars"></i>
-            </div>
-            <div style="flex: 1">
-              <div style="display: flex; align-items: center; gap: 6px">
-                <span
-                  style="
-                    font-size: 13px;
-                    font-weight: 800;
-                    color: var(--primary-dark);
-                  "
-                  >AI Academic Advisor Ready</span
-                >
-                <span
-                  style="
-                    background: var(--success-light);
-                    color: var(--success-dark);
-                    font-size: 9px;
-                    font-weight: 800;
-                    padding: 2px 6px;
-                    border-radius: 6px;
-                  "
-                  >OPTIMAL</span
-                >
-              </div>
-              <div
-                style="
-                  font-size: 11px;
-                  color: var(--text-secondary);
-                  margin-top: 2px;
-                "
-              >
-                Smart 4-course roadmap planned for Spring 2024 to safeguard your
-                3.85 target.
-              </div>
-            </div>
-            <i class="bi bi-chevron-right" style="color: var(--primary)"></i>
-          </div>
-
-          <!-- Recent Term Preview -->
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 10px;
-            "
-          >
-            <span
-              style="
-                font-family: &quot;Outfit&quot;, sans-serif;
-                font-size: 15px;
-                font-weight: 800;
-                color: var(--navy);
-              "
-              >Recent Trimester • Fall 2023</span
-            >
-            <span
-              style="
-                font-size: 11px;
-                font-weight: 800;
-                color: var(--success-dark);
-                background: var(--success-light);
-                padding: 3px 10px;
-                border-radius: 8px;
-              "
-              >SGPA 3.74</span
-            >
-          </div>
-
-          <div class="course-card">
-            <div class="code-badge">
-              <div class="code-text">CSE 4165</div>
-              <div class="cr-text">3.0 Cr</div>
-            </div>
-            <div class="course-info">
-              <div class="course-title">Web Technologies</div>
-              <div style="font-size: 10px; color: var(--text-secondary)">
-                Core • Lab Included
-              </div>
-            </div>
-            <div class="grade-badge grade-a">A (4.00)</div>
-          </div>
-
-          <div class="course-card">
-            <div class="code-badge">
-              <div class="code-text">CSE 3811</div>
-              <div class="cr-text">3.0 Cr</div>
-            </div>
-            <div class="course-info">
-              <div class="course-title">Artificial Intelligence</div>
-              <div style="font-size: 10px; color: var(--text-secondary)">
-                Core Theory
-              </div>
-            </div>
-            <div class="grade-badge grade-a">A (4.00)</div>
-          </div>
-        </div>
-
-        <!-- ================= 2. GPA CALCULATOR ================= -->
-        <div id="screen-gpa" class="screen">
-          <div class="header-row">
-            <div>
-              <div class="header-title">GPA Calculator</div>
-              <div class="header-sub">Official UIU 4.00 Scale Calculator</div>
-            </div>
-            <div class="header-action-btn" onclick="openScaleModal()">
+            <div class="header-action-btn" onclick="openScaleModal()" title="UIU Grading Scale">
               <i class="bi bi-mortarboard-fill"></i>
             </div>
           </div>
+        </div>
 
-          <div
-            class="hero-card"
-            style="
-              background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
-            "
-          >
-            <div style="font-size: 11px; font-weight: 800; opacity: 0.9">
-              REQUIRED FUTURE AVERAGE SGPA
+        <!-- 1-Click APK Download Banner -->
+        <div class="download-cta-banner">
+          <div>
+            <div style="font-weight: 800; font-size: 13px;">UIU CGPA Android App (.APK)</div>
+            <div style="font-size: 11px; opacity: 0.9;">Install directly on your Android phone</div>
+          </div>
+          <a href="/download-apk" class="btn-download-direct" download="UIU-CGPA-Calculator-AI.apk">
+            <i class="bi bi-android2"></i> Download APK
+          </a>
+        </div>
+
+        <!-- Hero CGPA Card -->
+        <div class="hero-card">
+          <div class="cgpa-ring-container">
+            <div class="cgpa-ring">
+              <svg>
+                <circle class="bg" cx="41" cy="41" r="36"></circle>
+                <circle class="progress" id="home-ring-progress" cx="41" cy="41" r="36"></circle>
+              </svg>
+              <div class="cgpa-val" id="home-cgpa-val">3.78</div>
             </div>
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: baseline;
-                margin: 8px 0;
-              "
-            >
-              <span
-                id="res-req-gpa"
-                style="
-                  font-size: 46px;
-                  font-weight: 900;
-                  font-family: &quot;Outfit&quot;, sans-serif;
-                "
-                >3.93</span
-              >
-              <span
-                id="res-badge"
-                style="
-                  background: white;
-                  color: #e65100;
-                  font-size: 11px;
-                  font-weight: 800;
-                  padding: 5px 12px;
-                  border-radius: 12px;
-                "
-                >Challenging (A/A-)</span
-              >
-            </div>
-            <div
-              id="res-advice"
-              style="font-size: 12px; opacity: 0.95; line-height: 1.4"
-            >
-              Requires maintaining near straight A's across remaining 62.0
-              credits to reach 3.85 target.
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: #FFA000; letter-spacing: 0.5px;">CUMULATIVE GPA</div>
+              <div style="font-size: 20px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-student-name">Sourav Ahmed</div>
+              <div style="font-size: 11px; opacity: 0.8;" id="home-student-id">011 201 042 • Batch 201 (CSE)</div>
             </div>
           </div>
 
-          <div class="control-card">
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 8px;
-              "
-            >
-              <span style="font-weight: 700; font-size: 13px"
-                >Target CGPA Goal</span
-              >
-              <span id="val-target-cgpa" class="slider-val">3.85</span>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.15); text-align: center;">
+            <div>
+              <div style="font-size: 16px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-stat-completed">76.0</div>
+              <div style="font-size: 9px; opacity: 0.8; font-weight: 700;">Completed Cr</div>
             </div>
-            <input
-              type="range"
-              id="input-target-cgpa"
-              min="2.00"
-              max="4.00"
-              step="0.01"
-              value="3.85"
-              oninput="updateTargetCalc()"
-            />
-          </div>
-
-          <div class="control-card">
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 8px;
-              "
-            >
-              <span style="font-weight: 700; font-size: 13px"
-                >Current CGPA</span
-              >
-              <span
-                id="val-current-cgpa"
-                class="slider-val"
-                style="background: var(--surface-muted); color: var(--navy)"
-                >3.78</span
-              >
+            <div>
+              <div style="font-size: 16px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-stat-remaining">62.0</div>
+              <div style="font-size: 9px; opacity: 0.8; font-weight: 700;">Remaining Cr</div>
             </div>
-            <input
-              type="range"
-              id="input-current-cgpa"
-              min="2.00"
-              max="4.00"
-              step="0.01"
-              value="3.78"
-              oninput="updateTargetCalc()"
-            />
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
-            <div class="control-card">
-              <div
-                style="
-                  font-size: 11px;
-                  font-weight: 700;
-                  color: var(--text-secondary);
-                  margin-bottom: 6px;
-                "
-              >
-                Completed Credits
-              </div>
-              <input
-                type="number"
-                id="input-comp-cr"
-                value="76"
-                style="
-                  width: 100%;
-                  padding: 10px;
-                  border: 1.5px solid var(--border);
-                  border-radius: 12px;
-                  font-weight: 800;
-                  font-size: 16px;
-                  font-family: &quot;Outfit&quot;, sans-serif;
-                "
-                oninput="updateTargetCalc()"
-              />
-            </div>
-            <div class="control-card">
-              <div
-                style="
-                  font-size: 11px;
-                  font-weight: 700;
-                  color: var(--text-secondary);
-                  margin-bottom: 6px;
-                "
-              >
-                Remaining Credits
-              </div>
-              <input
-                type="number"
-                id="input-rem-cr"
-                value="62"
-                style="
-                  width: 100%;
-                  padding: 10px;
-                  border: 1.5px solid var(--border);
-                  border-radius: 12px;
-                  font-weight: 800;
-                  font-size: 16px;
-                  font-family: &quot;Outfit&quot;, sans-serif;
-                "
-                oninput="updateTargetCalc()"
-              />
+            <div>
+              <div style="font-size: 16px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-stat-target">3.85</div>
+              <div style="font-size: 9px; opacity: 0.8; font-weight: 700;">Target CGPA</div>
             </div>
           </div>
         </div>
 
-        <!-- ================= 3. AI ADVISOR ================= -->
-        <div id="screen-advisor" class="screen">
-          <div class="header-row">
-            <div>
-              <div class="header-title">AI Academic Advisor</div>
-              <div class="header-sub">
-                UIU Course Sequence & Workload Analyzer
-              </div>
-            </div>
-          </div>
-
-          <div class="hero-card">
-            <div
-              style="
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                margin-bottom: 10px;
-              "
-            >
-              <i
-                class="bi bi-cpu-fill"
-                style="color: #ffd54f; font-size: 22px"
-              ></i>
-              <span style="font-weight: 800; font-size: 16px"
-                >AI Performance Digest</span
-              >
-            </div>
-            <div style="font-size: 13px; line-height: 1.45; opacity: 0.9">
-              Outstanding standing in Algorithms & Applied Systems. You are in
-              the top 5% of UIU CSE batch 201. Your path to 3.85+ requires a
-              3.93 average over remaining 62 credits.
-            </div>
-          </div>
-
-          <div
-            style="
-              font-family: &quot;Outfit&quot;, sans-serif;
-              font-weight: 800;
-              font-size: 15px;
-              margin-bottom: 10px;
-              color: var(--navy);
-            "
-          >
-            Recommended Next Term Load
-          </div>
-
-          <div class="course-card">
-            <div class="code-badge" style="background: var(--primary-subtle)">
-              <div class="code-text" style="color: var(--primary-dark)">
-                CSE 4325
-              </div>
-              <div class="cr-text">3.0 Cr</div>
-            </div>
-            <div class="course-info">
-              <div class="course-title">Microprocessors & Microcontrollers</div>
-              <div style="font-size: 10px; color: var(--text-secondary)">
-                4th-year core prerequisite. Unlocks Embedded track.
-              </div>
-            </div>
-            <span
-              style="
-                background: var(--primary);
-                color: white;
-                font-size: 10px;
-                font-weight: 800;
-                padding: 3px 8px;
-                border-radius: 8px;
-              "
-              >#1 Pick</span
-            >
-          </div>
-
-          <div class="course-card">
-            <div class="code-badge" style="background: var(--primary-subtle)">
-              <div class="code-text" style="color: var(--primary-dark)">
-                CSE 4889
-              </div>
-              <div class="cr-text">3.0 Cr</div>
-            </div>
-            <div class="course-info">
-              <div class="course-title">Machine Learning</div>
-              <div style="font-size: 10px; color: var(--text-secondary)">
-                Capitalizes on your 4.00 in AI & Mathematics.
-              </div>
-            </div>
-            <span
-              style="
-                background: var(--primary);
-                color: white;
-                font-size: 10px;
-                font-weight: 800;
-                padding: 3px 8px;
-                border-radius: 8px;
-              "
-              >#2 Pick</span
-            >
-          </div>
-
-          <!-- Workload Conflict Warning -->
-          <div
-            style="
-              background: var(--error-light);
-              border: 1.5px solid rgba(239, 68, 68, 0.3);
-              border-radius: 18px;
-              padding: 16px;
-              margin-top: 14px;
-            "
-          >
-            <div
-              style="
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                color: var(--error);
-                font-weight: 800;
-                font-size: 13px;
-              "
-            >
-              <i class="bi bi-exclamation-triangle-fill"></i> Heavy Workload
-              Warning
-            </div>
-            <div
-              style="
-                font-size: 11px;
-                color: #7f1d1d;
-                margin-top: 6px;
-                line-height: 1.45;
-              "
-            >
-              <strong
-                >Avoid taking Microprocessors (CSE 4325) + Compiler Design (CSE
-                4531)</strong
-              >
-              in the same trimester due to 20+ weekly coding lab hours. Defer
-              Compiler Design to Term 9.
-            </div>
-          </div>
-        </div>
-
-        <!-- ================= 4. RECORDS ================= -->
-        <div id="screen-transcript" class="screen">
-          <div class="header-row">
-            <div>
-              <div class="header-title">Academic Records</div>
-              <div class="header-sub">UIU CSE Curriculum Breakdown</div>
-            </div>
-          </div>
-
-          <div class="stat-card" style="margin-bottom: 12px">
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 8px;
-              "
-            >
-              <span style="font-weight: 800; font-size: 14px"
-                >Trimester 7 • Fall 2023</span
-              >
-              <span
-                style="
-                  background: var(--primary-subtle);
-                  color: var(--primary-dark);
-                  font-weight: 800;
-                  font-size: 12px;
-                  padding: 3px 8px;
-                  border-radius: 8px;
-                "
-                >SGPA 3.74</span
-              >
-            </div>
-            <div class="course-card">
-              <div class="code-badge">
-                <div class="code-text">CSE 4165</div>
-              </div>
-              <div class="course-info">
-                <div class="course-title">Web Technologies</div>
-              </div>
-              <div class="grade-badge grade-a">A (4.00)</div>
-            </div>
-            <div class="course-card">
-              <div class="code-badge">
-                <div class="code-text">CSE 3811</div>
-              </div>
-              <div class="course-info">
-                <div class="course-title">Artificial Intelligence</div>
-              </div>
-              <div class="grade-badge grade-a">A (4.00)</div>
-            </div>
-            <div class="course-card">
-              <div class="code-badge">
-                <div class="code-text">ECO 2101</div>
-              </div>
-              <div class="course-info">
-                <div class="course-title">Principles of Economics</div>
-              </div>
-              <div class="grade-badge grade-b">B (3.00)</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ================= 5. PROFILE ================= -->
-        <div id="screen-profile" class="screen">
-          <div class="header-row">
-            <div>
-              <div class="header-title">Student Profile</div>
-              <div class="header-sub">United International University</div>
-            </div>
-          </div>
-
-          <div class="hero-card">
-            <div style="display: flex; gap: 16px; align-items: center">
-              <div
-                style="
-                  width: 56px;
-                  height: 56px;
-                  border-radius: 50%;
-                  background: var(--primary);
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-size: 22px;
-                  font-weight: 900;
-                  color: white;
-                  font-family: &quot;Outfit&quot;, sans-serif;
-                "
-              >
-                SA
+        <!-- Quick Actions Grid -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px;">
+          <div class="stat-card" style="margin-bottom: 0; cursor: pointer;" onclick="openAddTrimesterModal()">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--primary-subtle); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="bi bi-plus-circle-fill"></i>
               </div>
               <div>
-                <div style="font-size: 19px; font-weight: 800">
-                  Sourav Ahmed
-                </div>
-                <div style="font-size: 12px; opacity: 0.85">
-                  UIU Student ID: 011 201 042
-                </div>
-                <div
-                  style="
-                    font-size: 11px;
-                    color: #ffd54f;
-                    font-weight: 700;
-                    margin-top: 2px;
-                  "
-                >
-                  Batch 201 • B.Sc. in CSE
-                </div>
+                <div style="font-size: 13px; font-weight: 800; color: var(--navy);">Add Trimester</div>
+                <div style="font-size: 10px; color: var(--text-secondary);">Manual grade entry</div>
               </div>
-            </div>
-            <div
-              style="
-                margin-top: 14px;
-                padding-top: 10px;
-                border-top: 1px solid rgba(255, 255, 255, 0.15);
-                font-size: 11px;
-                opacity: 0.85;
-              "
-            >
-              Department of Computer Science & Engineering
             </div>
           </div>
 
-          <div
-            class="stat-card"
-            style="padding: 0; overflow: hidden; margin-bottom: 16px"
-          >
-            <div
-              style="
-                padding: 14px 16px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border-bottom: 1px solid var(--border);
-                cursor: pointer;
-              "
-              onclick="openScaleModal()"
-            >
-              <div style="display: flex; align-items: center; gap: 12px">
-                <i
-                  class="bi bi-mortarboard-fill"
-                  style="color: var(--navy); font-size: 18px"
-                ></i>
-                <span style="font-weight: 700; font-size: 13px"
-                  >UIU Official Grading Scale</span
-                >
+          <div class="stat-card" style="margin-bottom: 0; cursor: pointer;" onclick="switchTab('transcript')">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #E0F2FE; color: #0284C7; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="bi bi-folder2-open"></i>
               </div>
-              <i
-                class="bi bi-chevron-right"
-                style="color: var(--text-tertiary)"
-              ></i>
+              <div>
+                <div style="font-size: 13px; font-weight: 800; color: var(--navy);">All Records</div>
+                <div style="font-size: 10px; color: var(--text-secondary);" id="home-quick-terms">4 Trimesters</div>
+              </div>
             </div>
-
-            <a
-              href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai/raw/main/apk/UIU-CGPA-Calculator-AI.apk"
-              download="UIU-CGPA-Calculator-AI.apk"
-              style="
-                padding: 14px 16px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                text-decoration: none;
-                color: inherit;
-              "
-            >
-              <div style="display: flex; align-items: center; gap: 12px">
-                <i
-                  class="bi bi-android2"
-                  style="color: #10b981; font-size: 18px"
-                ></i>
-                <span style="font-weight: 700; font-size: 13px"
-                  >Download Android App (.APK)</span
-                >
-              </div>
-              <i
-                class="bi bi-download"
-                style="color: var(--primary); font-size: 14px"
-              ></i>
-            </a>
           </div>
+        </div>
 
-          <div
-            style="
-              text-align: center;
-              margin-top: 20px;
-              font-size: 11px;
-              color: var(--text-tertiary);
-            "
-          >
-            <strong>UIU CGPA Calculator AI</strong> • United International
-            University<br />
-            GitHub:
-            <a
-              href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai"
-              target="_blank"
-              style="color: var(--primary); font-weight: 700"
-              >souravsahapartho/uiu-cgpa-calculator-ai</a
-            >
+        <!-- Recent Trimesters Preview -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 800; color: var(--navy);">Recent Trimester Preview</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--primary); cursor: pointer;" onclick="switchTab('transcript')">View All</span>
+        </div>
+        <div id="home-recent-list"></div>
+      </div>
+
+      <!-- ================= 2. GPA CALCULATOR ================= -->
+      <div id="screen-gpa" class="screen">
+        <div class="header-row">
+          <div>
+            <div class="header-title">GPA Calculator</div>
+            <div class="header-sub">Official UIU 4.00 Scale Calculator</div>
+          </div>
+          <div class="header-action-btn" onclick="openScaleModal()">
+            <i class="bi bi-mortarboard-fill"></i>
+          </div>
+        </div>
+
+        <div class="hero-card" style="background: linear-gradient(135deg, #F57C00 0%, #E65100 100%);">
+          <div style="font-size: 11px; font-weight: 800; opacity: 0.9;">REQUIRED FUTURE AVERAGE SGPA</div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 8px 0;">
+            <span id="res-req-gpa" style="font-size: 46px; font-weight: 900; font-family: 'Outfit', sans-serif;">3.93</span>
+            <span id="res-badge" style="background: white; color: #E65100; font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 12px;">Challenging (A/A-)</span>
+          </div>
+          <div id="res-advice" style="font-size: 12px; opacity: 0.95; line-height: 1.4;">
+            Requires maintaining near straight A's across remaining 62.0 credits to reach 3.85 target.
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-weight: 700; font-size: 13px; color: var(--navy);">Target CGPA Goal</span>
+            <span id="val-target-cgpa" style="background: var(--primary-subtle); color: var(--primary-dark); font-weight: 800; font-size: 13px; padding: 3px 8px; border-radius: 8px;">3.85</span>
+          </div>
+          <input type="range" id="input-target-cgpa" min="2.00" max="4.00" step="0.01" value="3.85" style="width: 100%; accent-color: var(--primary);" oninput="updateTargetCalc()">
+        </div>
+
+        <div class="stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-weight: 700; font-size: 13px; color: var(--navy);">Current CGPA</span>
+            <span id="val-current-cgpa" style="background: var(--surface-muted); color: var(--navy); font-weight: 800; font-size: 13px; padding: 3px 8px; border-radius: 8px;">3.78</span>
+          </div>
+          <input type="range" id="input-current-cgpa" min="2.00" max="4.00" step="0.01" value="3.78" style="width: 100%; accent-color: var(--primary);" oninput="updateTargetCalc()">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="stat-card">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Completed Credits</div>
+            <input type="number" id="input-comp-cr" value="76" class="input-field" style="font-weight: 800; font-size: 16px; font-family: 'Outfit', sans-serif;" oninput="updateTargetCalc()">
+          </div>
+          <div class="stat-card">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Remaining Credits</div>
+            <input type="number" id="input-rem-cr" value="62" class="input-field" style="font-weight: 800; font-size: 16px; font-family: 'Outfit', sans-serif;" oninput="updateTargetCalc()">
           </div>
         </div>
       </div>
 
-      <!-- BOTTOM NAV -->
-      <div class="bottom-nav">
-        <div id="nav-home" class="nav-tab active" onclick="switchTab('home')">
-          <i class="bi bi-grid-fill"></i><span>Home</span>
+      <!-- ================= 3. AI ADVISOR ================= -->
+      <div id="screen-advisor" class="screen">
+        <div class="header-row">
+          <div>
+            <div class="header-title">AI Academic Advisor</div>
+            <div class="header-sub">UIU Course Sequence & Workload Analyzer</div>
+          </div>
         </div>
-        <div id="nav-gpa" class="nav-tab" onclick="switchTab('gpa')">
-          <i class="bi bi-calculator"></i><span>GPA</span>
+
+        <div class="hero-card">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <i class="bi bi-cpu-fill" style="color: #FFD54F; font-size: 22px;"></i>
+            <span style="font-weight: 800; font-size: 16px;">AI Performance Digest</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.45; opacity: 0.9;" id="advisor-summary-text">
+            Outstanding standing in Algorithms & Core Systems. Based on your completed courses, your target CGPA of 3.85 is within strong reach.
+          </div>
         </div>
-        <div
-          id="nav-advisor"
-          class="nav-tab hero-tab"
-          onclick="switchTab('advisor')"
-        >
-          <i class="bi bi-stars"></i><span>AI Advisor</span>
+
+        <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 15px; margin-bottom: 10px; color: var(--navy);">
+          Recommended Next Term Load
         </div>
-        <div
-          id="nav-transcript"
-          class="nav-tab"
-          onclick="switchTab('transcript')"
-        >
-          <i class="bi bi-file-earmark-text"></i><span>Records</span>
+
+        <div class="course-card" style="background: var(--surface);">
+          <div class="code-badge" style="background: var(--primary-subtle);">
+            <div class="code-text" style="color: var(--primary-dark);">CSE 4325</div>
+            <div class="cr-text">3.0 Cr</div>
+          </div>
+          <div class="course-info">
+            <div class="course-title">Microprocessors & Microcontrollers</div>
+            <div style="font-size: 10px; color: var(--text-secondary);">4th-year core prerequisite. Unlocks Embedded track.</div>
+          </div>
+          <span style="background: var(--primary); color: white; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px;">#1 Pick</span>
         </div>
-        <div id="nav-profile" class="nav-tab" onclick="switchTab('profile')">
-          <i class="bi bi-person"></i><span>Profile</span>
+
+        <div class="course-card" style="background: var(--surface);">
+          <div class="code-badge" style="background: var(--primary-subtle);">
+            <div class="code-text" style="color: var(--primary-dark);">CSE 4889</div>
+            <div class="cr-text">3.0 Cr</div>
+          </div>
+          <div class="course-info">
+            <div class="course-title">Machine Learning</div>
+            <div style="font-size: 10px; color: var(--text-secondary);">Capitalizes on your 4.00 in AI & Mathematics.</div>
+          </div>
+          <span style="background: var(--primary); color: white; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px;">#2 Pick</span>
+        </div>
+
+        <!-- Workload Conflict Warning -->
+        <div style="background: var(--error-light); border: 1.5px solid rgba(239, 68, 68, 0.3); border-radius: 18px; padding: 16px; margin-top: 14px;">
+          <div style="display: flex; align-items: center; gap: 8px; color: var(--error); font-weight: 800; font-size: 13px;">
+            <i class="bi bi-exclamation-triangle-fill"></i> Heavy Workload Warning
+          </div>
+          <div style="font-size: 11px; color: #7F1D1D; margin-top: 6px; line-height: 1.45;">
+            <strong>Avoid taking Microprocessors (CSE 4325) + Compiler Design (CSE 4531)</strong> in the same trimester due to 20+ weekly coding lab hours. Defer Compiler Design to the subsequent term.
+          </div>
         </div>
       </div>
 
-      <!-- UIU OFFICIAL GRADING SCALE MODAL (MATCHING IMAGE) -->
-      <div id="scaleModal" class="modal-overlay" onclick="closeScaleModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 14px;
-            "
-          >
+      <!-- ================= 4. RECORDS (TRIMESTERS) ================= -->
+      <div id="screen-transcript" class="screen">
+        <div class="header-row">
+          <div>
+            <div class="header-title">Academic Records</div>
+            <div class="header-sub" id="transcript-header-sub">Manage your UIU trimesters & grades</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <div class="header-action-btn" onclick="openScaleModal()" title="UIU Policy">
+              <i class="bi bi-mortarboard-fill"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Bar: Add Trimester, Import CSV, Import PDF, Import Image -->
+        <div class="stat-card" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-weight: 800; font-size: 14px; color: var(--navy);">Manage Trimesters</div>
+            <span style="font-size: 11px; color: var(--text-secondary);" id="transcript-term-count">0 Terms</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <button class="btn-primary" onclick="openAddTrimesterModal()">
+              <i class="bi bi-plus-lg"></i> Add Trimester
+            </button>
+            <button class="btn-outline" onclick="openImportCsvModal()">
+              <i class="bi bi-file-earmark-spreadsheet" style="color: #10B981;"></i> CSV
+            </button>
+            <button class="btn-outline" onclick="openImportPdfModal()">
+              <i class="bi bi-file-earmark-pdf" style="color: #EF4444;"></i> PDF
+            </button>
+            <button class="btn-outline" onclick="openImportImageModal()">
+              <i class="bi bi-image" style="color: #0284C7;"></i> Image
+            </button>
+          </div>
+        </div>
+
+        <!-- Trimesters Accordion List -->
+        <div id="transcript-list"></div>
+      </div>
+
+      <!-- ================= 5. PROFILE & BACKUP ================= -->
+      <div id="screen-profile" class="screen">
+        <div class="header-row">
+          <div>
+            <div class="header-title">Student Profile</div>
+            <div class="header-sub">United International University</div>
+          </div>
+          <div class="header-action-btn" onclick="openEditProfileModal()" title="Edit Profile">
+            <i class="bi bi-pencil-fill"></i>
+          </div>
+        </div>
+
+        <!-- Profile Hero Card -->
+        <div class="hero-card">
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: white; font-family: 'Outfit', sans-serif;" id="prof-avatar">
+              SA
+            </div>
             <div>
-              <div
-                style="
-                  font-family: &quot;Outfit&quot;, sans-serif;
-                  font-weight: 800;
-                  font-size: 17px;
-                "
-              >
-                UIU Official Grading Policy
-              </div>
-              <div style="font-size: 11px; color: var(--text-secondary)">
-                As per United International University Guideline
-              </div>
+              <div style="font-size: 19px; font-weight: 800;" id="prof-name">Sourav Ahmed</div>
+              <div style="font-size: 12px; opacity: 0.85;" id="prof-id">UIU Student ID: 011 201 042</div>
+              <div style="font-size: 11px; color: #FFD54F; font-weight: 700; margin-top: 2px;" id="prof-batch">Batch 201 • B.Sc. in CSE</div>
             </div>
-            <i
-              class="bi bi-x-circle-fill"
-              style="
-                font-size: 22px;
-                color: var(--text-tertiary);
-                cursor: pointer;
-              "
-              onclick="closeScaleModal()"
-            ></i>
+          </div>
+          <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 11px; opacity: 0.85;" id="prof-dept">
+            Department of Computer Science & Engineering
+          </div>
+        </div>
+
+        <!-- BACKUP & RESTORE JSON SECTION -->
+        <div style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: var(--navy); margin-bottom: 8px;">
+          Data Backup & Cloud Portability
+        </div>
+        <div class="stat-card" style="margin-bottom: 16px;">
+          <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
+            Export full JSON backup before uninstalling. Restore JSON anytime after reinstalling to bring back all your grades & profile.
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="btn-primary" onclick="exportBackupJson()" style="justify-content: center;">
+              <i class="bi bi-download"></i> Download JSON
+            </button>
+            <button class="btn-outline" onclick="openImportJsonModal()" style="justify-content: center;">
+              <i class="bi bi-upload" style="color: var(--primary);"></i> Import JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Academic Honors Section -->
+        <div style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: var(--navy); margin-bottom: 8px;">
+          UIU Convocation Academic Honors
+        </div>
+        <div class="stat-card" style="margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-weight: 800; font-size: 13px; color: var(--navy);">Honors Standing</span>
+            <span id="honors-badge" style="background: #FEF3C7; color: #B45309; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 8px;">Cum Laude Eligible</span>
+          </div>
+          <div id="honors-desc" style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
+            Your current CGPA (3.78) qualifies for Cum Laude honors (3.75 - 3.84 range).
+          </div>
+        </div>
+
+        <!-- Settings List -->
+        <div class="stat-card" style="padding: 0; overflow: hidden; margin-bottom: 16px;">
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="toggleTheme()">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="bi bi-palette-fill" style="color: var(--primary); font-size: 18px;"></i>
+              <span style="font-weight: 700; font-size: 13px; color: var(--navy);">Dark Mode Theme</span>
+            </div>
+            <i class="bi bi-toggle2-off" id="theme-toggle-icon" style="font-size: 20px; color: var(--text-tertiary);"></i>
           </div>
 
-          <table
-            style="width: 100%; border-collapse: collapse; font-size: 12px"
-          >
-            <tr
-              style="
-                border-bottom: 1.5px solid var(--border);
-                font-weight: 800;
-                color: var(--text-secondary);
-              "
-            >
-              <th style="padding: 6px">Letter Grade</th>
-              <th style="padding: 6px">Marks</th>
-              <th style="padding: 6px">Grade Point</th>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #10b981">
-                A (Plain)
-              </td>
-              <td style="padding: 6px">90 - 100</td>
-              <td style="padding: 6px; font-weight: 700">4.00</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #059669">
-                A- (Minus)
-              </td>
-              <td style="padding: 6px">86 - 89</td>
-              <td style="padding: 6px; font-weight: 700">3.67</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #0284c7">
-                B+ (Plus)
-              </td>
-              <td style="padding: 6px">82 - 85</td>
-              <td style="padding: 6px; font-weight: 700">3.33</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #2563eb">
-                B (Plain)
-              </td>
-              <td style="padding: 6px">78 - 81</td>
-              <td style="padding: 6px; font-weight: 700">3.00</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #ffa000">
-                B- (Minus)
-              </td>
-              <td style="padding: 6px">74 - 77</td>
-              <td style="padding: 6px; font-weight: 700">2.67</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #d97706">
-                C+ (Plus)
-              </td>
-              <td style="padding: 6px">70 - 73</td>
-              <td style="padding: 6px; font-weight: 700">2.33</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #f59e0b">
-                C (Plain)
-              </td>
-              <td style="padding: 6px">66 - 69</td>
-              <td style="padding: 6px; font-weight: 700">2.00</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #ea580c">
-                C- (Minus)
-              </td>
-              <td style="padding: 6px">62 - 65</td>
-              <td style="padding: 6px; font-weight: 700">1.67</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #dc2626">
-                D+ (Plus)
-              </td>
-              <td style="padding: 6px">58 - 61</td>
-              <td style="padding: 6px; font-weight: 700">1.33</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border)">
-              <td style="padding: 6px; font-weight: 800; color: #b91c1c">
-                D (Plain)
-              </td>
-              <td style="padding: 6px">55 - 57</td>
-              <td style="padding: 6px; font-weight: 700">1.00</td>
-            </tr>
-            <tr>
-              <td style="padding: 6px; font-weight: 800; color: #ef4444">
-                F (Fail)
-              </td>
-              <td style="padding: 6px">0 - 54</td>
-              <td style="padding: 6px; font-weight: 700">0.00</td>
-            </tr>
-          </table>
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openScaleModal()">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="bi bi-mortarboard-fill" style="color: var(--navy); font-size: 18px;"></i>
+              <span style="font-weight: 700; font-size: 13px; color: var(--navy);">UIU Official Grading Scale</span>
+            </div>
+            <i class="bi bi-chevron-right" style="color: var(--text-tertiary);"></i>
+          </div>
+
+          <a href="/download-apk" download="UIU-CGPA-Calculator-AI.apk" style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="bi bi-android2" style="color: #10B981; font-size: 18px;"></i>
+              <span style="font-weight: 700; font-size: 13px; color: var(--navy);">Download Android App (.APK)</span>
+            </div>
+            <i class="bi bi-download" style="color: var(--primary); font-size: 14px;"></i>
+          </a>
         </div>
+
+        <div style="text-align: center; margin-top: 20px; font-size: 11px; color: var(--text-tertiary);">
+          <strong>UIU CGPA Calculator AI</strong> • United International University<br>
+          GitHub: <a href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai" target="_blank" style="color: var(--primary); font-weight: 700;">souravsahapartho/uiu-cgpa-calculator-ai</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+      <div id="nav-home" class="nav-tab active" onclick="switchTab('home')">
+        <i class="bi bi-grid-fill"></i><span>Home</span>
+      </div>
+      <div id="nav-gpa" class="nav-tab" onclick="switchTab('gpa')">
+        <i class="bi bi-calculator"></i><span>GPA</span>
+      </div>
+      <div id="nav-advisor" class="nav-tab hero-tab" onclick="switchTab('advisor')">
+        <i class="bi bi-stars"></i><span>AI Advisor</span>
+      </div>
+      <div id="nav-transcript" class="nav-tab" onclick="switchTab('transcript')">
+        <i class="bi bi-file-earmark-text"></i><span>Records</span>
+      </div>
+      <div id="nav-profile" class="nav-tab" onclick="switchTab('profile')">
+        <i class="bi bi-person"></i><span>Profile</span>
       </div>
     </div>
 
-    <script>
-      function switchTab(id) {
-        document
-          .querySelectorAll(".screen")
-          .forEach((s) => s.classList.remove("active"));
-        document
-          .querySelectorAll(".nav-tab")
-          .forEach((t) => t.classList.remove("active"));
-        const s = document.getElementById("screen-" + id);
-        if (s) s.classList.add("active");
-        const n = document.getElementById("nav-" + id);
-        if (n) n.classList.add("active");
-      }
+    <!-- ================= MODALS ================= -->
 
-      function openScaleModal() {
-        document.getElementById("scaleModal").classList.add("active");
-      }
-      function closeScaleModal() {
-        document.getElementById("scaleModal").classList.remove("active");
-      }
+    <!-- 1. ADD TRIMESTER MODAL (RESPONSIVE CARD LAYOUT WITH PLACEHOLDERS) -->
+    <div id="addTrimesterModal" class="modal-overlay" onclick="closeAddTrimesterModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 18px; color: var(--navy);">Add Trimester</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Enter courses, credits, and grades</div>
+          </div>
+          <span id="modal-live-gpa" style="background: var(--primary-subtle); color: var(--primary-dark); font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 10px;">GPA: 4.00</span>
+        </div>
 
-      function updateTargetCalc() {
-        const target = parseFloat(
-          document.getElementById("input-target-cgpa").value,
-        );
-        const current = parseFloat(
-          document.getElementById("input-current-cgpa").value,
-        );
-        const compCr =
-          parseFloat(document.getElementById("input-comp-cr").value) || 76;
-        const remCr =
-          parseFloat(document.getElementById("input-rem-cr").value) || 62;
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
+          <input type="text" id="add-term-name" class="input-field" placeholder="e.g. Spring 2024, Fall 2023" value="Spring 2024">
+        </div>
 
-        document.getElementById("val-target-cgpa").innerText =
-          target.toFixed(2);
-        document.getElementById("val-current-cgpa").innerText =
-          current.toFixed(2);
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+          <span style="font-size: 12px; font-weight: 800; color: var(--navy);">Courses</span>
+          <button type="button" class="btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="addCourseRowToModal()">
+            <i class="bi bi-plus-lg"></i> Add Course
+          </button>
+        </div>
 
-        const totalCr = compCr + remCr;
-        const reqPoints = target * totalCr - current * compCr;
-        const reqGPA = reqPoints / remCr;
+        <!-- Course Cards List Inside Modal -->
+        <div id="modal-courses-list" style="max-height: 42vh; overflow-y: auto; margin-bottom: 14px; padding-right: 2px;"></div>
 
-        const gpaEl = document.getElementById("res-req-gpa");
-        const badgeEl = document.getElementById("res-badge");
-        const adviceEl = document.getElementById("res-advice");
+        <button class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;" onclick="saveTrimesterFromModal()">
+          <i class="bi bi-check2-circle"></i> Save Trimester to Transcript
+        </button>
+      </div>
+    </div>
 
-        if (reqGPA <= 0) {
-          gpaEl.innerText = "0.00";
-          badgeEl.innerText = "Target Exceeded 🏆";
-          adviceEl.innerText = "You have already achieved this CGPA!";
-        } else if (reqGPA <= 3.3) {
-          gpaEl.innerText = reqGPA.toFixed(2);
-          badgeEl.innerText = "Easily Attainable (B+)";
-          adviceEl.innerText = "Attainable with steady B+ average grades.";
-        } else if (reqGPA <= 3.75) {
-          gpaEl.innerText = reqGPA.toFixed(2);
-          badgeEl.innerText = "Challenging (A-/A)";
-          adviceEl.innerText =
-            "Requires steady A- and A grades in upcoming trimesters.";
-        } else if (reqGPA <= 4.0) {
-          gpaEl.innerText = reqGPA.toFixed(2);
-          badgeEl.innerText = "Extremely Demanding";
-          adviceEl.innerText = "Requires near straight 4.00s (all A grades).";
-        } else {
-          gpaEl.innerText = reqGPA.toFixed(2);
-          badgeEl.innerText = "Impossible (>4.00)";
-          adviceEl.innerText = "Mathematically unreachable (>4.00 max limit).";
+    <!-- 2. IMPORT CSV MODAL -->
+    <div id="importCsvModal" class="modal-overlay" onclick="closeImportCsvModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 18px; color: var(--navy);">Import CSV / Grade Sheet</div>
+          <i class="bi bi-x-circle-fill" style="font-size: 20px; color: var(--text-tertiary); cursor: pointer;" onclick="closeImportCsvModal()"></i>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
+          <input type="text" id="csv-term-name" class="input-field" placeholder="e.g. Fall 2023" value="Fall 2023">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Pick .CSV File or Paste Below</label>
+          <input type="file" id="csv-file-input" accept=".csv,.txt" class="input-field" style="padding: 6px;" onchange="handleCsvFileUpload(event)">
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;">Format: Code, Title, Credit, Grade</div>
+        <textarea id="csv-text-area" class="input-field" rows="5" placeholder="CSE 1111, Structured Programming, 3.0, A&#10;CSE 1112, SPL Lab, 1.0, A&#10;MATH 1151, Fundamental Calculus, 3.0, A-"></textarea>
+
+        <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 14px; padding: 12px;" onclick="processCsvImport()">
+          <i class="bi bi-file-earmark-arrow-up"></i> Import Courses
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. IMPORT PDF MODAL -->
+    <div id="importPdfModal" class="modal-overlay" onclick="closeImportPdfModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 18px; color: var(--navy);">Import UIU Transcript PDF</div>
+          <i class="bi bi-x-circle-fill" style="font-size: 20px; color: var(--text-tertiary); cursor: pointer;" onclick="closeImportPdfModal()"></i>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
+          <input type="text" id="pdf-term-name" class="input-field" placeholder="e.g. Spring 2024" value="Spring 2024">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Select Transcript PDF or TXT</label>
+          <input type="file" id="pdf-file-input" accept=".pdf,.txt" class="input-field" style="padding: 6px;" onchange="handlePdfFileUpload(event)">
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;">Or Paste Transcript Text</div>
+        <textarea id="pdf-text-area" class="input-field" rows="5" placeholder="CSE 2213 Object Oriented Programming 3.00 A&#10;CSE 2214 OOP Lab 1.00 A&#10;MATH 2183 Calculus & Linear Algebra 3.00 A-"></textarea>
+
+        <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 14px; padding: 12px;" onclick="processPdfImport()">
+          <i class="bi bi-file-earmark-pdf-fill"></i> Import From PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. IMPORT IMAGE MODAL -->
+    <div id="importImageModal" class="modal-overlay" onclick="closeImportImageModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 18px; color: var(--navy);">Import Grade Sheet Image</div>
+          <i class="bi bi-x-circle-fill" style="font-size: 20px; color: var(--text-tertiary); cursor: pointer;" onclick="closeImportImageModal()"></i>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
+          <input type="text" id="img-term-name" class="input-field" placeholder="e.g. Summer 2023" value="Summer 2023">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Upload Image (JPG / PNG)</label>
+          <input type="file" id="img-file-input" accept="image/*" class="input-field" style="padding: 6px;" onchange="handleImageFileUpload(event)">
+        </div>
+
+        <div id="image-preview-container" style="display: none; margin-bottom: 12px; text-align: center;">
+          <img id="image-preview" src="" style="max-height: 120px; border-radius: 12px; border: 1px solid var(--border);">
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;">Parsed / Extracted Courses:</div>
+        <textarea id="img-text-area" class="input-field" rows="4" placeholder="CSE 1111, Structured Programming, 3.0, A&#10;ENG 1011, English I, 3.0, A-"></textarea>
+
+        <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 14px; padding: 12px;" onclick="processImageImport()">
+          <i class="bi bi-image-fill"></i> Import From Image
+        </button>
+      </div>
+    </div>
+
+    <!-- 5. IMPORT JSON RESTORE MODAL -->
+    <div id="importJsonModal" class="modal-overlay" onclick="closeImportJsonModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 18px; color: var(--navy);">Restore JSON Backup</div>
+          <i class="bi bi-x-circle-fill" style="font-size: 20px; color: var(--text-tertiary); cursor: pointer;" onclick="closeImportJsonModal()"></i>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Pick .json Backup File</label>
+          <input type="file" id="json-file-input" accept=".json" class="input-field" style="padding: 6px;" onchange="handleJsonFileUpload(event)">
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;">Or Paste Backup JSON text</div>
+        <textarea id="json-text-area" class="input-field" rows="6" placeholder='{"version": 1, "profile": {...}, "semesters": [...]}'></textarea>
+
+        <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 14px; padding: 12px;" onclick="processJsonRestore()">
+          <i class="bi bi-arrow-counterclockwise"></i> Restore All Data
+        </button>
+      </div>
+    </div>
+
+    <!-- 6. EDIT PROFILE MODAL -->
+    <div id="editProfileModal" class="modal-overlay" onclick="closeEditProfileModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 18px; color: var(--navy);">Edit Student Profile</div>
+          <i class="bi bi-x-circle-fill" style="font-size: 20px; color: var(--text-tertiary); cursor: pointer;" onclick="closeEditProfileModal()"></i>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Full Name</label>
+          <input type="text" id="edit-prof-name" class="input-field" placeholder="e.g. Sourav Ahmed">
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Student ID</label>
+          <input type="text" id="edit-prof-id" class="input-field" placeholder="e.g. 011 201 042">
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Department</label>
+          <input type="text" id="edit-prof-dept" class="input-field" placeholder="e.g. Computer Science & Engineering">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Batch</label>
+            <input type="text" id="edit-prof-batch" class="input-field" placeholder="e.g. 201">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Target CGPA</label>
+            <input type="number" step="0.01" id="edit-prof-target" class="input-field" placeholder="e.g. 3.85">
+          </div>
+        </div>
+
+        <button class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;" onclick="saveProfileChanges()">
+          <i class="bi bi-check2"></i> Save Profile
+        </button>
+      </div>
+    </div>
+
+    <!-- 7. UIU GRADING SCALE MODAL -->
+    <div id="scaleModal" class="modal-overlay" onclick="closeScaleModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 17px; color: var(--navy);">UIU Official Grading Policy</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">4.00 Grading Scale & Quality Points</div>
+          </div>
+          <i class="bi bi-x-circle-fill" style="font-size: 22px; color: var(--text-tertiary); cursor: pointer;" onclick="closeScaleModal()"></i>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <tr style="border-bottom: 1.5px solid var(--border); font-weight: 800; color: var(--text-secondary);">
+            <th style="padding: 6px; text-align: left;">Grade</th>
+            <th style="padding: 6px; text-align: left;">Marks</th>
+            <th style="padding: 6px; text-align: left;">GP</th>
+            <th style="padding: 6px; text-align: left;">Remarks</th>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #10B981;">A</td><td style="padding: 6px;">90 - 100</td><td style="padding: 6px; font-weight: 800;">4.00</td><td style="padding: 6px; font-size: 11px;">Outstanding</td></tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #059669;">A-</td><td style="padding: 6px;">86 - 89</td><td style="padding: 6px; font-weight: 800;">3.67</td><td style="padding: 6px; font-size: 11px;">Excellent</td></tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #0284C7;">B+</td><td style="padding: 6px;">82 - 85</td><td style="padding: 6px; font-weight: 800;">3.33</td><td style="padding: 6px; font-size: 11px;">Very Good</td></tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #2563EB;">B</td><td style="padding: 6px;">78 - 81</td><td style="padding: 6px; font-weight: 800;">3.00</td><td style="padding: 6px; font-size: 11px;">Good</td></tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #FFA000;">B-</td><td style="padding: 6px;">74 - 77</td><td style="padding: 6px; font-weight: 800;">2.67</td><td style="padding: 6px; font-size: 11px;">Satisfactory</td></tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #D97706;">C+</td><td style="padding: 6px;">70 - 73</td><td style="padding: 6px; font-weight: 800;">2.33</td><td style="padding: 6px; font-size: 11px;">Above Avg</td></tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #F59E0B;">C</td><td style="padding: 6px;">66 - 69</td><td style="padding: 6px; font-weight: 800;">2.00</td><td style="padding: 6px; font-size: 11px;">Average</td></tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #EA580C;">C-</td><td style="padding: 6px;">62 - 65</td><td style="padding: 6px; font-weight: 800;">1.67</td><td style="padding: 6px; font-size: 11px;">Below Avg</td></tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #DC2626;">D+</td><td style="padding: 6px;">58 - 61</td><td style="padding: 6px; font-weight: 800;">1.33</td><td style="padding: 6px; font-size: 11px;">Pass</td></tr>
+          <tr style="border-bottom: 1px solid var(--border);"><td style="padding: 6px; font-weight: 800; color: #B91C1C;">D</td><td style="padding: 6px;">55 - 57</td><td style="padding: 6px; font-weight: 800;">1.00</td><td style="padding: 6px; font-size: 11px;">Barely Pass</td></tr>
+          <tr><td style="padding: 6px; font-weight: 800; color: #EF4444;">F</td><td style="padding: 6px;">0 - 54</td><td style="padding: 6px; font-weight: 800;">0.00</td><td style="padding: 6px; font-size: 11px;">Fail</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast-msg">
+      <i class="bi bi-check-circle-fill" style="color: #10B981;"></i>
+      <span id="toast-text">Success</span>
+    </div>
+
+  </div>
+
+  <script>
+    // ================= DATA STORE & REACTIVITY =================
+    const GRADE_MAP = {
+      'A': 4.00, 'A-': 3.67, 'B+': 3.33, 'B': 3.00, 'B-': 2.67,
+      'C+': 2.33, 'C': 2.00, 'C-': 1.67, 'D+': 1.33, 'D': 1.00, 'F': 0.00
+    };
+
+    const DEFAULT_DATA = {
+      profile: {
+        name: 'Sourav Ahmed',
+        studentId: '011 201 042',
+        department: 'Department of Computer Science & Engineering',
+        program: 'B.Sc. in CSE',
+        batch: '201',
+        currentCGPA: 3.78,
+        completedCredits: 76.0,
+        totalDegreeCredits: 138.0,
+        targetCGPA: 3.85
+      },
+      semesters: [
+        {
+          semesterName: 'Fall 2023',
+          creditsEarned: 9.0,
+          sgpa: 3.74,
+          cgpa: 3.78,
+          courses: [
+            { code: 'CSE 4165', title: 'Web Technologies', credit: 3.0, grade: 'A', gradePoint: 4.00 },
+            { code: 'CSE 3811', title: 'Artificial Intelligence', credit: 3.0, grade: 'A', gradePoint: 4.00 },
+            { code: 'ECO 2101', title: 'Principles of Economics', credit: 3.0, grade: 'B', gradePoint: 3.00 }
+          ]
+        },
+        {
+          semesterName: 'Summer 2023',
+          creditsEarned: 9.0,
+          sgpa: 3.89,
+          cgpa: 3.79,
+          courses: [
+            { code: 'CSE 3521', title: 'Database Management Systems', credit: 3.0, grade: 'A', gradePoint: 4.00 },
+            { code: 'CSE 3522', title: 'DBMS Lab', credit: 1.0, grade: 'A', gradePoint: 4.00 },
+            { code: 'CSE 3711', title: 'Computer Networks', credit: 3.0, grade: 'A-', gradePoint: 3.67 },
+            { code: 'CSE 3712', title: 'Computer Networks Lab', credit: 1.0, grade: 'A', gradePoint: 4.00 },
+            { code: 'MATH 2205', title: 'Probability & Statistics', credit: 3.0, grade: 'A', gradePoint: 4.00 }
+          ]
         }
+      ]
+    };
+
+    let appData = loadAppData();
+
+    function loadAppData() {
+      try {
+        const stored = localStorage.getItem('uiu_student_app_data');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.profile && Array.isArray(parsed.semesters)) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load local data', e);
       }
-    </script>
-  </body>
+      return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+
+    function saveAppData() {
+      recomputeGlobalMetrics();
+      localStorage.setItem('uiu_student_app_data', JSON.stringify(appData));
+      renderAllViews();
+    }
+
+    function recomputeGlobalMetrics() {
+      let totalPts = 0;
+      let totalCr = 0;
+      appData.semesters.forEach(sem => {
+        let semPts = 0;
+        let semCr = 0;
+        sem.courses.forEach(c => {
+          const cr = parseFloat(c.credit) || 0;
+          const gp = c.gradePoint !== undefined ? c.gradePoint : (GRADE_MAP[c.grade] || 0.0);
+          semPts += gp * cr;
+          semCr += cr;
+        });
+        sem.creditsEarned = semCr;
+        sem.sgpa = semCr > 0 ? parseFloat((semPts / semCr).toFixed(2)) : 0.00;
+        totalPts += semPts;
+        totalCr += semCr;
+      });
+
+      if (totalCr > 0) {
+        appData.profile.currentCGPA = parseFloat((totalPts / totalCr).toFixed(2));
+        appData.profile.completedCredits = totalCr;
+      }
+    }
+
+    // ================= VIEW RENDERING =================
+    function renderAllViews() {
+      renderHomeScreen();
+      renderTranscriptScreen();
+      renderProfileScreen();
+      updateTargetCalc();
+    }
+
+    function renderHomeScreen() {
+      const p = appData.profile;
+      document.getElementById('home-cgpa-val').innerText = p.currentCGPA.toFixed(2);
+      document.getElementById('home-student-name').innerText = p.name;
+      document.getElementById('home-student-id').innerText = `${p.studentId} • Batch ${p.batch} (${p.program.replace('B.Sc. in ', '')})`;
+      document.getElementById('home-stat-completed').innerText = p.completedCredits.toFixed(1);
+      const remaining = Math.max(0, p.totalDegreeCredits - p.completedCredits);
+      document.getElementById('home-stat-remaining').innerText = remaining.toFixed(1);
+      document.getElementById('home-stat-target').innerText = p.targetCGPA.toFixed(2);
+      document.getElementById('home-quick-terms').innerText = `${appData.semesters.length} Trimesters`;
+
+      // Update Ring Progress
+      const ring = document.getElementById('home-ring-progress');
+      const offset = 226 - (226 * (p.currentCGPA / 4.0));
+      ring.style.strokeDashoffset = offset;
+
+      // Render recent trimesters on home
+      const listEl = document.getElementById('home-recent-list');
+      listEl.innerHTML = '';
+      if (appData.semesters.length === 0) {
+        listEl.innerHTML = `<div class="stat-card" style="text-align: center; color: var(--text-tertiary); font-size: 12px; padding: 24px;">No trimesters recorded yet. Tap "+ Add Trimester" to begin!</div>`;
+        return;
+      }
+
+      appData.semesters.slice(0, 2).forEach(sem => {
+        let coursesHtml = '';
+        sem.courses.forEach(c => {
+          const gClass = getGradeBadgeClass(c.grade);
+          coursesHtml += `
+            <div class="course-card">
+              <div class="code-badge">
+                <div class="code-text">${escapeHtml(c.code)}</div>
+                <div class="cr-text">${c.credit} Cr</div>
+              </div>
+              <div class="course-info">
+                <div class="course-title">${escapeHtml(c.title || c.code)}</div>
+              </div>
+              <div class="grade-badge ${gClass}">${c.grade} (${(c.gradePoint || GRADE_MAP[c.grade] || 0).toFixed(2)})</div>
+            </div>
+          `;
+        });
+
+        listEl.innerHTML += `
+          <div class="stat-card" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-weight: 800; font-size: 14px; color: var(--navy);">${escapeHtml(sem.semesterName)}</span>
+              <span style="background: var(--primary-subtle); color: var(--primary-dark); font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 8px;">SGPA ${sem.sgpa.toFixed(2)}</span>
+            </div>
+            ${coursesHtml}
+          </div>
+        `;
+      });
+    }
+
+    function renderTranscriptScreen() {
+      const listEl = document.getElementById('transcript-list');
+      const countEl = document.getElementById('transcript-term-count');
+      const headerSub = document.getElementById('transcript-header-sub');
+      const sems = appData.semesters;
+
+      countEl.innerText = `${sems.length} Terms`;
+      headerSub.innerText = sems.length === 0 ? 'No recorded trimesters yet' : `${sems.length} Trimesters • ${appData.profile.completedCredits.toFixed(1)} Credits Completed`;
+
+      listEl.innerHTML = '';
+      if (sems.length === 0) {
+        listEl.innerHTML = `
+          <div class="stat-card" style="text-align: center; padding: 32px 20px;">
+            <i class="bi bi-journal-x" style="font-size: 42px; color: var(--primary); opacity: 0.6;"></i>
+            <div style="font-size: 16px; font-weight: 800; margin-top: 12px; color: var(--navy);">No Trimesters Added</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4;">
+              Your academic history is currently empty. Tap "Add Trimester" above or import your JSON backup.
+            </div>
+            <button class="btn-primary" style="margin-top: 16px;" onclick="openAddTrimesterModal()">
+              <i class="bi bi-plus-lg"></i> Add First Trimester
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      sems.forEach((sem, idx) => {
+        let coursesHtml = '';
+        sem.courses.forEach(c => {
+          const gClass = getGradeBadgeClass(c.grade);
+          coursesHtml += `
+            <div class="course-card">
+              <div class="code-badge">
+                <div class="code-text">${escapeHtml(c.code)}</div>
+                <div class="cr-text">${c.credit} Cr</div>
+              </div>
+              <div class="course-info">
+                <div class="course-title">${escapeHtml(c.title || c.code)}</div>
+              </div>
+              <div class="grade-badge ${gClass}">${c.grade} (${(c.gradePoint || GRADE_MAP[c.grade] || 0).toFixed(2)})</div>
+            </div>
+          `;
+        });
+
+        const isExpanded = idx === 0 ? 'expanded' : '';
+
+        listEl.innerHTML += `
+          <div class="trimester-card ${isExpanded}" id="term-card-${idx}">
+            <div class="trimester-header" onclick="toggleTrimesterAccordion(${idx})">
+              <div class="trimester-title-group">
+                <div class="trimester-icon-box">
+                  <i class="bi bi-mortarboard"></i>
+                </div>
+                <div>
+                  <div style="font-weight: 800; font-size: 14px; color: var(--navy);">${escapeHtml(sem.semesterName)}</div>
+                  <div style="font-size: 10px; color: var(--text-secondary); font-weight: 600;">
+                    ${sem.courses.length} Courses • ${sem.creditsEarned.toFixed(1)} Credits
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: var(--primary-subtle); color: var(--primary-dark); font-weight: 800; font-size: 12px; padding: 4px 8px; border-radius: 8px;">
+                  GPA ${sem.sgpa.toFixed(2)}
+                </span>
+                <button class="btn-danger-ghost" title="Delete Trimester" onclick="event.stopPropagation(); deleteSemester(${idx});">
+                  <i class="bi bi-trash3"></i>
+                </button>
+                <i class="bi bi-chevron-down" id="term-chevron-${idx}" style="color: var(--text-tertiary); transition: transform 0.2s;"></i>
+              </div>
+            </div>
+            <div class="trimester-body">
+              ${coursesHtml}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderProfileScreen() {
+      const p = appData.profile;
+      document.getElementById('prof-name').innerText = p.name;
+      document.getElementById('prof-id').innerText = `UIU Student ID: ${p.studentId}`;
+      document.getElementById('prof-dept').innerText = p.department;
+      document.getElementById('prof-batch').innerText = `Batch ${p.batch} • ${p.program}`;
+
+      const initials = p.name.trim().split(' ').map(n => n ? n[0] : '').take(2).join('').toUpperCase() || 'SA';
+      document.getElementById('prof-avatar').innerText = initials;
+
+      // Calculate Academic Honors
+      const cgpa = p.currentCGPA;
+      const courseCodes = new Set();
+      let hasRetakes = false;
+      appData.semesters.forEach(s => {
+        s.courses.forEach(c => {
+          if (c.code) {
+            const up = c.code.trim().toUpperCase();
+            if (courseCodes.has(up)) hasRetakes = true;
+            else courseCodes.add(up);
+          }
+        });
+      });
+
+      const badgeEl = document.getElementById('honors-badge');
+      const descEl = document.getElementById('honors-desc');
+      if (cgpa >= 3.98) {
+        badgeEl.innerText = 'Gold Medal Candidate';
+        badgeEl.style.background = '#FEF3C7';
+        badgeEl.style.color = '#B45309';
+        descEl.innerText = `Outstanding standing (${cgpa.toFixed(2)} CGPA). Contender for UIU Batch Gold Medal.`;
+      } else if (cgpa >= 3.95 && !hasRetakes) {
+        badgeEl.innerText = 'Summa Cum Laude Eligible';
+        badgeEl.style.background = '#EDE9FE';
+        badgeEl.style.color = '#6D28D9';
+        descEl.innerText = `CGPA ${cgpa.toFixed(2)} with no retakes qualifies for UIU Summa Cum Laude honors.`;
+      } else if (cgpa >= 3.85) {
+        badgeEl.innerText = 'Magna Cum Laude Eligible';
+        badgeEl.style.background = '#DBEAFE';
+        badgeEl.style.color = '#1D4ED8';
+        descEl.innerText = `CGPA ${cgpa.toFixed(2)} meets criteria for Magna Cum Laude honors (3.85 - 3.94).`;
+      } else if (cgpa >= 3.75) {
+        badgeEl.innerText = 'Cum Laude Eligible';
+        badgeEl.style.background = '#D1FAE5';
+        badgeEl.style.color = '#047857';
+        descEl.innerText = `CGPA ${cgpa.toFixed(2)} qualifies for UIU Cum Laude honors (3.75 - 3.84).`;
+      } else {
+        badgeEl.innerText = 'Good Academic Standing';
+        badgeEl.style.background = 'var(--surface-muted)';
+        badgeEl.style.color = 'var(--text-secondary)';
+        descEl.innerText = `Maintain consistent grades to aim for Cum Laude honors (3.75+).`;
+      }
+    }
+
+    // Helper to take first N elements
+    Array.prototype.take = function(n) { return this.slice(0, n); };
+
+    function getGradeBadgeClass(grade) {
+      if (!grade) return 'grade-a';
+      const g = grade.toUpperCase();
+      if (g.startsWith('A')) return 'grade-a';
+      if (g.startsWith('B')) return 'grade-b';
+      if (g.startsWith('C')) return 'grade-c';
+      if (g.startsWith('D')) return 'grade-d';
+      return 'grade-f';
+    }
+
+    function toggleTrimesterAccordion(idx) {
+      const card = document.getElementById(`term-card-${idx}`);
+      if (card) {
+        card.classList.toggle('expanded');
+      }
+    }
+
+    function deleteSemester(idx) {
+      if (confirm(`Are you sure you want to delete ${appData.semesters[idx].semesterName}?`)) {
+        appData.semesters.splice(idx, 1);
+        saveAppData();
+        showToast('Trimester removed successfully');
+      }
+    }
+
+    // ================= ADD TRIMESTER MODAL LOGIC =================
+    let modalCourses = [];
+
+    function openAddTrimesterModal() {
+      const modal = document.getElementById('addTrimesterModal');
+      document.getElementById('add-term-name').value = 'Spring 2024';
+      modalCourses = [
+        { code: '', title: '', credit: 3.0, grade: 'A' },
+        { code: '', title: '', credit: 1.0, grade: 'A' },
+        { code: '', title: '', credit: 3.0, grade: 'A-' }
+      ];
+      renderModalCourseRows();
+      modal.classList.add('active');
+    }
+
+    function closeAddTrimesterModal() {
+      document.getElementById('addTrimesterModal').classList.remove('active');
+    }
+
+    function addCourseRowToModal() {
+      modalCourses.push({ code: '', title: '', credit: 3.0, grade: 'A' });
+      renderModalCourseRows();
+    }
+
+    function removeCourseRowFromModal(idx) {
+      if (modalCourses.length > 1) {
+        modalCourses.splice(idx, 1);
+        renderModalCourseRows();
+      }
+    }
+
+    function renderModalCourseRows() {
+      const container = document.getElementById('modal-courses-list');
+      container.innerHTML = '';
+
+      modalCourses.forEach((c, idx) => {
+        container.innerHTML += `
+          <div class="new-course-card">
+            <div class="form-row">
+              <input type="text" class="input-field" style="flex: 2; font-weight: 800;" placeholder="Code (e.g. CSE 1111)" value="${escapeHtml(c.code)}" oninput="modalCourses[${idx}].code = this.value">
+              <input type="text" class="input-field" style="flex: 3;" placeholder="Course Title (e.g. Structured Programming)" value="${escapeHtml(c.title)}" oninput="modalCourses[${idx}].title = this.value">
+            </div>
+            <div class="form-row">
+              <select class="select-field" style="flex: 1;" onchange="modalCourses[${idx}].credit = parseFloat(this.value); updateModalLiveGPA();">
+                <option value="1.0" ${c.credit == 1.0 ? 'selected' : ''}>1.0 Cr</option>
+                <option value="1.5" ${c.credit == 1.5 ? 'selected' : ''}>1.5 Cr</option>
+                <option value="2.0" ${c.credit == 2.0 ? 'selected' : ''}>2.0 Cr</option>
+                <option value="3.0" ${c.credit == 3.0 ? 'selected' : ''}>3.0 Cr</option>
+                <option value="4.0" ${c.credit == 4.0 ? 'selected' : ''}>4.0 Cr</option>
+                <option value="6.0" ${c.credit == 6.0 ? 'selected' : ''}>6.0 Cr</option>
+              </select>
+              <select class="select-field" style="flex: 1; font-weight: 800;" onchange="modalCourses[${idx}].grade = this.value; updateModalLiveGPA();">
+                <option value="A" ${c.grade == 'A' ? 'selected' : ''}>A (4.00)</option>
+                <option value="A-" ${c.grade == 'A-' ? 'selected' : ''}>A- (3.67)</option>
+                <option value="B+" ${c.grade == 'B+' ? 'selected' : ''}>B+ (3.33)</option>
+                <option value="B" ${c.grade == 'B' ? 'selected' : ''}>B (3.00)</option>
+                <option value="B-" ${c.grade == 'B-' ? 'selected' : ''}>B- (2.67)</option>
+                <option value="C+" ${c.grade == 'C+' ? 'selected' : ''}>C+ (2.33)</option>
+                <option value="C" ${c.grade == 'C' ? 'selected' : ''}>C (2.00)</option>
+                <option value="C-" ${c.grade == 'C-' ? 'selected' : ''}>C- (1.67)</option>
+                <option value="D+" ${c.grade == 'D+' ? 'selected' : ''}>D+ (1.33)</option>
+                <option value="D" ${c.grade == 'D' ? 'selected' : ''}>D (1.00)</option>
+                <option value="F" ${c.grade == 'F' ? 'selected' : ''}>F (0.00)</option>
+              </select>
+              ${modalCourses.length > 1 ? `<button type="button" class="btn-danger-ghost" onclick="removeCourseRowFromModal(${idx})"><i class="bi bi-dash-circle"></i></button>` : ''}
+            </div>
+          </div>
+        `;
+      });
+
+      updateModalLiveGPA();
+    }
+
+    function updateModalLiveGPA() {
+      let pts = 0;
+      let crs = 0;
+      modalCourses.forEach(c => {
+        const cr = parseFloat(c.credit) || 0;
+        const gp = GRADE_MAP[c.grade] || 0;
+        pts += gp * cr;
+        crs += cr;
+      });
+      const gpa = crs > 0 ? (pts / crs).toFixed(2) : '4.00';
+      document.getElementById('modal-live-gpa').innerText = `GPA: ${gpa}`;
+    }
+
+    function saveTrimesterFromModal() {
+      const termName = document.getElementById('add-term-name').value.trim() || 'Trimester';
+      const cleanCourses = [];
+      let termPts = 0;
+      let termCr = 0;
+
+      modalCourses.forEach((c, i) => {
+        const code = c.code.trim() || `COURSE ${i + 1}`;
+        const title = c.title.trim() || code;
+        const cr = parseFloat(c.credit) || 3.0;
+        const grade = c.grade || 'A';
+        const gp = GRADE_MAP[grade] || 4.00;
+
+        cleanCourses.push({
+          code: code,
+          title: title,
+          credit: cr,
+          grade: grade,
+          gradePoint: gp
+        });
+
+        termPts += gp * cr;
+        termCr += cr;
+      });
+
+      const sgpa = termCr > 0 ? parseFloat((termPts / termCr).toFixed(2)) : 0.00;
+
+      appData.semesters.unshift({
+        semesterName: termName,
+        creditsEarned: termCr,
+        sgpa: sgpa,
+        cgpa: sgpa,
+        courses: cleanCourses
+      });
+
+      saveAppData();
+      closeAddTrimesterModal();
+      showToast(`Saved ${termName} to records!`);
+    }
+
+    // ================= CSV IMPORT LOGIC =================
+    function openImportCsvModal() {
+      document.getElementById('importCsvModal').classList.add('active');
+    }
+    function closeImportCsvModal() {
+      document.getElementById('importCsvModal').classList.remove('active');
+    }
+
+    function handleCsvFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById('csv-text-area').value = evt.target.result;
+      };
+      reader.readAsText(file);
+    }
+
+    function processCsvImport() {
+      const termName = document.getElementById('csv-term-name').value.trim() || 'Imported Trimester';
+      const text = document.getElementById('csv-text-area').value.trim();
+      if (!text) {
+        alert('Please paste or upload CSV data.');
+        return;
+      }
+
+      const lines = text.split('\n');
+      const courses = [];
+      let totalPts = 0;
+      let totalCr = 0;
+
+      lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const code = parts[0].trim();
+          const title = parts.length >= 4 ? parts[1].trim() : code;
+          const cr = parseFloat(parts.length >= 4 ? parts[2].trim() : parts[1].trim()) || 3.0;
+          const gr = (parts.length >= 4 ? parts[3].trim() : parts[2].trim()).toUpperCase();
+          const gp = GRADE_MAP[gr] || 0.0;
+
+          courses.push({
+            code: code,
+            title: title,
+            credit: cr,
+            grade: gr,
+            gradePoint: gp
+          });
+          totalPts += gp * cr;
+          totalCr += cr;
+        }
+      });
+
+      if (courses.length === 0) {
+        alert('Could not parse any valid courses from CSV. Expected: Code, Title, Credit, Grade');
+        return;
+      }
+
+      const sgpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
+      appData.semesters.unshift({
+        semesterName: termName,
+        creditsEarned: totalCr,
+        sgpa: sgpa,
+        cgpa: sgpa,
+        courses: courses
+      });
+
+      saveAppData();
+      closeImportCsvModal();
+      showToast(`Imported ${courses.length} courses from CSV!`);
+    }
+
+    // ================= PDF IMPORT LOGIC =================
+    function openImportPdfModal() {
+      document.getElementById('importPdfModal').classList.add('active');
+    }
+    function closeImportPdfModal() {
+      document.getElementById('importPdfModal').classList.remove('active');
+    }
+
+    function handlePdfFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById('pdf-text-area').value = evt.target.result;
+      };
+      reader.readAsText(file);
+    }
+
+    function processPdfImport() {
+      const termName = document.getElementById('pdf-term-name').value.trim() || 'Transcript Term';
+      const text = document.getElementById('pdf-text-area').value.trim();
+      if (!text) {
+        alert('Please paste transcript text or upload file.');
+        return;
+      }
+
+      const lines = text.split('\n');
+      const courses = [];
+      let totalPts = 0;
+      let totalCr = 0;
+
+      lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+        // Regex to parse: CSE 1111 [Title] 3.00 A
+        const match = line.match(/^([A-Za-z]{2,5}\s*\d{4})\s+(.+?)\s+([0-9.]+)\s+([A-D][+-]?|F)/i);
+        if (match) {
+          const code = match[1].trim();
+          const title = match[2].trim();
+          const cr = parseFloat(match[3]) || 3.0;
+          const gr = match[4].toUpperCase();
+          const gp = GRADE_MAP[gr] || 0.0;
+          courses.push({ code, title, credit: cr, grade: gr, gradePoint: gp });
+          totalPts += gp * cr;
+          totalCr += cr;
+        } else {
+          // Alternative comma/space split
+          const p = line.split(/[,\t]/);
+          if (p.length >= 3) {
+            const code = p[0].trim();
+            const title = p.length >= 4 ? p[1].trim() : code;
+            const cr = parseFloat(p.length >= 4 ? p[2] : p[1]) || 3.0;
+            const gr = (p.length >= 4 ? p[3] : p[2]).trim().toUpperCase();
+            const gp = GRADE_MAP[gr] || 0.0;
+            courses.push({ code, title, credit: cr, grade: gr, gradePoint: gp });
+            totalPts += gp * cr;
+            totalCr += cr;
+          }
+        }
+      });
+
+      if (courses.length === 0) {
+        alert('Could not find recognizable course patterns. Try formatting as: CSE 1111 Title 3.0 A');
+        return;
+      }
+
+      const sgpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
+      appData.semesters.unshift({
+        semesterName: termName,
+        creditsEarned: totalCr,
+        sgpa: sgpa,
+        cgpa: sgpa,
+        courses: courses
+      });
+
+      saveAppData();
+      closeImportPdfModal();
+      showToast(`Imported ${courses.length} courses from PDF!`);
+    }
+
+    // ================= IMAGE IMPORT LOGIC =================
+    function openImportImageModal() {
+      document.getElementById('importImageModal').classList.add('active');
+    }
+    function closeImportImageModal() {
+      document.getElementById('importImageModal').classList.remove('active');
+    }
+
+    function handleImageFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = document.getElementById('image-preview');
+        img.src = evt.target.result;
+        document.getElementById('image-preview-container').style.display = 'block';
+        // Mock recognized courses
+        document.getElementById('img-text-area').value =
+          "CSE 2213, Object Oriented Programming, 3.0, A\nCSE 2214, OOP Lab, 1.0, A\nMATH 2183, Calculus & Linear Algebra, 3.0, A-";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function processImageImport() {
+      const termName = document.getElementById('img-term-name').value.trim() || 'Image Trimester';
+      const text = document.getElementById('img-text-area').value.trim();
+      if (!text) {
+        alert('No recognized text to import.');
+        return;
+      }
+
+      const lines = text.split('\n');
+      const courses = [];
+      let totalPts = 0;
+      let totalCr = 0;
+
+      lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const code = parts[0].trim();
+          const title = parts.length >= 4 ? parts[1].trim() : code;
+          const cr = parseFloat(parts.length >= 4 ? parts[2].trim() : parts[1].trim()) || 3.0;
+          const gr = (parts.length >= 4 ? parts[3].trim() : parts[2].trim()).toUpperCase();
+          const gp = GRADE_MAP[gr] || 0.0;
+          courses.push({ code, title, credit: cr, grade: gr, gradePoint: gp });
+          totalPts += gp * cr;
+          totalCr += cr;
+        }
+      });
+
+      if (courses.length === 0) {
+        alert('Could not parse courses.');
+        return;
+      }
+
+      const sgpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
+      appData.semesters.unshift({
+        semesterName: termName,
+        creditsEarned: totalCr,
+        sgpa: sgpa,
+        cgpa: sgpa,
+        courses: courses
+      });
+
+      saveAppData();
+      closeImportImageModal();
+      showToast(`Imported ${courses.length} courses from image!`);
+    }
+
+    // ================= JSON EXPORT & RESTORE =================
+    function exportBackupJson() {
+      const dataStr = JSON.stringify(appData, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `uiu_academic_backup_${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // Also copy to clipboard
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(dataStr);
+      }
+      showToast('JSON Backup downloaded & copied to clipboard!');
+    }
+
+    function openImportJsonModal() {
+      document.getElementById('importJsonModal').classList.add('active');
+    }
+    function closeImportJsonModal() {
+      document.getElementById('importJsonModal').classList.remove('active');
+    }
+
+    function handleJsonFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById('json-text-area').value = evt.target.result;
+      };
+      reader.readAsText(file);
+    }
+
+    function processJsonRestore() {
+      const raw = document.getElementById('json-text-area').value.trim();
+      if (!raw) {
+        alert('Please paste or pick a valid JSON backup file.');
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.profile && Array.isArray(parsed.semesters)) {
+          appData = parsed;
+          saveAppData();
+          closeImportJsonModal();
+          showToast('Academic records restored successfully!');
+        } else if (Array.isArray(parsed)) {
+          appData.semesters = parsed;
+          saveAppData();
+          closeImportJsonModal();
+          showToast('Semesters restored successfully!');
+        } else {
+          alert('Invalid backup JSON schema. Expected keys: profile, semesters');
+        }
+      } catch (err) {
+        alert('Failed to parse JSON: ' + err.message);
+      }
+    }
+
+    // ================= EDIT PROFILE MODAL =================
+    function openEditProfileModal() {
+      const p = appData.profile;
+      document.getElementById('edit-prof-name').value = p.name;
+      document.getElementById('edit-prof-id').value = p.studentId;
+      document.getElementById('edit-prof-dept').value = p.department;
+      document.getElementById('edit-prof-batch').value = p.batch;
+      document.getElementById('edit-prof-target').value = p.targetCGPA;
+      document.getElementById('editProfileModal').classList.add('active');
+    }
+
+    function closeEditProfileModal() {
+      document.getElementById('editProfileModal').classList.remove('active');
+    }
+
+    function saveProfileChanges() {
+      appData.profile.name = document.getElementById('edit-prof-name').value.trim() || 'Sourav Ahmed';
+      appData.profile.studentId = document.getElementById('edit-prof-id').value.trim() || '011 201 042';
+      appData.profile.department = document.getElementById('edit-prof-dept').value.trim() || 'Department of Computer Science & Engineering';
+      appData.profile.batch = document.getElementById('edit-prof-batch').value.trim() || '201';
+      appData.profile.targetCGPA = parseFloat(document.getElementById('edit-prof-target').value) || 3.85;
+
+      saveAppData();
+      closeEditProfileModal();
+      showToast('Profile updated successfully!');
+    }
+
+    // ================= NAVIGATION & TAB SWITCHING =================
+    function switchTab(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      const s = document.getElementById('screen-' + id);
+      if (s) s.classList.add('active');
+      const n = document.getElementById('nav-' + id);
+      if (n) n.classList.add('active');
+    }
+
+    function openScaleModal() { document.getElementById('scaleModal').classList.add('active'); }
+    function closeScaleModal() { document.getElementById('scaleModal').classList.remove('active'); }
+
+    // ================= THEME TOGGLE =================
+    let isDarkMode = false;
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      document.body.classList.toggle('dark-mode', isDarkMode);
+      const icon = document.getElementById('theme-icon');
+      const toggle = document.getElementById('theme-toggle-icon');
+      if (icon) icon.className = isDarkMode ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+      if (toggle) {
+        toggle.className = isDarkMode ? 'bi bi-toggle2-on' : 'bi bi-toggle2-off';
+        toggle.style.color = isDarkMode ? 'var(--primary)' : 'var(--text-tertiary)';
+      }
+    }
+
+    // ================= TOAST =================
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      toastText.innerText = text;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ================= TARGET GPA CALCULATOR =================
+    function updateTargetCalc() {
+      const target = parseFloat(document.getElementById('input-target-cgpa').value) || 3.85;
+      const current = parseFloat(document.getElementById('input-current-cgpa').value) || appData.profile.currentCGPA;
+      const compCr = parseFloat(document.getElementById('input-comp-cr').value) || appData.profile.completedCredits;
+      const remCr = parseFloat(document.getElementById('input-rem-cr').value) || (appData.profile.totalDegreeCredits - compCr);
+
+      document.getElementById('val-target-cgpa').innerText = target.toFixed(2);
+      document.getElementById('val-current-cgpa').innerText = current.toFixed(2);
+
+      const totalCr = compCr + remCr;
+      const reqPoints = (target * totalCr) - (current * compCr);
+      const reqGPA = remCr > 0 ? (reqPoints / remCr) : 0;
+
+      const gpaEl = document.getElementById('res-req-gpa');
+      const badgeEl = document.getElementById('res-badge');
+      const adviceEl = document.getElementById('res-advice');
+
+      if (reqGPA <= 0) {
+        gpaEl.innerText = '0.00';
+        badgeEl.innerText = 'Target Exceeded 🏆';
+        adviceEl.innerText = 'You have already surpassed this target CGPA!';
+      } else if (reqGPA <= 3.30) {
+        gpaEl.innerText = reqGPA.toFixed(2);
+        badgeEl.innerText = 'Easily Attainable (B+)';
+        adviceEl.innerText = 'Attainable with steady B+ average grades.';
+      } else if (reqGPA <= 3.75) {
+        gpaEl.innerText = reqGPA.toFixed(2);
+        badgeEl.innerText = 'Challenging (A-/A)';
+        adviceEl.innerText = 'Requires steady A- and A grades in upcoming trimesters.';
+      } else if (reqGPA <= 4.00) {
+        gpaEl.innerText = reqGPA.toFixed(2);
+        badgeEl.innerText = 'Extremely Demanding';
+        adviceEl.innerText = 'Requires near straight 4.00s (all A grades).';
+      } else {
+        gpaEl.innerText = reqGPA.toFixed(2);
+        badgeEl.innerText = 'Impossible (>4.00)';
+        adviceEl.innerText = 'Mathematically unreachable (>4.00 max limit).';
+      }
+    }
+
+    // Initialize View
+    renderAllViews();
+  </script>
+</body>
 </html>

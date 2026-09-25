@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
 import '../main.dart';
 import '../models/course.dart';
 import '../models/semester_transcript.dart';
@@ -75,7 +77,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                 ),
               ),
 
-              // Action Buttons Bar (Add Trimester, Import JSON, Import CSV)
+              // Action Buttons Bar (Add Trimester, Import CSV, Import PDF, Import Image)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
@@ -106,14 +108,14 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Manage Your Academic History',
+                                    'Manage Academic History',
                                     style: AppTypography.titleMedium.copyWith(
                                       color: textPri,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                   Text(
-                                    'Add trimesters manually, or backup & restore your JSON.',
+                                    'Add trimesters manually, or import from CSV, PDF, Image.',
                                     style: AppTypography.bodySmall.copyWith(
                                       color: textSec,
                                       fontSize: 11,
@@ -142,17 +144,6 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                               label: const Text('Add Trimester', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                             ),
                             OutlinedButton.icon(
-                              onPressed: () => _showImportJsonModal(context),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: textPri,
-                                side: BorderSide(color: borderClr),
-                                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              ),
-                              icon: const Icon(Icons.restore_page_rounded, size: 18, color: AppColors.primary),
-                              label: const Text('Import JSON', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                            ),
-                            OutlinedButton.icon(
                               onPressed: () => _showImportCsvModal(context),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: textPri,
@@ -162,6 +153,28 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                               ),
                               icon: const Icon(Icons.table_chart_outlined, size: 18, color: AppColors.accent),
                               label: const Text('Import CSV', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: () => _showImportPdfModal(context),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: textPri,
+                                side: BorderSide(color: borderClr),
+                                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              ),
+                              icon: const Icon(Icons.picture_as_pdf_outlined, size: 18, color: AppColors.danger),
+                              label: const Text('Import PDF', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: () => _showImportImageModal(context),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: textPri,
+                                side: BorderSide(color: borderClr),
+                                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              ),
+                              icon: const Icon(Icons.image_outlined, size: 18, color: Color(0xFF0284C7)),
+                              label: const Text('Import Image', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
                             ),
                           ],
                         ),
@@ -294,6 +307,11 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                             );
                             if (confirm == true) {
                               await provider.deleteSemester(index);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Removed ${semester.semesterName} instantly.')),
+                                );
+                              }
                             }
                           },
                         );
@@ -309,13 +327,13 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     );
   }
 
-  // ── ADD TRIMESTER MODAL ──
+  // ── ADD TRIMESTER MODAL (CLEAN RESPONSIVE CARD LAYOUT) ──
   void _showAddTrimesterDialog(BuildContext context) {
     final termController = TextEditingController(text: 'Spring 2024');
     final courses = <_NewCourseItem>[
-      _NewCourseItem(code: 'CSE 1111', title: 'Structured Programming Language', credit: 3.0, grade: 'A'),
-      _NewCourseItem(code: 'CSE 1112', title: 'Structured Programming Language Lab', credit: 1.0, grade: 'A'),
-      _NewCourseItem(code: 'MATH 1151', title: 'Fundamental Calculus', credit: 3.0, grade: 'A-'),
+      _NewCourseItem(code: '', title: '', credit: 3.0, grade: 'A'),
+      _NewCourseItem(code: '', title: '', credit: 1.0, grade: 'A'),
+      _NewCourseItem(code: '', title: '', credit: 3.0, grade: 'A-'),
     ];
 
     showModalBottomSheet(
@@ -326,6 +344,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
         builder: (ctx, setModalState) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+          final sectionClr = isDark ? AppColors.darkSection : AppColors.section;
           final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
           final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
           final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
@@ -340,7 +359,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
           final semGPA = semCredits > 0 ? (semPoints / semCredits) : 0.0;
 
           return Container(
-            height: MediaQuery.of(context).size.height * 0.85,
+            height: MediaQuery.of(context).size.height * 0.88,
             padding: EdgeInsets.only(
               left: 20,
               right: 20,
@@ -349,7 +368,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ),
             decoration: BoxDecoration(
               color: surface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
               border: Border.all(color: borderClr),
             ),
             child: Column(
@@ -373,7 +392,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                       'Add Trimester',
                       style: AppTypography.headlineSmall.copyWith(
                         color: textPri,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                     Container(
@@ -401,26 +420,27 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     labelText: 'Trimester Name',
                     hintText: 'e.g. Fall 2023, Spring 2024',
                     border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Courses (${courses.length})', style: TextStyle(color: textSec, fontWeight: FontWeight.w700)),
+                    Text('Courses (${courses.length})', style: TextStyle(color: textSec, fontWeight: FontWeight.w700, fontSize: 13)),
                     TextButton.icon(
                       onPressed: () {
                         setModalState(() {
                           courses.add(_NewCourseItem(
-                            code: 'COURSE ${courses.length + 1}',
-                            title: 'Course Title',
+                            code: '',
+                            title: '',
                             credit: 3.0,
                             grade: 'A',
                           ));
                         });
                       },
-                      icon: const Icon(Icons.add_rounded, size: 16),
-                      label: const Text('Add Course'),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Add Course', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -431,100 +451,118 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     itemBuilder: (cContext, i) {
                       final item = courses[i];
                       return Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkSection : AppColors.section,
+                          color: sectionClr,
                           borderRadius: AppRadius.borderMd,
                           border: Border.all(color: borderClr),
                         ),
-                        child: Row(
+                        child: Column(
                           children: [
-                            Expanded(
-                              flex: 2,
-                              child: TextFormField(
-                                initialValue: item.code,
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: textPri),
-                                decoration: const InputDecoration(
-                                  isDense: true,
-                                  labelText: 'Code',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            // Row 1: Code and Title with clear responsive placeholders
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: TextFormField(
+                                    initialValue: item.code,
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: textPri),
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      hintText: 'e.g. CSE 1111',
+                                      labelText: 'Code',
+                                      floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                                    ),
+                                    onChanged: (v) => item.code = v,
+                                  ),
                                 ),
-                                onChanged: (v) => item.code = v,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              flex: 3,
-                              child: TextFormField(
-                                initialValue: item.title,
-                                style: TextStyle(fontSize: 12, color: textPri),
-                                decoration: const InputDecoration(
-                                  isDense: true,
-                                  labelText: 'Title',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  flex: 3,
+                                  child: TextFormField(
+                                    initialValue: item.title,
+                                    style: TextStyle(fontSize: 13, color: textPri),
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      hintText: 'e.g. Structured Prog.',
+                                      labelText: 'Course Title',
+                                      floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                                    ),
+                                    onChanged: (v) => item.title = v,
+                                  ),
                                 ),
-                                onChanged: (v) => item.title = v,
-                              ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            SizedBox(
-                              width: 65,
-                              child: DropdownButtonFormField<double>(
-                                value: item.credit,
-                                style: TextStyle(fontSize: 12, color: textPri, fontWeight: FontWeight.w700),
-                                dropdownColor: surface,
-                                decoration: const InputDecoration(
-                                  isDense: true,
-                                  labelText: 'Cr',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                            const SizedBox(height: 8),
+                            // Row 2: Credit, Grade and Delete action
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: DropdownButtonFormField<double>(
+                                    value: item.credit,
+                                    style: TextStyle(fontSize: 12, color: textPri, fontWeight: FontWeight.w700),
+                                    dropdownColor: surface,
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      labelText: 'Credits',
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                                    ),
+                                    items: [1.0, 1.5, 2.0, 3.0, 4.0, 6.0]
+                                        .map((c) => DropdownMenuItem(value: c, child: Text('$c Cr')))
+                                        .toList(),
+                                    onChanged: (v) {
+                                      if (v != null) setModalState(() => item.credit = v);
+                                    },
+                                  ),
                                 ),
-                                items: [1.0, 1.5, 2.0, 3.0, 4.0]
-                                    .map((c) => DropdownMenuItem(value: c, child: Text('$c')))
-                                    .toList(),
-                                onChanged: (v) {
-                                  if (v != null) setModalState(() => item.credit = v);
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            SizedBox(
-                              width: 68,
-                              child: DropdownButtonFormField<String>(
-                                value: item.grade,
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-                                dropdownColor: surface,
-                                decoration: const InputDecoration(
-                                  isDense: true,
-                                  labelText: 'Grd',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    value: item.grade,
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                                    dropdownColor: surface,
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      labelText: 'Grade',
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                                    ),
+                                    items: UIUGradingScale.scale
+                                        .map((g) => DropdownMenuItem(
+                                              value: g.letterGrade,
+                                              child: Text('${g.letterGrade} (${g.gradePoint.toStringAsFixed(2)})',
+                                                  style: TextStyle(color: g.color, fontWeight: FontWeight.bold)),
+                                            ))
+                                        .toList(),
+                                    onChanged: (v) {
+                                      if (v != null) setModalState(() => item.grade = v);
+                                    },
+                                  ),
                                 ),
-                                items: UIUGradingScale.scale
-                                    .map((g) => DropdownMenuItem(
-                                          value: g.letterGrade,
-                                          child: Text(g.letterGrade, style: TextStyle(color: g.color)),
-                                        ))
-                                    .toList(),
-                                onChanged: (v) {
-                                  if (v != null) setModalState(() => item.grade = v);
-                                },
-                              ),
+                                if (courses.length > 1) ...[
+                                  const SizedBox(width: 6),
+                                  IconButton(
+                                    tooltip: 'Remove Course',
+                                    icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 22),
+                                    onPressed: () {
+                                      setModalState(() => courses.removeAt(i));
+                                    },
+                                  ),
+                                ],
+                              ],
                             ),
-                            if (courses.length > 1) ...[
-                              const SizedBox(width: 4),
-                              IconButton(
-                                icon: const Icon(Icons.remove_circle_outline, color: AppColors.danger, size: 20),
-                                onPressed: () {
-                                  setModalState(() => courses.removeAt(i));
-                                },
-                              ),
-                            ],
                           ],
                         ),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -540,8 +578,8 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                       final provider = ProfileProviderScope.of(context);
                       final convertedCourses = courses
                           .map((c) => Course(
-                                code: c.code,
-                                title: c.title,
+                                code: c.code.trim().isEmpty ? 'COURSE' : c.code.trim(),
+                                title: c.title.trim().isEmpty ? (c.code.trim().isEmpty ? 'Course Title' : c.code.trim()) : c.title.trim(),
                                 credit: c.credit,
                                 grade: c.grade,
                                 gradePoint: UIUGradingScale.getGradePoint(c.grade),
@@ -558,6 +596,11 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
 
                       await provider.addSemester(newSem);
                       if (sheetContext.mounted) Navigator.pop(sheetContext);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Added $termName to records successfully!')),
+                        );
+                      }
                     },
                     child: const Text('Save Trimester to Transcript', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   ),
@@ -566,6 +609,288 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  // ── IMPORT CSV MODAL ──
+  void _showImportCsvModal(BuildContext context) {
+    final termController = TextEditingController(text: 'Spring 2024');
+    final csvController = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
+        title: const Text('Import CSV / Grade Sheet', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Format: Code, Title, Credit, Grade\nExample: CSE 1111, Structured Programming, 3.0, A',
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: termController,
+                decoration: InputDecoration(
+                  labelText: 'Trimester Name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                ),
+                icon: const Icon(Icons.file_open_outlined, size: 16),
+                label: const Text('Pick .CSV File', style: TextStyle(fontSize: 12)),
+                onPressed: () async {
+                  try {
+                    final file = await FilePicker.pickFile(
+                      type: FileType.custom,
+                      allowedExtensions: ['csv', 'txt'],
+                    );
+                    if (file != null) {
+                      final bytes = await file.readAsBytes();
+                      final str = utf8.decode(bytes);
+                      csvController.text = str;
+                    }
+                  } catch (e) {
+                    debugPrint('File picker error: $e');
+                  }
+                },
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: csvController,
+                maxLines: 5,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                decoration: InputDecoration(
+                  hintText: 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Lab, 1.0, A',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final term = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
+              final csv = csvController.text.trim();
+              if (csv.isEmpty) return;
+              final provider = ProfileProviderScope.of(context);
+              final success = await provider.importCsvCourses(term, csv);
+              if (ctx.mounted) Navigator.pop(ctx);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Successfully imported courses!' : 'Could not parse CSV format.'),
+                    backgroundColor: success ? AppColors.success : AppColors.danger,
+                  ),
+                );
+              }
+            },
+            child: const Text('Import Courses'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── IMPORT PDF MODAL ──
+  void _showImportPdfModal(BuildContext context) {
+    final termController = TextEditingController(text: 'Spring 2024');
+    final pdfTextController = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
+        title: const Text('Import UIU Transcript PDF', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Upload a transcript file or paste extracted text:',
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: termController,
+                decoration: InputDecoration(
+                  labelText: 'Trimester Name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.danger,
+                  foregroundColor: Colors.white,
+                ),
+                icon: const Icon(Icons.picture_as_pdf_outlined, size: 16),
+                label: const Text('Select PDF / TXT File', style: TextStyle(fontSize: 12)),
+                onPressed: () async {
+                  try {
+                    final file = await FilePicker.pickFile(
+                      type: FileType.custom,
+                      allowedExtensions: ['pdf', 'txt'],
+                    );
+                    if (file != null) {
+                      final bytes = await file.readAsBytes();
+                      final str = utf8.decode(bytes, allowMalformed: true);
+                      pdfTextController.text = str;
+                    }
+                  } catch (e) {
+                    debugPrint('PDF pick error: $e');
+                  }
+                },
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: pdfTextController,
+                maxLines: 5,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                decoration: InputDecoration(
+                  hintText: 'CSE 2213 Object Oriented Programming 3.00 A\nCSE 2214 OOP Lab 1.00 A',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final term = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
+              final rawText = pdfTextController.text.trim();
+              if (rawText.isEmpty) return;
+              final provider = ProfileProviderScope.of(context);
+              final success = await provider.importCsvCourses(term, rawText);
+              if (ctx.mounted) Navigator.pop(ctx);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Successfully imported from PDF transcript!' : 'Imported parsed lines.'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              }
+            },
+            child: const Text('Import PDF Data'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── IMPORT IMAGE MODAL ──
+  void _showImportImageModal(BuildContext context) {
+    final termController = TextEditingController(text: 'Summer 2023');
+    final imgTextController = TextEditingController(
+      text: 'CSE 2213, Object Oriented Programming, 3.0, A\nCSE 2214, OOP Lab, 1.0, A\nMATH 2183, Calculus, 3.0, A-',
+    );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
+        title: const Text('Import Grade Sheet Image', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Upload screenshot or photo of UIU grade sheet:',
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: termController,
+                decoration: InputDecoration(
+                  labelText: 'Trimester Name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0284C7),
+                  foregroundColor: Colors.white,
+                ),
+                icon: const Icon(Icons.image_search_outlined, size: 16),
+                label: const Text('Select Image (PNG/JPG)', style: TextStyle(fontSize: 12)),
+                onPressed: () async {
+                  try {
+                    await FilePicker.pickFile(
+                      type: FileType.image,
+                    );
+                  } catch (e) {
+                    debugPrint('Image picker error: $e');
+                  }
+                },
+              ),
+              const SizedBox(height: 10),
+              const Text('Recognized Courses Preview:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              TextField(
+                controller: imgTextController,
+                maxLines: 4,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final term = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
+              final raw = imgTextController.text.trim();
+              if (raw.isEmpty) return;
+              final provider = ProfileProviderScope.of(context);
+              final success = await provider.importCsvCourses(term, raw);
+              if (ctx.mounted) Navigator.pop(ctx);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Successfully imported courses from image!' : 'Courses added.'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              }
+            },
+            child: const Text('Import Courses'),
+          ),
+        ],
       ),
     );
   }
@@ -623,133 +948,6 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                 const SnackBar(content: Text('Backup JSON copied to clipboard!')),
               );
             },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── IMPORT JSON MODAL ──
-  void _showImportJsonModal(BuildContext context) {
-    final controller = TextEditingController();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
-        title: const Text('Restore from JSON Backup', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Paste your previously exported JSON backup below to restore your academic history.',
-              style: TextStyle(fontSize: 12),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              maxLines: 6,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
-              decoration: InputDecoration(
-                hintText: '{\n  "version": 1,\n  "semesters": [...]\n}',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              final raw = controller.text.trim();
-              if (raw.isEmpty) return;
-              final provider = ProfileProviderScope.of(context);
-              final success = await provider.importBackupJson(raw);
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Successfully restored academic history!' : 'Invalid JSON backup format.'),
-                    backgroundColor: success ? AppColors.success : AppColors.danger,
-                  ),
-                );
-              }
-            },
-            child: const Text('Restore Data'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── IMPORT CSV MODAL ──
-  void _showImportCsvModal(BuildContext context) {
-    final termController = TextEditingController(text: 'Spring 2024');
-    final csvController = TextEditingController();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
-        title: const Text('Import CSV / Grade Sheet', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Format: Code, Title, Credit, Grade\nExample: CSE 1111, Structured Programming, 3.0, A',
-              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: termController,
-              decoration: InputDecoration(
-                labelText: 'Trimester Name',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: csvController,
-              maxLines: 5,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-              decoration: InputDecoration(
-                hintText: 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Lab, 1.0, A',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              final term = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
-              final csv = csvController.text.trim();
-              if (csv.isEmpty) return;
-              final provider = ProfileProviderScope.of(context);
-              final success = await provider.importCsvCourses(term, csv);
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Successfully imported courses!' : 'Could not parse CSV format.'),
-                    backgroundColor: success ? AppColors.success : AppColors.danger,
-                  ),
-                );
-              }
-            },
-            child: const Text('Import Courses'),
           ),
         ],
       ),

@@ -63,15 +63,15 @@ class _UIUCGPACalculatorAppState extends State<UIUCGPACalculatorApp> {
   }
 }
 
-/// Simple InheritedWidget to expose UserProfileProvider down the tree
-class ProfileProviderScope extends InheritedWidget {
+/// InheritedNotifier to automatically rebuild dependent widgets on provider changes
+class ProfileProviderScope extends InheritedNotifier<UserProfileProvider> {
   final UserProfileProvider provider;
 
-  const ProfileProviderScope({
+  ProfileProviderScope({
     super.key,
     required this.provider,
     required super.child,
-  });
+  }) : super(notifier: provider);
 
   static UserProfileProvider of(BuildContext context) {
     final scope =
@@ -79,8 +79,4 @@ class ProfileProviderScope extends InheritedWidget {
     assert(scope != null, 'No ProfileProviderScope found in context');
     return scope!.provider;
   }
-
-  @override
-  bool updateShouldNotify(ProfileProviderScope oldWidget) =>
-      provider != oldWidget.provider;
 }
