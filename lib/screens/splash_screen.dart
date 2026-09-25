@@ -39,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animController.forward();
 
-    Timer(const Duration(milliseconds: 2200), () {
+    Timer(const Duration(milliseconds: 900), () {
       if (!mounted) return;
       final provider = ProfileProviderScope.of(context);
       final nextScreen = provider.isOnboarded

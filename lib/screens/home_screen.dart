@@ -7,6 +7,7 @@ import '../theme/app_typography.dart';
 import '../theme/app_shadows.dart';
 import '../widgets/uiu_bottom_sheet.dart';
 import 'analytics_screen.dart';
+import 'main_navigation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -139,6 +140,76 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
 
+                // ── QUICK FEATURE NAVIGATION GRID ──
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('QUICK ACCESS',
+                            style: AppTypography.labelSmall.copyWith(
+                                color: textSec,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                                fontSize: 11)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _featureNavButton(
+                                label: 'GPA Calculator',
+                                sub: 'Calculate & Predict',
+                                icon: Icons.calculate_rounded,
+                                color: AppColors.primary,
+                                isDark: isDark,
+                                onTap: () => MainNavigationScreen.switchTab(context, 1),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _featureNavButton(
+                                label: 'Transcript',
+                                sub: 'Add/Import Courses',
+                                icon: Icons.description_rounded,
+                                color: AppColors.success,
+                                isDark: isDark,
+                                onTap: () => MainNavigationScreen.switchTab(context, 2),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _featureNavButton(
+                                label: 'AI Advisor',
+                                sub: 'Smart Suggestions',
+                                icon: Icons.auto_awesome_rounded,
+                                color: AppColors.accent,
+                                isDark: isDark,
+                                onTap: () => MainNavigationScreen.switchTab(context, 3),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _featureNavButton(
+                                label: 'Student Profile',
+                                sub: 'Target & Honors',
+                                icon: Icons.person_rounded,
+                                color: const Color(0xFF2563EB),
+                                isDark: isDark,
+                                onTap: () => MainNavigationScreen.switchTab(context, 4),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
                 // ── 4 QUICK STAT CARDS ──
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(
@@ -162,6 +233,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         textPri: textPri,
                         textSec: textSec,
                         index: 0,
+                        onTap: () => MainNavigationScreen.switchTab(context, 1),
                       ),
                       _statCard(
                         title: 'Credits Done',
@@ -174,6 +246,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         textPri: textPri,
                         textSec: textSec,
                         index: 1,
+                        onTap: () => MainNavigationScreen.switchTab(context, 2),
                       ),
                       _statCard(
                         title: 'Target CGPA',
@@ -186,6 +259,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         textPri: textPri,
                         textSec: textSec,
                         index: 2,
+                        onTap: () => MainNavigationScreen.switchTab(context, 1),
                       ),
                       _statCard(
                         title: 'Remaining',
@@ -198,6 +272,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         textPri: textPri,
                         textSec: textSec,
                         index: 3,
+                        onTap: () => MainNavigationScreen.switchTab(context, 2),
                       ),
                     ]),
                   ),
@@ -371,6 +446,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               isDark: isDark,
               textPri: textPri,
               textSec: textSec,
+              onTap: () => MainNavigationScreen.switchTab(context, 1),
             ),
           ),
           const SizedBox(width: 10),
@@ -383,6 +459,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               isDark: isDark,
               textPri: textPri,
               textSec: textSec,
+              onTap: () => MainNavigationScreen.switchTab(context, 2),
             ),
           ),
           const SizedBox(width: 10),
@@ -395,9 +472,82 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               isDark: isDark,
               textPri: textPri,
               textSec: textSec,
+              onTap: () => MainNavigationScreen.switchTab(context, 1),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _featureNavButton({
+    required String label,
+    required String sub,
+    required IconData icon,
+    required Color color,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final border = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.borderLg,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: AppRadius.borderLg,
+            border: Border.all(color: border),
+            boxShadow: AppShadows.soft,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: AppTypography.titleMedium.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: textPri,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      sub,
+                      style: AppTypography.bodySmall.copyWith(
+                        fontSize: 9.5,
+                        color: textSec,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, size: 15, color: textSec.withValues(alpha: 0.5)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -410,36 +560,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required bool isDark,
     required Color textPri,
     required Color textSec,
+    VoidCallback? onTap,
   }) {
     final surface = isDark ? AppColors.darkSurface : AppColors.surface;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-      decoration: BoxDecoration(
-        color: surface,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: AppRadius.borderLg,
-        border: Border.all(color: borderColor),
-        boxShadow: AppShadows.soft,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 14, color: accent),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: AppRadius.borderLg,
+            border: Border.all(color: borderColor),
+            boxShadow: AppShadows.soft,
           ),
-          const SizedBox(height: 6),
-          Text(value,
-              style: AppTypography.titleLarge.copyWith(
-                  fontSize: 16, fontWeight: FontWeight.w900, color: accent)),
-          Text(label,
-              style: AppTypography.bodySmall.copyWith(
-                  fontSize: 10, color: textSec, fontWeight: FontWeight.w600)),
-        ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 14, color: accent),
+              ),
+              const SizedBox(height: 6),
+              Text(value,
+                  style: AppTypography.titleLarge.copyWith(
+                      fontSize: 16, fontWeight: FontWeight.w900, color: accent)),
+              Text(label,
+                  style: AppTypography.bodySmall.copyWith(
+                      fontSize: 10, color: textSec, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -456,6 +614,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required Color textPri,
     required Color textSec,
     required int index,
+    VoidCallback? onTap,
   }) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -465,52 +624,59 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         scale: val,
         child: child,
       ),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: surface,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: AppRadius.borderXl,
-          border: Border.all(color: borderColor),
-          boxShadow: AppShadows.card,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: surface,
+              borderRadius: AppRadius.borderXl,
+              border: Border.all(color: borderColor),
+              boxShadow: AppShadows.card,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: AppTypography.labelSmall.copyWith(
-                        color: textSec,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 10,
-                        letterSpacing: 0.2)),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: iconBg.withValues(alpha: 0.12),
-                    borderRadius: AppRadius.borderSm,
-                  ),
-                  child: Icon(icon, size: 16, color: iconBg),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(title,
+                        style: AppTypography.labelSmall.copyWith(
+                            color: textSec,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 10,
+                            letterSpacing: 0.2)),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: iconBg.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.borderSm,
+                      ),
+                      child: Icon(icon, size: 16, color: iconBg),
+                    ),
+                  ],
                 ),
+                const Spacer(),
+                Text(value,
+                    style: AppTypography.headlineLarge.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: textPri,
+                        letterSpacing: -0.5),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 2),
+                Text(sub,
+                    style: AppTypography.bodySmall.copyWith(
+                        fontSize: 10, color: textSec),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
               ],
             ),
-            const Spacer(),
-            Text(value,
-                style: AppTypography.headlineLarge.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: textPri,
-                    letterSpacing: -0.5),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 2),
-            Text(sub,
-                style: AppTypography.bodySmall.copyWith(
-                    fontSize: 10, color: textSec),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis),
-          ],
+          ),
         ),
       ),
     );
@@ -588,6 +754,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 _progressLabel('Remaining', '${student.remainingCredits.toInt()} cr', AppColors.accent, textSec),
                 _progressLabel('Total', '${student.totalDegreeCredits.toInt()} cr', textSec, textSec),
               ],
+            ),
+            const SizedBox(height: 12),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => MainNavigationScreen.switchTab(context, 2),
+                borderRadius: AppRadius.borderBase,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadius.borderBase,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Manage Courses in Transcript',
+                          style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11)),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward_rounded,
+                          size: 14, color: AppColors.primary),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -701,6 +896,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ],
               ),
             ),
+            const SizedBox(height: 10),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => MainNavigationScreen.switchTab(context, 1),
+                borderRadius: AppRadius.borderBase,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadius.borderBase,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Open Full Trimester GPA Calculator',
+                          style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11)),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward_rounded,
+                          size: 14, color: AppColors.primary),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -774,6 +998,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ],
                   ),
                 )),
+            const SizedBox(height: 4),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => MainNavigationScreen.switchTab(context, 3),
+                borderRadius: AppRadius.borderBase,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.1),
+                    borderRadius: AppRadius.borderBase,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Ask AI Academic Advisor',
+                          style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11)),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.auto_awesome_rounded,
+                          size: 14, color: AppColors.accent),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

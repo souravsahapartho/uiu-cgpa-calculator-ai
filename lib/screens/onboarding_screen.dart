@@ -142,6 +142,32 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
+  Future<void> _skip() async {
+    final provider = ProfileProviderScope.of(context);
+    final profile = UserProfile(
+      name: 'UIUian',
+      studentId: '',
+      department: 'Computer Science & Engineering',
+      program: 'B.Sc. in CSE',
+      batch: '—',
+      currentCGPA: 0.0,
+      completedCredits: 0.0,
+      totalDegreeCredits: 138.0,
+      targetCGPA: 3.75,
+    );
+    await provider.saveProfile(profile);
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (c, a1, a2) => const MainNavigationScreen(),
+        transitionsBuilder: (c, a1, a2, child) =>
+            FadeTransition(opacity: a1, child: child),
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -223,6 +249,28 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               style: AppTypography.bodySmall.copyWith(
                                   color: textSec, fontSize: 11)),
                         ],
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: _skip,
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Skip',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                    color: textSec)),
+                            const SizedBox(width: 4),
+                            Icon(Icons.arrow_forward_ios_rounded,
+                                size: 12, color: textSec),
+                          ],
+                        ),
                       ),
                     ],
                   ),
