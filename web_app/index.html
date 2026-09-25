@@ -497,6 +497,67 @@
       background: var(--error-light);
     }
 
+    /* Segmented Control & Chips */
+    .segmented-control {
+      display: flex;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 4px;
+      margin-bottom: 14px;
+      gap: 4px;
+    }
+    .segmented-option {
+      flex: 1;
+      text-align: center;
+      padding: 9px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .segmented-option.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(245, 124, 0, 0.3);
+    }
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .chip-btn {
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-subtle);
+      color: var(--primary-dark);
+      font-weight: 800;
+    }
+    .fee-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .fee-row:last-child {
+      border-bottom: none;
+    }
+
     /* Modals & Bottom Sheets */
     .modal-overlay {
       position: fixed;
@@ -734,6 +795,9 @@
             <div class="header-action-btn" onclick="openScaleModal()" title="UIU Grading Scale">
               <i class="bi bi-mortarboard-fill"></i>
             </div>
+            <div class="header-action-btn" onclick="switchTab('profile')" title="Student Profile">
+              <i class="bi bi-person-fill"></i>
+            </div>
           </div>
         </div>
 
@@ -823,8 +887,13 @@
             <div class="header-title">GPA Calculator</div>
             <div class="header-sub">Official UIU 4.00 Scale Calculator</div>
           </div>
-          <div class="header-action-btn" onclick="openScaleModal()">
-            <i class="bi bi-mortarboard-fill"></i>
+          <div style="display: flex; gap: 8px;">
+            <div class="header-action-btn" onclick="openScaleModal()" title="UIU Grading Scale">
+              <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="header-action-btn" onclick="switchTab('profile')" title="Student Profile">
+              <i class="bi bi-person-fill"></i>
+            </div>
           </div>
         </div>
 
@@ -873,6 +942,14 @@
           <div>
             <div class="header-title">AI Academic Advisor</div>
             <div class="header-sub">UIU Course Sequence & Workload Analyzer</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <div class="header-action-btn" onclick="openScaleModal()" title="UIU Policy">
+              <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="header-action-btn" onclick="switchTab('profile')" title="Student Profile">
+              <i class="bi bi-person-fill"></i>
+            </div>
           </div>
         </div>
 
@@ -936,6 +1013,9 @@
             <div class="header-action-btn" onclick="openScaleModal()" title="UIU Policy">
               <i class="bi bi-mortarboard-fill"></i>
             </div>
+            <div class="header-action-btn" onclick="switchTab('profile')" title="Student Profile">
+              <i class="bi bi-person-fill"></i>
+            </div>
           </div>
         </div>
 
@@ -968,9 +1048,14 @@
       <!-- ================= 5. PROFILE & BACKUP ================= -->
       <div id="screen-profile" class="screen">
         <div class="header-row">
-          <div>
-            <div class="header-title">Student Profile</div>
-            <div class="header-sub">United International University</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="header-action-btn" onclick="goBackFromProfile()" title="Back" style="cursor: pointer; width: 34px; height: 34px;">
+              <i class="bi bi-arrow-left"></i>
+            </div>
+            <div>
+              <div class="header-title">Student Profile</div>
+              <div class="header-sub">United International University</div>
+            </div>
           </div>
           <div class="header-action-btn" onclick="openEditProfileModal()" title="Edit Profile">
             <i class="bi bi-pencil-fill"></i>
@@ -1006,9 +1091,10 @@
             <button class="btn-primary" onclick="exportBackupJson()" style="justify-content: center;">
               <i class="bi bi-download"></i> Download JSON
             </button>
-            <button class="btn-outline" onclick="openImportJsonModal()" style="justify-content: center;">
+            <button class="btn-outline" onclick="triggerDirectJsonUpload()" style="justify-content: center;">
               <i class="bi bi-upload" style="color: var(--primary);"></i> Import JSON
             </button>
+            <input type="file" id="direct-json-upload" accept=".json" style="display: none;" onchange="handleDirectJsonUpload(event)">
           </div>
         </div>
 
@@ -1074,6 +1160,231 @@
         </div>
       </div>
 
+      <!-- ================= 6. UIU TUITION FEE CALCULATOR ================= -->
+      <div id="screen-tuition" class="screen">
+        <div class="header-row">
+          <div>
+            <div class="header-title">Tuition Calculator</div>
+            <div class="header-sub">UIU Official Fee Structure & Policies</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <div class="header-action-btn" onclick="openScaleModal()" title="UIU Policy">
+              <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="header-action-btn" onclick="switchTab('profile')" title="Student Profile">
+              <i class="bi bi-person-fill"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic System Selector -->
+        <div class="segmented-control">
+          <div id="sys-opt-trimester" class="segmented-option active" onclick="setTuitionSystem('trimester')">
+            <i class="bi bi-calendar3"></i> Trimester (3 Terms)
+          </div>
+          <div id="sys-opt-semester" class="segmented-option" onclick="setTuitionSystem('semester')">
+            <i class="bi bi-calendar2-range"></i> Semester (2 Terms)
+          </div>
+        </div>
+
+        <!-- Primary Fee Settings Card -->
+        <div class="stat-card" style="margin-bottom: 12px;">
+          <div style="font-weight: 800; font-size: 13px; color: var(--navy); margin-bottom: 10px;">
+            <i class="bi bi-cash-stack" style="color: var(--primary);"></i> Academic Fee Parameters
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label style="font-size: 10px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">CREDIT FEE (BDT)</label>
+              <input type="number" id="tuition-credit-fee" class="input-field" value="6500" step="100" oninput="calculateTuition()">
+            </div>
+            <div>
+              <label style="font-size: 10px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">SESSION FEE (BDT)</label>
+              <input type="number" id="tuition-session-fee" class="input-field" value="5000" step="500" oninput="calculateTuition()">
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 10px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">TOTAL REGISTERED CREDITS THIS TERM</label>
+            <input type="number" id="tuition-registered-credits" class="input-field" value="13.0" step="0.5" oninput="calculateTuition()">
+          </div>
+        </div>
+
+        <!-- First-Time Retake Courses (50% Off) -->
+        <div class="stat-card" style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div>
+              <div style="font-weight: 800; font-size: 13px; color: var(--navy);">
+                <i class="bi bi-arrow-repeat" style="color: #10B981;"></i> First-Time Retake Courses
+              </div>
+              <div style="font-size: 10px; color: #059669; font-weight: 700;">50% discount applies on course tuition</div>
+            </div>
+            <button type="button" class="btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="addFirstRetakeCourse()">
+              <i class="bi bi-plus-lg"></i> Add Course
+            </button>
+          </div>
+          <div id="first-retake-list"></div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="first-retake-summary">0 courses (0.0 Cr)</div>
+        </div>
+
+        <!-- Subsequent Retake Courses (0% Off - 2nd time or more) -->
+        <div class="stat-card" style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div>
+              <div style="font-weight: 800; font-size: 13px; color: var(--navy);">
+                <i class="bi bi-exclamation-triangle-fill" style="color: #F59E0B;"></i> Subsequent Retakes (2nd+ Time)
+              </div>
+              <div style="font-size: 10px; color: #D97706; font-weight: 700;">No discount (100% full course fee)</div>
+            </div>
+            <button type="button" class="btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="addSubsequentRetakeCourse()">
+              <i class="bi bi-plus-lg"></i> Add Course
+            </button>
+          </div>
+          <div id="subsequent-retake-list"></div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="subsequent-retake-summary">0 courses (0.0 Cr)</div>
+        </div>
+
+        <!-- Scholarship or Tuition Waiver -->
+        <div class="stat-card" style="margin-bottom: 12px;">
+          <div style="font-weight: 800; font-size: 13px; color: var(--navy);">
+            <i class="bi bi-award-fill" style="color: #0284C7;"></i> Scholarship / Tuition Waiver
+          </div>
+          <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">
+            *Applies ONLY to Regular Courses tuition (Retakes & session fee are excluded)
+          </div>
+          <div class="chip-group" style="margin-top: 8px;">
+            <div class="chip-btn active" id="waiver-opt-0" onclick="setWaiverPercent(0)">0% (None)</div>
+            <div class="chip-btn" id="waiver-opt-25" onclick="setWaiverPercent(25)">25%</div>
+            <div class="chip-btn" id="waiver-opt-50" onclick="setWaiverPercent(50)">50%</div>
+            <div class="chip-btn" id="waiver-opt-100" onclick="setWaiverPercent(100)">100% (Full)</div>
+            <div class="chip-btn" id="waiver-opt-custom" onclick="setWaiverPercent('custom')">Custom %</div>
+          </div>
+          <div id="custom-waiver-container" style="display: none; margin-top: 8px;">
+            <input type="number" id="tuition-custom-waiver" class="input-field" placeholder="Enter discount % (e.g. 20)" min="0" max="100" oninput="calculateTuition()">
+          </div>
+        </div>
+
+        <!-- Missed Installment Fine Counter -->
+        <div class="stat-card" style="margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 800; font-size: 13px; color: var(--navy);">
+                <i class="bi bi-shield-exclamation" style="color: #DC2626;"></i> Missed Installments Fine
+              </div>
+              <div style="font-size: 10px; color: var(--text-secondary);">500 BDT penalty per missed installment</div>
+            </div>
+            <div class="chip-group" style="margin-top: 0;">
+              <div class="chip-btn active" id="missed-opt-0" onclick="setMissedInstallments(0)">0</div>
+              <div class="chip-btn" id="missed-opt-1" onclick="setMissedInstallments(1)">1 (+500৳)</div>
+              <div class="chip-btn" id="missed-opt-2" onclick="setMissedInstallments(2)">2 (+1000৳)</div>
+              <div class="chip-btn" id="missed-opt-3" onclick="setMissedInstallments(3)">3 (+1500৳)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOTAL PAYABLE HERO CARD -->
+        <div class="hero-card" style="background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%); margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px; opacity: 0.9;">TOTAL PAYABLE TUITION FEE</div>
+          <div style="display: flex; align-items: baseline; gap: 6px; margin: 8px 0;">
+            <span style="font-size: 32px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="tuition-total-payable">৳ 0 BDT</span>
+          </div>
+          <div style="font-size: 11px; opacity: 0.95;" id="tuition-total-subtitle">
+            Includes tuition and academic session fee
+          </div>
+          <div id="tuition-fine-badge" style="display: none; margin-top: 8px; background: rgba(0,0,0,0.25); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">
+            Includes late payment fine
+          </div>
+        </div>
+
+        <!-- DETAILED OUTPUT BREAKDOWN CARD -->
+        <div class="stat-card" style="margin-bottom: 14px;">
+          <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 14px; color: var(--navy); margin-bottom: 10px;">
+            Detailed Tuition & Fee Breakdown
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary);">Academic System</span>
+            <span style="font-weight: 800; color: var(--navy);" id="out-system">Trimester</span>
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary);">Credit Fee</span>
+            <span style="font-weight: 700;" id="out-credit-fee">6,500 BDT</span>
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary);">Trimester/Semester Fee</span>
+            <span style="font-weight: 700;" id="out-session-fee">5,000 BDT</span>
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary);">Registered Credits</span>
+            <span style="font-weight: 800; color: var(--navy);" id="out-reg-credits">13.0 Cr</span>
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary); padding-left: 12px;">• Regular Credits</span>
+            <span style="font-weight: 700;" id="out-regular-credits">13.0 Cr</span>
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary); padding-left: 12px;">• 1st-Time Retake Credits</span>
+            <span style="font-weight: 700; color: #10B981;" id="out-first-retake-credits">0.0 Cr</span>
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary); padding-left: 12px;">• Subsequent Retake Credits</span>
+            <span style="font-weight: 700; color: #F59E0B;" id="out-subsequent-retake-credits">0.0 Cr</span>
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary);">Regular Tuition</span>
+            <span style="font-weight: 700;" id="out-regular-tuition">0 BDT</span>
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary);">1st-Time Retake Tuition (50% off)</span>
+            <span style="font-weight: 700; color: #10B981;" id="out-first-retake-tuition">0 BDT</span>
+          </div>
+          <div class="fee-row">
+            <span style="color: var(--text-secondary);">Subsequent Retake Tuition</span>
+            <span style="font-weight: 700;" id="out-subsequent-retake-tuition">0 BDT</span>
+          </div>
+          <div class="fee-row" style="background: var(--surface-muted); padding: 8px 6px; border-radius: 8px; margin: 4px 0;">
+            <span style="color: #059669; font-weight: 700;">1st Retake Discount (50%)</span>
+            <span style="font-weight: 800; color: #059669;" id="out-first-discount">−0 BDT</span>
+          </div>
+          <div class="fee-row" style="background: var(--surface-muted); padding: 8px 6px; border-radius: 8px; margin: 4px 0;">
+            <span style="color: #0284C7; font-weight: 700;">Scholarship / Waiver Discount</span>
+            <span style="font-weight: 800; color: #0284C7;" id="out-waiver-discount">−0 BDT</span>
+          </div>
+          <div class="fee-row">
+            <span style="font-weight: 800; color: #10B981;">Total Savings / Discount</span>
+            <span style="font-weight: 900; color: #10B981;" id="out-total-discount">−0 BDT</span>
+          </div>
+          <div class="fee-row" style="border-top: 1.5px solid var(--border); margin-top: 6px; padding-top: 10px;">
+            <span style="font-weight: 900; font-size: 14px; color: var(--navy);">TOTAL PAYABLE</span>
+            <span style="font-weight: 900; font-size: 16px; color: var(--primary);" id="out-final-payable">0 BDT</span>
+          </div>
+        </div>
+
+        <!-- INSTALLMENT PLAN -->
+        <div class="stat-card" style="margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 14px; color: var(--navy);">
+              <i class="bi bi-pie-chart-fill" style="color: var(--primary);"></i> Installment Plan
+            </div>
+            <span style="font-size: 10px; font-weight: 700; color: var(--text-secondary);" id="out-installment-scheme">3 Installments (40% / 30% / 30%)</span>
+          </div>
+          <div id="installments-cards-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <!-- UIU OFFICIAL RULES & POLICY NOTICE -->
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 12px; color: var(--navy); margin-bottom: 8px;">
+            <i class="bi bi-info-circle-fill" style="color: var(--primary);"></i> Summary of Official UIU Rules
+          </div>
+          <ul style="font-size: 11px; color: var(--text-secondary); margin: 0; padding-left: 18px; line-height: 1.6;">
+            <li><strong>First-time retake:</strong> 50% discount on that course's tuition.</li>
+            <li><strong>Subsequent retake (2nd time+):</strong> No discount at all (full price).</li>
+            <li><strong>Scholarship / Waiver:</strong> Applies <em>ONLY</em> to regular courses. Retakes & session fees are excluded.</li>
+            <li><strong>Session Fee:</strong> Always added as-is without any discounts.</li>
+            <li><strong>Trimester:</strong> 3 installments (40% &rarr; 30% &rarr; 30%).</li>
+            <li><strong>Semester:</strong> 4 installments (25% &rarr; 25% &rarr; 25% &rarr; 25%).</li>
+            <li><strong>Missed Installment Penalty:</strong> 500 BDT fine per missed deadline.</li>
+          </ul>
+        </div>
+      </div>
+
     </div>
 
     <!-- BOTTOM NAVIGATION -->
@@ -1090,8 +1401,8 @@
       <div id="nav-transcript" class="nav-tab" onclick="switchTab('transcript')">
         <i class="bi bi-file-earmark-text"></i><span>Records</span>
       </div>
-      <div id="nav-profile" class="nav-tab" onclick="switchTab('profile')">
-        <i class="bi bi-person"></i><span>Profile</span>
+      <div id="nav-tuition" class="nav-tab" onclick="switchTab('tuition')">
+        <i class="bi bi-wallet2"></i><span>Tuition</span>
       </div>
     </div>
 
@@ -1858,6 +2169,7 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         document.getElementById('csv-text-area').value = evt.target.result;
+        processCsvImport();
       };
       reader.readAsText(file);
     }
@@ -1931,6 +2243,7 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         document.getElementById('pdf-text-area').value = evt.target.result;
+        processPdfImport();
       };
       reader.readAsText(file);
     }
@@ -2013,9 +2326,9 @@
         const img = document.getElementById('image-preview');
         img.src = evt.target.result;
         document.getElementById('image-preview-container').style.display = 'block';
-        // Mock recognized courses
         document.getElementById('img-text-area').value =
           "CSE 2213, Object Oriented Programming, 3.0, A\nCSE 2214, OOP Lab, 1.0, A\nMATH 2183, Calculus & Linear Algebra, 3.0, A-";
+        processImageImport();
       };
       reader.readAsDataURL(file);
     }
@@ -2081,11 +2394,41 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      // Also copy to clipboard
       if (navigator.clipboard) {
         navigator.clipboard.writeText(dataStr);
       }
       showToast('JSON Backup downloaded & copied to clipboard!');
+    }
+
+    function triggerDirectJsonUpload() {
+      const fileInput = document.getElementById('direct-json-upload');
+      if (fileInput) fileInput.click();
+    }
+
+    function handleDirectJsonUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.profile && Array.isArray(parsed.semesters)) {
+            appData = parsed;
+            saveAppData();
+            showToast('All academic records restored directly from JSON!');
+          } else if (Array.isArray(parsed)) {
+            appData.semesters = parsed;
+            saveAppData();
+            showToast('Semesters restored directly from JSON!');
+          } else {
+            alert('Invalid backup JSON format. Missing profile or semesters.');
+          }
+        } catch (err) {
+          alert('Failed to parse JSON file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
     }
 
     function openImportJsonModal() {
@@ -2171,13 +2514,28 @@
     }
 
     // ================= NAVIGATION & TAB SWITCHING =================
+    let previousTab = 'home';
     function switchTab(id) {
+      const cur = document.querySelector('.screen.active');
+      if (cur && cur.id.startsWith('screen-')) {
+        const curName = cur.id.replace('screen-', '');
+        if (curName !== 'profile') {
+          previousTab = curName;
+        }
+      }
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
       const s = document.getElementById('screen-' + id);
       if (s) s.classList.add('active');
       const n = document.getElementById('nav-' + id);
       if (n) n.classList.add('active');
+      if (id === 'tuition') {
+        calculateTuition();
+      }
+    }
+
+    function goBackFromProfile() {
+      switchTab(previousTab || 'home');
     }
 
     function openScaleModal() { document.getElementById('scaleModal').classList.add('active'); }
@@ -2209,6 +2567,293 @@
     function escapeHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ================= UIU TUITION FEE CALCULATOR =================
+    const tuitionState = {
+      system: 'trimester', // 'trimester' or 'semester'
+      creditFee: 6500,
+      sessionFee: 5000,
+      registeredCredits: 13.0,
+      firstRetakes: [],
+      subsequentRetakes: [],
+      waiverPercent: 0,
+      missedInstallments: 0
+    };
+
+    function setTuitionSystem(sys) {
+      tuitionState.system = sys;
+      document.getElementById('sys-opt-trimester').classList.toggle('active', sys === 'trimester');
+      document.getElementById('sys-opt-semester').classList.toggle('active', sys === 'semester');
+      calculateTuition();
+    }
+
+    function addFirstRetakeCourse() {
+      const id = Date.now() + Math.random();
+      tuitionState.firstRetakes.push({
+        id: id,
+        name: `Course ${tuitionState.firstRetakes.length + 1}`,
+        credit: 3.0
+      });
+      renderRetakeLists();
+      calculateTuition();
+    }
+
+    function removeFirstRetake(id) {
+      tuitionState.firstRetakes = tuitionState.firstRetakes.filter(c => c.id !== id);
+      renderRetakeLists();
+      calculateTuition();
+    }
+
+    function updateFirstRetakeCredit(id, val) {
+      const item = tuitionState.firstRetakes.find(c => c.id === id);
+      if (item) {
+        item.credit = parseFloat(val) || 0;
+        calculateTuition();
+      }
+    }
+
+    function updateFirstRetakeName(id, val) {
+      const item = tuitionState.firstRetakes.find(c => c.id === id);
+      if (item) {
+        item.name = val;
+      }
+    }
+
+    function addSubsequentRetakeCourse() {
+      const id = Date.now() + Math.random();
+      tuitionState.subsequentRetakes.push({
+        id: id,
+        name: `Course ${tuitionState.subsequentRetakes.length + 1}`,
+        credit: 3.0
+      });
+      renderRetakeLists();
+      calculateTuition();
+    }
+
+    function removeSubsequentRetake(id) {
+      tuitionState.subsequentRetakes = tuitionState.subsequentRetakes.filter(c => c.id !== id);
+      renderRetakeLists();
+      calculateTuition();
+    }
+
+    function updateSubsequentRetakeCredit(id, val) {
+      const item = tuitionState.subsequentRetakes.find(c => c.id === id);
+      if (item) {
+        item.credit = parseFloat(val) || 0;
+        calculateTuition();
+      }
+    }
+
+    function updateSubsequentRetakeName(id, val) {
+      const item = tuitionState.subsequentRetakes.find(c => c.id === id);
+      if (item) {
+        item.name = val;
+      }
+    }
+
+    function renderRetakeLists() {
+      // First retake list
+      const firstList = document.getElementById('first-retake-list');
+      let firstCr = 0;
+      let firstHtml = '';
+      tuitionState.firstRetakes.forEach(c => {
+        firstCr += (parseFloat(c.credit) || 0);
+        firstHtml += `
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+            <input type="text" class="input-field" style="flex: 2; padding: 6px 10px; font-size: 12px;" value="${escapeHtml(c.name)}" placeholder="Course Code" oninput="updateFirstRetakeName(${c.id}, this.value)">
+            <input type="number" step="0.5" min="0.5" max="6.0" class="input-field" style="flex: 1; padding: 6px 8px; font-size: 12px; font-weight: 800; text-align: center;" value="${c.credit}" placeholder="Cr" oninput="updateFirstRetakeCredit(${c.id}, this.value)">
+            <button type="button" class="btn-danger-ghost" onclick="removeFirstRetake(${c.id})" title="Remove"><i class="bi bi-trash3-fill"></i></button>
+          </div>
+        `;
+      });
+      firstList.innerHTML = firstHtml;
+      document.getElementById('first-retake-summary').innerText = `${tuitionState.firstRetakes.length} courses (${firstCr.toFixed(1)} Credits)`;
+
+      // Subsequent retake list
+      const subList = document.getElementById('subsequent-retake-list');
+      let subCr = 0;
+      let subHtml = '';
+      tuitionState.subsequentRetakes.forEach(c => {
+        subCr += (parseFloat(c.credit) || 0);
+        subHtml += `
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+            <input type="text" class="input-field" style="flex: 2; padding: 6px 10px; font-size: 12px;" value="${escapeHtml(c.name)}" placeholder="Course Code" oninput="updateSubsequentRetakeName(${c.id}, this.value)">
+            <input type="number" step="0.5" min="0.5" max="6.0" class="input-field" style="flex: 1; padding: 6px 8px; font-size: 12px; font-weight: 800; text-align: center;" value="${c.credit}" placeholder="Cr" oninput="updateSubsequentRetakeCredit(${c.id}, this.value)">
+            <button type="button" class="btn-danger-ghost" onclick="removeSubsequentRetake(${c.id})" title="Remove"><i class="bi bi-trash3-fill"></i></button>
+          </div>
+        `;
+      });
+      subList.innerHTML = subHtml;
+      document.getElementById('subsequent-retake-summary').innerText = `${tuitionState.subsequentRetakes.length} courses (${subCr.toFixed(1)} Credits)`;
+    }
+
+    function setWaiverPercent(val) {
+      const customContainer = document.getElementById('custom-waiver-container');
+      ['0', '25', '50', '100', 'custom'].forEach(v => {
+        const el = document.getElementById(`waiver-opt-${v}`);
+        if (el) el.classList.toggle('active', v == val);
+      });
+
+      if (val === 'custom') {
+        customContainer.style.display = 'block';
+        const customVal = parseFloat(document.getElementById('tuition-custom-waiver').value) || 0;
+        tuitionState.waiverPercent = customVal;
+      } else {
+        customContainer.style.display = 'none';
+        tuitionState.waiverPercent = parseFloat(val) || 0;
+      }
+      calculateTuition();
+    }
+
+    function setMissedInstallments(n) {
+      tuitionState.missedInstallments = n;
+      [0, 1, 2, 3].forEach(i => {
+        const el = document.getElementById(`missed-opt-${i}`);
+        if (el) el.classList.toggle('active', i === n);
+      });
+      calculateTuition();
+    }
+
+    function calculateTuition() {
+      const creditFee = parseFloat(document.getElementById('tuition-credit-fee')?.value) || 6500;
+      const sessionFee = parseFloat(document.getElementById('tuition-session-fee')?.value) || 0;
+      const totalRegCredits = parseFloat(document.getElementById('tuition-registered-credits')?.value) || 0;
+
+      if (document.getElementById('waiver-opt-custom')?.classList.contains('active')) {
+        tuitionState.waiverPercent = parseFloat(document.getElementById('tuition-custom-waiver')?.value) || 0;
+      }
+
+      // Step 1: Separate credits into categories
+      let firstRetakeCredits = 0;
+      tuitionState.firstRetakes.forEach(c => firstRetakeCredits += (parseFloat(c.credit) || 0));
+
+      let subRetakeCredits = 0;
+      tuitionState.subsequentRetakes.forEach(c => subRetakeCredits += (parseFloat(c.credit) || 0));
+
+      const totalRetakeCredits = firstRetakeCredits + subRetakeCredits;
+      const regularCredits = Math.max(0, totalRegCredits - totalRetakeCredits);
+
+      // Step 2: Tuition per category
+      const regularTuition = regularCredits * creditFee;
+
+      const firstRetakeNormalPrice = firstRetakeCredits * creditFee;
+      const firstRetakeDiscount = firstRetakeNormalPrice * 0.50;
+      const firstRetakeTuition = firstRetakeNormalPrice - firstRetakeDiscount;
+
+      const subRetakeTuition = subRetakeCredits * creditFee;
+
+      // Step 3: Apply Scholarship/Waiver ONLY to Regular Tuition
+      const waiverPercent = tuitionState.waiverPercent || 0;
+      const regularDiscount = regularTuition * (waiverPercent / 100);
+      const finalRegularTuition = regularTuition - regularDiscount;
+
+      // Step 4: Totals
+      const totalTuition = finalRegularTuition + firstRetakeTuition + subRetakeTuition;
+      const totalDiscount = firstRetakeDiscount + regularDiscount;
+      const totalPayable = totalTuition + sessionFee;
+
+      const lateFine = tuitionState.missedInstallments * 500;
+      const totalWithFine = totalPayable + lateFine;
+
+      // Update UI elements
+      const sysEl = document.getElementById('out-system');
+      if (sysEl) sysEl.innerText = tuitionState.system === 'trimester' ? 'Trimester (3 Terms)' : 'Semester (2 Terms)';
+      const crFeeEl = document.getElementById('out-credit-fee');
+      if (crFeeEl) crFeeEl.innerText = `${creditFee.toLocaleString()} BDT`;
+      const sesFeeEl = document.getElementById('out-session-fee');
+      if (sesFeeEl) sesFeeEl.innerText = `${sessionFee.toLocaleString()} BDT`;
+      const regCrEl = document.getElementById('out-reg-credits');
+      if (regCrEl) regCrEl.innerText = `${totalRegCredits.toFixed(1)} Cr`;
+      const regCrOnlyEl = document.getElementById('out-regular-credits');
+      if (regCrOnlyEl) regCrOnlyEl.innerText = `${regularCredits.toFixed(1)} Cr`;
+      const firstCrEl = document.getElementById('out-first-retake-credits');
+      if (firstCrEl) firstCrEl.innerText = `${firstRetakeCredits.toFixed(1)} Cr`;
+      const subCrEl = document.getElementById('out-subsequent-retake-credits');
+      if (subCrEl) subCrEl.innerText = `${subRetakeCredits.toFixed(1)} Cr`;
+
+      const outRegTui = document.getElementById('out-regular-tuition');
+      if (outRegTui) outRegTui.innerText = `${Math.round(regularTuition).toLocaleString()} BDT`;
+      const outFirstTui = document.getElementById('out-first-retake-tuition');
+      if (outFirstTui) outFirstTui.innerText = `${Math.round(firstRetakeTuition).toLocaleString()} BDT`;
+      const outSubTui = document.getElementById('out-subsequent-retake-tuition');
+      if (outSubTui) outSubTui.innerText = `${Math.round(subRetakeTuition).toLocaleString()} BDT`;
+
+      const outFirstDisc = document.getElementById('out-first-discount');
+      if (outFirstDisc) outFirstDisc.innerText = `−${Math.round(firstRetakeDiscount).toLocaleString()} BDT`;
+      const outWaivDisc = document.getElementById('out-waiver-discount');
+      if (outWaivDisc) outWaivDisc.innerText = `−${Math.round(regularDiscount).toLocaleString()} BDT (${waiverPercent}%)`;
+      const outTotDisc = document.getElementById('out-total-discount');
+      if (outTotDisc) outTotDisc.innerText = `−${Math.round(totalDiscount).toLocaleString()} BDT`;
+
+      const outFinPay = document.getElementById('out-final-payable');
+      if (outFinPay) outFinPay.innerText = `${Math.round(totalPayable).toLocaleString()} BDT`;
+      const totPayBanner = document.getElementById('tuition-total-payable');
+      if (totPayBanner) totPayBanner.innerText = `৳ ${Math.round(totalWithFine).toLocaleString()} BDT`;
+
+      const fineBadge = document.getElementById('tuition-fine-badge');
+      if (fineBadge) {
+        if (tuitionState.missedInstallments > 0) {
+          fineBadge.style.display = 'inline-block';
+          fineBadge.innerText = `Includes +৳${lateFine.toLocaleString()} BDT late fine (${tuitionState.missedInstallments} missed)`;
+        } else {
+          fineBadge.style.display = 'none';
+        }
+      }
+
+      // Installment Plan
+      const instScheme = document.getElementById('out-installment-scheme');
+      const instContainer = document.getElementById('installments-cards-container');
+      if (instScheme && instContainer) {
+        let instHtml = '';
+        if (tuitionState.system === 'trimester') {
+          instScheme.innerText = '3 Installments (40% / 30% / 30%)';
+          const inst1 = totalPayable * 0.40;
+          const inst2 = totalPayable * 0.30;
+          const inst3 = totalPayable * 0.30;
+          const list = [
+            { name: '1st Installment', pct: '40%', amount: inst1, tip: 'Paid at term start/registration' },
+            { name: '2nd Installment', pct: '30%', amount: inst2, tip: 'Paid before midterm exams' },
+            { name: '3rd Installment', pct: '30%', amount: inst3, tip: 'Paid before final exams' }
+          ];
+          list.forEach(item => {
+            instHtml += `
+              <div style="background: var(--surface-muted); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-weight: 800; font-size: 13px; color: var(--navy);">${item.name} (${item.pct})</div>
+                  <div style="font-size: 10px; color: var(--text-secondary);">${item.tip}</div>
+                </div>
+                <div style="font-weight: 900; font-size: 14px; font-family: 'Outfit', sans-serif; color: var(--primary);">
+                  ৳ ${Math.round(item.amount).toLocaleString()}
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          instScheme.innerText = '4 Installments (25% / 25% / 25% / 25%)';
+          const inst = totalPayable * 0.25;
+          const list = [
+            { name: '1st Installment', pct: '25%', amount: inst, tip: 'Registration installment' },
+            { name: '2nd Installment', pct: '25%', amount: inst, tip: 'Before 1st term assessment' },
+            { name: '3rd Installment', pct: '25%', amount: inst, tip: 'Before Midterm assessment' },
+            { name: '4th Installment', pct: '25%', amount: inst, tip: 'Before Final examination' }
+          ];
+          list.forEach(item => {
+            instHtml += `
+              <div style="background: var(--surface-muted); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-weight: 800; font-size: 13px; color: var(--navy);">${item.name} (${item.pct})</div>
+                  <div style="font-size: 10px; color: var(--text-secondary);">${item.tip}</div>
+                </div>
+                <div style="font-weight: 900; font-size: 14px; font-family: 'Outfit', sans-serif; color: var(--primary);">
+                  ৳ ${Math.round(item.amount).toLocaleString()}
+                </div>
+              </div>
+            `;
+          });
+        }
+        instContainer.innerHTML = instHtml;
+      }
     }
 
     // ================= TARGET GPA CALCULATOR =================
@@ -2254,6 +2899,7 @@
 
     // Initialize View
     renderAllViews();
+    calculateTuition();
   </script>
 </body>
 </html>

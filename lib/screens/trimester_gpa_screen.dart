@@ -6,6 +6,7 @@ import '../theme/app_typography.dart';
 import '../theme/app_shadows.dart';
 import '../widgets/subtle_background.dart';
 import '../widgets/uiu_bottom_sheet.dart';
+import 'profile_screen.dart';
 
 class _TrimesterCourse {
   String name;
@@ -156,8 +157,14 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
                       tooltip: 'Grading Policy',
                     ),
                     IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.more_vert_rounded, color: textSec, size: 22),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.person_rounded, color: AppColors.primary, size: 22),
+                      tooltip: 'Student Profile',
                     ),
                   ],
                 ),

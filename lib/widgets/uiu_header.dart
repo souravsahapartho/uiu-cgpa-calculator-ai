@@ -3,6 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
+import '../screens/profile_screen.dart';
 
 class UIUHeader extends StatelessWidget {
   final String title;
@@ -68,28 +69,51 @@ class UIUHeader extends StatelessWidget {
           if (trailing != null)
             trailing!
           else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: AppRadius.borderMd,
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.15), width: 1),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.school_rounded, size: 14, color: AppColors.primary),
-                  const SizedBox(width: 4),
-                  Text(
-                    'UIU',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 11,
-                    ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadius.borderMd,
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.15), width: 1),
                   ),
-                ],
-              ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.school_rounded, size: 14, color: AppColors.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        'UIU',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: AppRadius.borderMd,
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: const Icon(Icons.person_rounded, size: 18, color: AppColors.primary),
+                  ),
+                ),
+              ],
             ),
         ],
       ),

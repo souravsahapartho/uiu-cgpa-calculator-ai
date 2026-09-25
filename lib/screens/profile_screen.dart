@@ -65,15 +65,29 @@ class ProfileScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('MY PROFILE',
-                              style: AppTypography.labelSmall.copyWith(
-                                  color: textSec, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-                          Text('Student Profile',
-                              style: AppTypography.headlineLarge.copyWith(
-                                  fontSize: 22, fontWeight: FontWeight.w900, color: textPri, letterSpacing: -0.5)),
+                          if (Navigator.canPop(context)) ...[
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('MY PROFILE',
+                                  style: AppTypography.labelSmall.copyWith(
+                                      color: textSec, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                              Text('Student Profile',
+                                  style: AppTypography.headlineLarge.copyWith(
+                                      fontSize: 22, fontWeight: FontWeight.w900, color: textPri, letterSpacing: -0.5)),
+                            ],
+                          ),
                         ],
                       ),
                       Row(
