@@ -8,6 +8,7 @@ import '../theme/app_shadows.dart';
 import '../widgets/uiu_bottom_sheet.dart';
 import 'analytics_screen.dart';
 import 'main_navigation_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -195,9 +196,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             const SizedBox(width: 8),
                             Expanded(
                               child: _featureNavButton(
-                                label: 'Student Profile',
-                                sub: 'Target & Honors',
-                                icon: Icons.person_rounded,
+                                label: 'Tuition Fee',
+                                sub: 'Waiver, Retake & Plan',
+                                icon: Icons.payments_rounded,
                                 color: const Color(0xFF2563EB),
                                 isDark: isDark,
                                 onTap: () => MainNavigationScreen.switchTab(context, 4),
@@ -394,14 +395,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
-          Column(
+          Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               _headerIconBtn(Icons.verified_rounded, () => UIUBottomSheet.showGradingScale(context)),
-              const SizedBox(height: 8),
-              _headerIconBtn(Icons.insights_rounded, () {
+              const SizedBox(width: 8),
+              _headerIconBtn(Icons.person_rounded, () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
                 );
               }),
             ],

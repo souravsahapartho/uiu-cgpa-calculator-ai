@@ -4,7 +4,6 @@ import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
 import '../widgets/subtle_background.dart';
 import '../widgets/uiu_header.dart';
-import 'profile_screen.dart';
 
 class RetakeCourseItem {
   final String id;
@@ -144,31 +143,9 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
             slivers: [
               // Header
               SliverToBoxAdapter(
-                child: UIUHeader(
+                child: const UIUHeader(
                   title: 'Tuition Fee',
                   subtitle: 'Official UIU Fee Structure & Policies',
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: AppRadius.borderMd,
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                          ),
-                          child: const Icon(Icons.person_rounded, size: 20, color: AppColors.primary),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
 
