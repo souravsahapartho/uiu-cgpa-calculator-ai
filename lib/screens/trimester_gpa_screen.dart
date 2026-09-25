@@ -319,7 +319,7 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
 
         // Calculate result card
         Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 2),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: AppColors.primary,
@@ -362,8 +362,6 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
             ],
           ),
         ),
-
-        const SizedBox(height: 80), // nav bar space
       ],
     );
   }

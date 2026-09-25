@@ -417,9 +417,11 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                               );
                             }),
                           ],
-                          const SizedBox(height: 4),
-                          Text('${_firstRetakes.length} courses (${firstRetakeCr.toStringAsFixed(1)} Credits)',
-                              style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11)),
+                          if (_firstRetakes.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text('${_firstRetakes.length} added courses (${firstRetakeCr.toStringAsFixed(1)} Credits)',
+                                style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11)),
+                          ],
                         ],
                       ),
                     ),
@@ -569,9 +571,11 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                               );
                             }),
                           ],
-                          const SizedBox(height: 4),
-                          Text('${_subsequentRetakes.length} courses (${subRetakeCr.toStringAsFixed(1)} Credits)',
-                              style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11)),
+                          if (_subsequentRetakes.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text('${_subsequentRetakes.length} added courses (${subRetakeCr.toStringAsFixed(1)} Credits)',
+                                style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11)),
+                          ],
                         ],
                       ),
                     ),
