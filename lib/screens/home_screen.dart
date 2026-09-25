@@ -8,7 +8,6 @@ import '../theme/app_shadows.dart';
 import '../widgets/uiu_bottom_sheet.dart';
 import 'analytics_screen.dart';
 import 'main_navigation_screen.dart';
-import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -397,15 +396,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           Column(
             children: [
-              _headerIconBtn(Icons.person_rounded, () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                );
-              }),
-              const SizedBox(height: 6),
               _headerIconBtn(Icons.verified_rounded, () => UIUBottomSheet.showGradingScale(context)),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               _headerIconBtn(Icons.insights_rounded, () {
                 Navigator.push(
                   context,

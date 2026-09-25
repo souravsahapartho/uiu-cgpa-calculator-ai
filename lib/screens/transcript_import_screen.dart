@@ -690,13 +690,15 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
               final csv = csvController.text.trim();
               if (csv.isEmpty) return;
               final provider = ProfileProviderScope.of(context);
-              final success = await provider.importCsvCourses(term, csv);
+              final res = await provider.importMultiTrimesterContent(term, csv);
+              final count = res['courses'] ?? 0;
+              final terms = res['trimesters'] ?? 0;
               if (ctx.mounted) Navigator.pop(ctx);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(success ? 'Successfully imported courses!' : 'Could not parse CSV format.'),
-                    backgroundColor: success ? AppColors.success : AppColors.danger,
+                    content: Text(count > 0 ? 'Successfully imported ' + count.toString() + ' courses across ' + terms.toString() + ' trimester(s)!' : 'Could not parse CSV format.'),
+                    backgroundColor: count > 0 ? AppColors.success : AppColors.danger,
                   ),
                 );
               }
@@ -785,12 +787,14 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
               final rawText = pdfTextController.text.trim();
               if (rawText.isEmpty) return;
               final provider = ProfileProviderScope.of(context);
-              final success = await provider.importCsvCourses(term, rawText);
+              final res = await provider.importMultiTrimesterContent(term, rawText);
+              final count = res['courses'] ?? 0;
+              final terms = res['trimesters'] ?? 0;
               if (ctx.mounted) Navigator.pop(ctx);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(success ? 'Successfully imported from PDF transcript!' : 'Imported parsed lines.'),
+                    content: Text(count > 0 ? 'Successfully imported ' + count.toString() + ' courses across ' + terms.toString() + ' trimester(s) from PDF!' : 'Could not detect courses in PDF text.'),
                     backgroundColor: AppColors.success,
                   ),
                 );
@@ -877,12 +881,14 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
               final raw = imgTextController.text.trim();
               if (raw.isEmpty) return;
               final provider = ProfileProviderScope.of(context);
-              final success = await provider.importCsvCourses(term, raw);
+              final res = await provider.importMultiTrimesterContent(term, raw);
+              final count = res['courses'] ?? 0;
+              final terms = res['trimesters'] ?? 0;
               if (ctx.mounted) Navigator.pop(ctx);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(success ? 'Successfully imported courses from image!' : 'Courses added.'),
+                    content: Text(count > 0 ? 'Successfully imported ' + count.toString() + ' courses across ' + terms.toString() + ' trimester(s)!' : 'Could not parse image courses.'),
                     backgroundColor: AppColors.success,
                   ),
                 );

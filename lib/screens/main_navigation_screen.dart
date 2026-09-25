@@ -6,7 +6,7 @@ import 'home_screen.dart';
 import 'trimester_gpa_screen.dart';
 import 'transcript_import_screen.dart';
 import 'ai_advisor_screen.dart';
-import 'tuition_fee_screen.dart';
+import 'profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final int initialIndex;
@@ -35,7 +35,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     TrimesterGPAScreen(),
     TranscriptImportScreen(),
     AIAdvisorScreen(),
-    TuitionFeeScreen(),
+    ProfileScreen(),
   ];
 
   @override
@@ -96,7 +96,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     isHero: true,
                   ),
                 ),
-                Expanded(child: _buildNavItem(index: 4, icon: Icons.account_balance_wallet_rounded, label: 'Tuition')),
+                Expanded(child: _buildNavItem(index: 4, icon: Icons.person_rounded, label: 'Profile')),
               ],
             ),
           ),
