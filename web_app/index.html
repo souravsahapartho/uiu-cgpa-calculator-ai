@@ -775,7 +775,7 @@
         </div>
 
         <div class="hero-card" style="background: linear-gradient(135deg, #F57C00 0%, #E65100 100%);">
-          <div style="font-size: 11px; font-weight: 800; opacity: 0.9;">REQUIRED FUTURE AVERAGE SGPA</div>
+          <div style="font-size: 11px; font-weight: 800; opacity: 0.9;">REQUIRED FUTURE AVERAGE TRIMESTER GPA</div>
           <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 8px 0;">
             <span id="res-req-gpa" style="font-size: 46px; font-weight: 900; font-family: 'Outfit', sans-serif;">3.93</span>
             <span id="res-badge" style="background: white; color: #E65100; font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 12px;">Challenging (A/A-)</span>
@@ -958,17 +958,53 @@
           </div>
         </div>
 
-        <!-- Academic Honors Section -->
+        <!-- Academic Honors Section (4 UIU Convocation Honors horizontally scrollable) -->
         <div style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: var(--navy); margin-bottom: 8px;">
-          UIU Convocation Academic Honors
+          UIU Convocation Academic Honors Criteria
         </div>
-        <div class="stat-card" style="margin-bottom: 16px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <span style="font-weight: 800; font-size: 13px; color: var(--navy);">Honors Standing</span>
-            <span id="honors-badge" style="background: #FEF3C7; color: #B45309; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 8px;">Cum Laude Eligible</span>
+        <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; -webkit-overflow-scrolling: touch;">
+          <!-- 1. Gold Medal -->
+          <div class="stat-card" style="min-width: 190px; flex: 0 0 auto; margin-bottom: 0; border-top: 3px solid #F59E0B;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 20px;">🥇</span>
+              <span id="badge-gold" style="background: #FEF3C7; color: #B45309; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Top in Batch</span>
+            </div>
+            <div style="font-weight: 800; font-size: 13px; color: var(--navy);">Gold Medal</div>
+            <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">সর্বোচ্চ সম্মান • Batch Rank 1</div>
+            <div style="font-size: 11px; font-weight: 700; color: #B45309;">CGPA 4.00 (Highest)</div>
           </div>
-          <div id="honors-desc" style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
-            Your current CGPA (3.78) qualifies for Cum Laude honors (3.75 - 3.84 range).
+
+          <!-- 2. Summa Cum Laude -->
+          <div class="stat-card" style="min-width: 190px; flex: 0 0 auto; margin-bottom: 0; border-top: 3px solid #8B5CF6;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 20px;">🏆</span>
+              <span id="badge-summa" style="background: #EDE9FE; color: #6D28D9; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">No Retakes</span>
+            </div>
+            <div style="font-weight: 800; font-size: 13px; color: var(--navy);">Summa Cum Laude</div>
+            <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">Highest Honor • No Retake</div>
+            <div style="font-size: 11px; font-weight: 700; color: #6D28D9;">CGPA 3.95 – 4.00</div>
+          </div>
+
+          <!-- 3. Magna Cum Laude -->
+          <div class="stat-card" style="min-width: 190px; flex: 0 0 auto; margin-bottom: 0; border-top: 3px solid #2563EB;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 20px;">🎖️</span>
+              <span id="badge-magna" style="background: #DBEAFE; color: #1D4ED8; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Retake OK</span>
+            </div>
+            <div style="font-weight: 800; font-size: 13px; color: var(--navy);">Magna Cum Laude</div>
+            <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">Great Honor • Retake OK</div>
+            <div style="font-size: 11px; font-weight: 700; color: #1D4ED8;">CGPA 3.85 – 3.94</div>
+          </div>
+
+          <!-- 4. Cum Laude -->
+          <div class="stat-card" style="min-width: 190px; flex: 0 0 auto; margin-bottom: 0; border-top: 3px solid #059669;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 20px;">🏅</span>
+              <span id="badge-cum" style="background: #D1FAE5; color: #047857; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Retake OK</span>
+            </div>
+            <div style="font-weight: 800; font-size: 13px; color: var(--navy);">Cum Laude</div>
+            <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">Honor • Retake OK</div>
+            <div style="font-size: 11px; font-weight: 700; color: #047857;">CGPA 3.75 – 3.84</div>
           </div>
         </div>
 
@@ -986,6 +1022,17 @@
             <div style="display: flex; align-items: center; gap: 12px;">
               <i class="bi bi-mortarboard-fill" style="color: var(--navy); font-size: 18px;"></i>
               <span style="font-weight: 700; font-size: 13px; color: var(--navy);">UIU Official Grading Scale</span>
+            </div>
+            <i class="bi bi-chevron-right" style="color: var(--text-tertiary);"></i>
+          </div>
+
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openAboutModal()">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="bi bi-info-circle-fill" style="color: var(--primary); font-size: 18px;"></i>
+              <div>
+                <div style="font-weight: 700; font-size: 13px; color: var(--navy);">About UIU CGPA Calculator AI</div>
+                <div style="font-size: 10px; color: var(--text-secondary);">Version 1.0.0 • Developer: Sourav Saha (sourav.com.bd)</div>
+              </div>
             </div>
             <i class="bi bi-chevron-right" style="color: var(--text-tertiary);"></i>
           </div>
@@ -1041,7 +1088,7 @@
 
         <div style="margin-bottom: 12px;">
           <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
-          <input type="text" id="add-term-name" class="input-field" placeholder="e.g. Spring 2024, Fall 2023" value="Spring 2024">
+          <input type="text" id="add-term-name" class="input-field" placeholder="e.g. Spring 2025 or Fall 2024" value="">
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
@@ -1070,7 +1117,7 @@
 
         <div style="margin-bottom: 10px;">
           <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
-          <input type="text" id="csv-term-name" class="input-field" placeholder="e.g. Fall 2023" value="Fall 2023">
+          <input type="text" id="csv-term-name" class="input-field" placeholder="e.g. Fall 2024" value="">
         </div>
 
         <div style="margin-bottom: 12px;">
@@ -1097,7 +1144,7 @@
 
         <div style="margin-bottom: 10px;">
           <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
-          <input type="text" id="pdf-term-name" class="input-field" placeholder="e.g. Spring 2024" value="Spring 2024">
+          <input type="text" id="pdf-term-name" class="input-field" placeholder="e.g. Spring 2025" value="">
         </div>
 
         <div style="margin-bottom: 12px;">
@@ -1124,7 +1171,7 @@
 
         <div style="margin-bottom: 10px;">
           <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
-          <input type="text" id="img-term-name" class="input-field" placeholder="e.g. Summer 2023" value="Summer 2023">
+          <input type="text" id="img-term-name" class="input-field" placeholder="e.g. Summer 2024" value="">
         </div>
 
         <div style="margin-bottom: 12px;">
@@ -1240,6 +1287,50 @@
       </div>
     </div>
 
+    <!-- 8. ABOUT MODAL -->
+    <div id="aboutModal" class="modal-overlay" onclick="closeAboutModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 17px; color: var(--navy);">About UIU CGPA Calculator AI</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Academic Companion for UIU Students</div>
+          </div>
+          <i class="bi bi-x-circle-fill" style="font-size: 22px; color: var(--text-tertiary); cursor: pointer;" onclick="closeAboutModal()"></i>
+        </div>
+
+        <div style="text-align: center; padding: 12px 0 16px;">
+          <div style="width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, #F58220 0%, #D96000 100%); display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 32px; box-shadow: 0 4px 16px rgba(245, 130, 32, 0.35); margin-bottom: 10px;">
+            <i class="bi bi-mortarboard-fill"></i>
+          </div>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 900; color: var(--navy);">UIU CGPA Calculator AI</div>
+          <div style="font-size: 12px; font-weight: 700; color: var(--primary); margin-top: 2px;">Version 1.0.0 (Release)</div>
+        </div>
+
+        <div class="stat-card" style="margin-bottom: 14px; font-size: 12px; line-height: 1.6;">
+          <div style="margin-bottom: 6px;">
+            <strong>Lead Developer:</strong> Sourav Saha
+          </div>
+          <div style="margin-bottom: 6px;">
+            <strong>Official Website:</strong> <a href="https://www.sourav.com.bd" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: none;">www.sourav.com.bd</a>
+          </div>
+          <div style="margin-bottom: 6px;">
+            <strong>University:</strong> United International University (UIU)
+          </div>
+          <div>
+            <strong>Open Source Repository:</strong> <a href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: none;">GitHub Releases</a>
+          </div>
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.5; text-align: center; margin-bottom: 16px;">
+          Designed specifically for UIU trimester system students with 4.00 grading scale, convocation honors tracking, degree credit planner, and local JSON backup safety.
+        </div>
+
+        <button class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;" onclick="closeAboutModal()">
+          Close
+        </button>
+      </div>
+    </div>
+
     <!-- TOAST NOTIFICATION -->
     <div id="toast" class="toast-msg">
       <i class="bi bi-check-circle-fill" style="color: #10B981;"></i>
@@ -1257,42 +1348,17 @@
 
     const DEFAULT_DATA = {
       profile: {
-        name: 'Sourav Ahmed',
-        studentId: '011 201 042',
+        name: 'UIU Student',
+        studentId: '011 231 000',
         department: 'Department of Computer Science & Engineering',
         program: 'B.Sc. in CSE',
-        batch: '201',
-        currentCGPA: 3.78,
-        completedCredits: 76.0,
+        batch: '231',
+        currentCGPA: 0.00,
+        completedCredits: 0.0,
         totalDegreeCredits: 138.0,
-        targetCGPA: 3.85
+        targetCGPA: 3.75
       },
-      semesters: [
-        {
-          semesterName: 'Fall 2023',
-          creditsEarned: 9.0,
-          sgpa: 3.74,
-          cgpa: 3.78,
-          courses: [
-            { code: 'CSE 4165', title: 'Web Technologies', credit: 3.0, grade: 'A', gradePoint: 4.00 },
-            { code: 'CSE 3811', title: 'Artificial Intelligence', credit: 3.0, grade: 'A', gradePoint: 4.00 },
-            { code: 'ECO 2101', title: 'Principles of Economics', credit: 3.0, grade: 'B', gradePoint: 3.00 }
-          ]
-        },
-        {
-          semesterName: 'Summer 2023',
-          creditsEarned: 9.0,
-          sgpa: 3.89,
-          cgpa: 3.79,
-          courses: [
-            { code: 'CSE 3521', title: 'Database Management Systems', credit: 3.0, grade: 'A', gradePoint: 4.00 },
-            { code: 'CSE 3522', title: 'DBMS Lab', credit: 1.0, grade: 'A', gradePoint: 4.00 },
-            { code: 'CSE 3711', title: 'Computer Networks', credit: 3.0, grade: 'A-', gradePoint: 3.67 },
-            { code: 'CSE 3712', title: 'Computer Networks Lab', credit: 1.0, grade: 'A', gradePoint: 4.00 },
-            { code: 'MATH 2205', title: 'Probability & Statistics', credit: 3.0, grade: 'A', gradePoint: 4.00 }
-          ]
-        }
-      ]
+      semesters: []
     };
 
     let appData = loadAppData();
@@ -1303,6 +1369,12 @@
         if (stored) {
           const parsed = JSON.parse(stored);
           if (parsed.profile && Array.isArray(parsed.semesters)) {
+            // Automatically clear legacy default demo trimesters from previous sessions
+            if (parsed.semesters.length === 2 && parsed.semesters[0].semesterName === 'Fall 2023' && parsed.semesters[1].semesterName === 'Summer 2023') {
+              parsed.semesters = [];
+              parsed.profile.currentCGPA = 0.00;
+              parsed.profile.completedCredits = 0.0;
+            }
             return parsed;
           }
         }
@@ -1396,7 +1468,7 @@
           <div class="stat-card" style="margin-bottom: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <span style="font-weight: 800; font-size: 14px; color: var(--navy);">${escapeHtml(sem.semesterName)}</span>
-              <span style="background: var(--primary-subtle); color: var(--primary-dark); font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 8px;">SGPA ${sem.sgpa.toFixed(2)}</span>
+              <span style="background: var(--primary-subtle); color: var(--primary-dark); font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 8px;">GPA ${sem.sgpa.toFixed(2)}</span>
             </div>
             ${coursesHtml}
           </div>
@@ -1492,7 +1564,7 @@
       const initials = p.name.trim().split(' ').map(n => n ? n[0] : '').take(2).join('').toUpperCase() || 'SA';
       document.getElementById('prof-avatar').innerText = initials;
 
-      // Calculate Academic Honors
+      // Calculate Academic Honors for all 4 UIU Honors
       const cgpa = p.currentCGPA;
       const courseCodes = new Set();
       let hasRetakes = false;
@@ -1506,34 +1578,70 @@
         });
       });
 
-      const badgeEl = document.getElementById('honors-badge');
-      const descEl = document.getElementById('honors-desc');
-      if (cgpa >= 3.98) {
-        badgeEl.innerText = 'Gold Medal Candidate';
-        badgeEl.style.background = '#FEF3C7';
-        badgeEl.style.color = '#B45309';
-        descEl.innerText = `Outstanding standing (${cgpa.toFixed(2)} CGPA). Contender for UIU Batch Gold Medal.`;
-      } else if (cgpa >= 3.95 && !hasRetakes) {
-        badgeEl.innerText = 'Summa Cum Laude Eligible';
-        badgeEl.style.background = '#EDE9FE';
-        badgeEl.style.color = '#6D28D9';
-        descEl.innerText = `CGPA ${cgpa.toFixed(2)} with no retakes qualifies for UIU Summa Cum Laude honors.`;
-      } else if (cgpa >= 3.85) {
-        badgeEl.innerText = 'Magna Cum Laude Eligible';
-        badgeEl.style.background = '#DBEAFE';
-        badgeEl.style.color = '#1D4ED8';
-        descEl.innerText = `CGPA ${cgpa.toFixed(2)} meets criteria for Magna Cum Laude honors (3.85 - 3.94).`;
-      } else if (cgpa >= 3.75) {
-        badgeEl.innerText = 'Cum Laude Eligible';
-        badgeEl.style.background = '#D1FAE5';
-        badgeEl.style.color = '#047857';
-        descEl.innerText = `CGPA ${cgpa.toFixed(2)} qualifies for UIU Cum Laude honors (3.75 - 3.84).`;
-      } else {
-        badgeEl.innerText = 'Good Academic Standing';
-        badgeEl.style.background = 'var(--surface-muted)';
-        badgeEl.style.color = 'var(--text-secondary)';
-        descEl.innerText = `Maintain consistent grades to aim for Cum Laude honors (3.75+).`;
+      const goldEl = document.getElementById('badge-gold');
+      const summaEl = document.getElementById('badge-summa');
+      const magnaEl = document.getElementById('badge-magna');
+      const cumEl = document.getElementById('badge-cum');
+
+      if (goldEl) {
+        if (cgpa >= 3.98) {
+          goldEl.innerText = 'Top Candidate 🥇';
+          goldEl.style.background = '#FEF3C7';
+          goldEl.style.color = '#B45309';
+        } else {
+          goldEl.innerText = 'Top in Batch';
+          goldEl.style.background = 'var(--surface-muted)';
+          goldEl.style.color = 'var(--text-secondary)';
+        }
       }
+
+      if (summaEl) {
+        if (hasRetakes) {
+          summaEl.innerText = 'Disqualified (Retake)';
+          summaEl.style.background = '#FEE2E2';
+          summaEl.style.color = '#B91C1C';
+        } else if (cgpa >= 3.95) {
+          summaEl.innerText = 'Eligible 🏆';
+          summaEl.style.background = '#EDE9FE';
+          summaEl.style.color = '#6D28D9';
+        } else {
+          summaEl.innerText = 'No Retakes OK';
+          summaEl.style.background = 'var(--surface-muted)';
+          summaEl.style.color = 'var(--text-secondary)';
+        }
+      }
+
+      if (magnaEl) {
+        if (cgpa >= 3.85 && cgpa <= 4.00) {
+          magnaEl.innerText = 'Eligible 🎖️';
+          magnaEl.style.background = '#DBEAFE';
+          magnaEl.style.color = '#1D4ED8';
+        } else {
+          magnaEl.innerText = 'Retake OK';
+          magnaEl.style.background = 'var(--surface-muted)';
+          magnaEl.style.color = 'var(--text-secondary)';
+        }
+      }
+
+      if (cumEl) {
+        if (cgpa >= 3.75 && cgpa <= 4.00) {
+          cumEl.innerText = 'Eligible 🏅';
+          cumEl.style.background = '#D1FAE5';
+          cumEl.style.color = '#047857';
+        } else {
+          cumEl.innerText = 'Retake OK';
+          cumEl.style.background = 'var(--surface-muted)';
+          cumEl.style.color = 'var(--text-secondary)';
+        }
+      }
+    }
+
+    function openAboutModal() {
+      document.getElementById('aboutModal').classList.add('active');
+    }
+
+    function closeAboutModal() {
+      document.getElementById('aboutModal').classList.remove('active');
     }
 
     // Helper to take first N elements
@@ -1569,11 +1677,9 @@
 
     function openAddTrimesterModal() {
       const modal = document.getElementById('addTrimesterModal');
-      document.getElementById('add-term-name').value = 'Spring 2024';
+      document.getElementById('add-term-name').value = '';
       modalCourses = [
-        { code: '', title: '', credit: 3.0, grade: 'A' },
-        { code: '', title: '', credit: 1.0, grade: 'A' },
-        { code: '', title: '', credit: 3.0, grade: 'A-' }
+        { code: '', title: '', credit: 3.0, grade: 'A' }
       ];
       renderModalCourseRows();
       modal.classList.add('active');
@@ -1602,12 +1708,12 @@
       modalCourses.forEach((c, idx) => {
         container.innerHTML += `
           <div class="new-course-card">
-            <div class="form-row">
-              <input type="text" class="input-field" style="flex: 2; font-weight: 800;" placeholder="Code (e.g. CSE 1111)" value="${escapeHtml(c.code)}" oninput="modalCourses[${idx}].code = this.value">
-              <input type="text" class="input-field" style="flex: 3;" placeholder="Course Title (e.g. Structured Programming)" value="${escapeHtml(c.title)}" oninput="modalCourses[${idx}].title = this.value">
+            <div class="form-row" style="margin-bottom: 8px;">
+              <input type="text" class="input-field" style="flex: 4; font-weight: 800;" placeholder="Code (e.g. CSE 1111)" value="${escapeHtml(c.code)}" oninput="modalCourses[${idx}].code = this.value">
+              <input type="text" class="input-field" style="flex: 6;" placeholder="Course Title (e.g. Structured Programming)" value="${escapeHtml(c.title)}" oninput="modalCourses[${idx}].title = this.value">
             </div>
             <div class="form-row">
-              <select class="select-field" style="flex: 1;" onchange="modalCourses[${idx}].credit = parseFloat(this.value); updateModalLiveGPA();">
+              <select class="select-field" style="flex: 4;" onchange="modalCourses[${idx}].credit = parseFloat(this.value); updateModalLiveGPA();">
                 <option value="1.0" ${c.credit == 1.0 ? 'selected' : ''}>1.0 Cr</option>
                 <option value="1.5" ${c.credit == 1.5 ? 'selected' : ''}>1.5 Cr</option>
                 <option value="2.0" ${c.credit == 2.0 ? 'selected' : ''}>2.0 Cr</option>
@@ -1615,7 +1721,7 @@
                 <option value="4.0" ${c.credit == 4.0 ? 'selected' : ''}>4.0 Cr</option>
                 <option value="6.0" ${c.credit == 6.0 ? 'selected' : ''}>6.0 Cr</option>
               </select>
-              <select class="select-field" style="flex: 1; font-weight: 800;" onchange="modalCourses[${idx}].grade = this.value; updateModalLiveGPA();">
+              <select class="select-field" style="flex: 5; font-weight: 800;" onchange="modalCourses[${idx}].grade = this.value; updateModalLiveGPA();">
                 <option value="A" ${c.grade == 'A' ? 'selected' : ''}>A (4.00)</option>
                 <option value="A-" ${c.grade == 'A-' ? 'selected' : ''}>A- (3.67)</option>
                 <option value="B+" ${c.grade == 'B+' ? 'selected' : ''}>B+ (3.33)</option>
@@ -1628,7 +1734,7 @@
                 <option value="D" ${c.grade == 'D' ? 'selected' : ''}>D (1.00)</option>
                 <option value="F" ${c.grade == 'F' ? 'selected' : ''}>F (0.00)</option>
               </select>
-              ${modalCourses.length > 1 ? `<button type="button" class="btn-danger-ghost" onclick="removeCourseRowFromModal(${idx})"><i class="bi bi-dash-circle"></i></button>` : ''}
+              ${modalCourses.length > 1 ? `<button type="button" class="btn-danger-ghost" style="padding: 6px 10px;" onclick="removeCourseRowFromModal(${idx})"><i class="bi bi-trash3"></i></button>` : ''}
             </div>
           </div>
         `;
