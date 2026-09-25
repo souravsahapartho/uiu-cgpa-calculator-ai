@@ -57,6 +57,60 @@
       --navy: #F8FAFC;
     }
 
+    body.dark-mode table tr {
+      border-bottom-color: #233549 !important;
+    }
+    body.dark-mode table th {
+      color: #94A3B8 !important;
+    }
+    body.dark-mode table td {
+      color: #F8FAFC !important;
+    }
+    body.dark-mode .modal-content {
+      background: #111B27 !important;
+      color: #F8FAFC !important;
+      border: 1px solid #233549;
+    }
+    body.dark-mode .stat-card {
+      background: #111B27 !important;
+      border-color: #233549 !important;
+      color: #F8FAFC !important;
+    }
+    body.dark-mode .trimester-card {
+      background: #111B27 !important;
+      border-color: #233549 !important;
+    }
+    body.dark-mode .course-card {
+      background: #1A2838 !important;
+      border-color: #233549 !important;
+    }
+    body.dark-mode .code-badge {
+      background: #111B27 !important;
+      border-color: #233549 !important;
+    }
+    body.dark-mode .input-field, body.dark-mode .select-field, body.dark-mode textarea {
+      background: #1A2838 !important;
+      border-color: #233549 !important;
+      color: #F8FAFC !important;
+    }
+    body.dark-mode .new-course-card {
+      background: #14202E !important;
+      border-color: #233549 !important;
+    }
+    body.dark-mode .btn-outline {
+      background: #111B27 !important;
+      border-color: #233549 !important;
+      color: #F8FAFC !important;
+    }
+    body.dark-mode .btn-outline:hover {
+      background: #1A2838 !important;
+      border-color: var(--primary) !important;
+    }
+    body.dark-mode .bottom-nav {
+      background: rgba(17, 27, 39, 0.95) !important;
+      border-top-color: #233549 !important;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -670,7 +724,7 @@
       <div id="screen-home" class="screen active">
         <div class="header-row">
           <div>
-            <div class="header-title">StudentBrain</div>
+            <div class="header-title">UIU CGPA Calculator AI</div>
             <div class="header-sub">UIU Student Assistant & GPA Analyzer</div>
           </div>
           <div style="display: flex; gap: 8px;">
@@ -700,28 +754,28 @@
             <div class="cgpa-ring">
               <svg>
                 <circle class="bg" cx="41" cy="41" r="36"></circle>
-                <circle class="progress" id="home-ring-progress" cx="41" cy="41" r="36"></circle>
+                <circle class="progress" id="home-ring-progress" cx="41" cy="41" r="36" style="stroke-dashoffset: 226;"></circle>
               </svg>
-              <div class="cgpa-val" id="home-cgpa-val">3.78</div>
+              <div class="cgpa-val" id="home-cgpa-val">0.00</div>
             </div>
             <div>
               <div style="font-size: 11px; font-weight: 800; color: #FFA000; letter-spacing: 0.5px;">CUMULATIVE GPA</div>
-              <div style="font-size: 20px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-student-name">Sourav Ahmed</div>
-              <div style="font-size: 11px; opacity: 0.8;" id="home-student-id">011 201 042 • Batch 201 (CSE)</div>
+              <div style="font-size: 20px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-student-name">UIU Student</div>
+              <div style="font-size: 11px; opacity: 0.8;" id="home-student-id">Student ID • Batch (CSE)</div>
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.15); text-align: center;">
             <div>
-              <div style="font-size: 16px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-stat-completed">76.0</div>
+              <div style="font-size: 16px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-stat-completed">0.0</div>
               <div style="font-size: 9px; opacity: 0.8; font-weight: 700;">Completed Cr</div>
             </div>
             <div>
-              <div style="font-size: 16px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-stat-remaining">62.0</div>
+              <div style="font-size: 16px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-stat-remaining">138.0</div>
               <div style="font-size: 9px; opacity: 0.8; font-weight: 700;">Remaining Cr</div>
             </div>
             <div>
-              <div style="font-size: 16px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-stat-target">3.85</div>
+              <div style="font-size: 16px; font-weight: 900; font-family: 'Outfit', sans-serif;" id="home-stat-target">3.75</div>
               <div style="font-size: 9px; opacity: 0.8; font-weight: 700;">Target CGPA</div>
             </div>
           </div>
@@ -748,7 +802,7 @@
               </div>
               <div>
                 <div style="font-size: 13px; font-weight: 800; color: var(--navy);">All Records</div>
-                <div style="font-size: 10px; color: var(--text-secondary);" id="home-quick-terms">4 Trimesters</div>
+                <div style="font-size: 10px; color: var(--text-secondary);" id="home-quick-terms">0 Trimesters</div>
               </div>
             </div>
           </div>
@@ -775,7 +829,7 @@
         </div>
 
         <div class="hero-card" style="background: linear-gradient(135deg, #F57C00 0%, #E65100 100%);">
-          <div style="font-size: 11px; font-weight: 800; opacity: 0.9;">REQUIRED FUTURE AVERAGE TRIMESTER GPA</div>
+          <div style="font-size: 11px; font-weight: 800; opacity: 0.9;">REQUIRED FUTURE AVERAGE GPA</div>
           <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 8px 0;">
             <span id="res-req-gpa" style="font-size: 46px; font-weight: 900; font-family: 'Outfit', sans-serif;">3.93</span>
             <span id="res-badge" style="background: white; color: #E65100; font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 12px;">Challenging (A/A-)</span>
@@ -927,12 +981,12 @@
         <div class="hero-card">
           <div style="display: flex; gap: 16px; align-items: center;">
             <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: white; font-family: 'Outfit', sans-serif;" id="prof-avatar">
-              SA
+              UI
             </div>
             <div>
-              <div style="font-size: 19px; font-weight: 800;" id="prof-name">Sourav Ahmed</div>
-              <div style="font-size: 12px; opacity: 0.85;" id="prof-id">UIU Student ID: 011 201 042</div>
-              <div style="font-size: 11px; color: #FFD54F; font-weight: 700; margin-top: 2px;" id="prof-batch">Batch 201 • B.Sc. in CSE</div>
+              <div style="font-size: 19px; font-weight: 800;" id="prof-name">UIU Student</div>
+              <div style="font-size: 12px; opacity: 0.85;" id="prof-id">UIU Student ID: Not set</div>
+              <div style="font-size: 11px; color: #FFD54F; font-weight: 700; margin-top: 2px;" id="prof-batch">Batch • B.Sc. in CSE</div>
             </div>
           </div>
           <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 11px; opacity: 0.85;" id="prof-dept">
@@ -958,58 +1012,37 @@
           </div>
         </div>
 
-        <!-- Academic Honors Section (4 UIU Convocation Honors horizontally scrollable) -->
-        <div style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: var(--navy); margin-bottom: 8px;">
-          UIU Convocation Academic Honors Criteria
+        <!-- Academic Honors Section (4 UIU Convocation Honors Horizontal Scroll) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: var(--navy);">UIU Convocation Academic Honors</span>
+          <span style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Scroll &rarr;</span>
         </div>
-        <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; -webkit-overflow-scrolling: touch;">
-          <!-- 1. Gold Medal -->
-          <div class="stat-card" style="min-width: 190px; flex: 0 0 auto; margin-bottom: 0; border-top: 3px solid #F59E0B;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span style="font-size: 20px;">🥇</span>
-              <span id="badge-gold" style="background: #FEF3C7; color: #B45309; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Top in Batch</span>
-            </div>
-            <div style="font-weight: 800; font-size: 13px; color: var(--navy);">Gold Medal</div>
-            <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">সর্বোচ্চ সম্মান • Batch Rank 1</div>
-            <div style="font-size: 11px; font-weight: 700; color: #B45309;">CGPA 4.00 (Highest)</div>
-          </div>
-
-          <!-- 2. Summa Cum Laude -->
-          <div class="stat-card" style="min-width: 190px; flex: 0 0 auto; margin-bottom: 0; border-top: 3px solid #8B5CF6;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span style="font-size: 20px;">🏆</span>
-              <span id="badge-summa" style="background: #EDE9FE; color: #6D28D9; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">No Retakes</span>
-            </div>
-            <div style="font-weight: 800; font-size: 13px; color: var(--navy);">Summa Cum Laude</div>
-            <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">Highest Honor • No Retake</div>
-            <div style="font-size: 11px; font-weight: 700; color: #6D28D9;">CGPA 3.95 – 4.00</div>
-          </div>
-
-          <!-- 3. Magna Cum Laude -->
-          <div class="stat-card" style="min-width: 190px; flex: 0 0 auto; margin-bottom: 0; border-top: 3px solid #2563EB;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span style="font-size: 20px;">🎖️</span>
-              <span id="badge-magna" style="background: #DBEAFE; color: #1D4ED8; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Retake OK</span>
-            </div>
-            <div style="font-weight: 800; font-size: 13px; color: var(--navy);">Magna Cum Laude</div>
-            <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">Great Honor • Retake OK</div>
-            <div style="font-size: 11px; font-weight: 700; color: #1D4ED8;">CGPA 3.85 – 3.94</div>
-          </div>
-
-          <!-- 4. Cum Laude -->
-          <div class="stat-card" style="min-width: 190px; flex: 0 0 auto; margin-bottom: 0; border-top: 3px solid #059669;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span style="font-size: 20px;">🏅</span>
-              <span id="badge-cum" style="background: #D1FAE5; color: #047857; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Retake OK</span>
-            </div>
-            <div style="font-weight: 800; font-size: 13px; color: var(--navy);">Cum Laude</div>
-            <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">Honor • Retake OK</div>
-            <div style="font-size: 11px; font-weight: 700; color: #047857;">CGPA 3.75 – 3.84</div>
-          </div>
-        </div>
+        <div id="honors-cards-scroll" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch;"></div>
 
         <!-- Settings List -->
         <div class="stat-card" style="padding: 0; overflow: hidden; margin-bottom: 16px;">
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openAboutModal()">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="bi bi-info-circle-fill" style="color: var(--primary); font-size: 18px;"></i>
+              <div>
+                <div style="font-weight: 700; font-size: 13px; color: var(--navy);">About UIU CGPA Calculator AI</div>
+                <div style="font-size: 10px; color: var(--text-secondary);">Developer: Sourav Saha • www.sourav.com.bd • v1.0.0</div>
+              </div>
+            </div>
+            <i class="bi bi-chevron-right" style="color: var(--text-tertiary);"></i>
+          </div>
+
+          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openEditProfileModal()">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="bi bi-sliders2" style="color: #0284C7; font-size: 18px;"></i>
+              <div>
+                <div style="font-weight: 700; font-size: 13px; color: var(--navy);">Degree Credits & Profile Setup</div>
+                <div style="font-size: 10px; color: var(--text-secondary);">Set required degree credits (out of 138)</div>
+              </div>
+            </div>
+            <i class="bi bi-chevron-right" style="color: var(--text-tertiary);"></i>
+          </div>
+
           <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="toggleTheme()">
             <div style="display: flex; align-items: center; gap: 12px;">
               <i class="bi bi-palette-fill" style="color: var(--primary); font-size: 18px;"></i>
@@ -1022,17 +1055,6 @@
             <div style="display: flex; align-items: center; gap: 12px;">
               <i class="bi bi-mortarboard-fill" style="color: var(--navy); font-size: 18px;"></i>
               <span style="font-weight: 700; font-size: 13px; color: var(--navy);">UIU Official Grading Scale</span>
-            </div>
-            <i class="bi bi-chevron-right" style="color: var(--text-tertiary);"></i>
-          </div>
-
-          <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openAboutModal()">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <i class="bi bi-info-circle-fill" style="color: var(--primary); font-size: 18px;"></i>
-              <div>
-                <div style="font-weight: 700; font-size: 13px; color: var(--navy);">About UIU CGPA Calculator AI</div>
-                <div style="font-size: 10px; color: var(--text-secondary);">Version 1.0.0 • Developer: Sourav Saha (sourav.com.bd)</div>
-              </div>
             </div>
             <i class="bi bi-chevron-right" style="color: var(--text-tertiary);"></i>
           </div>
@@ -1088,7 +1110,7 @@
 
         <div style="margin-bottom: 12px;">
           <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
-          <input type="text" id="add-term-name" class="input-field" placeholder="e.g. Spring 2025 or Fall 2024" value="">
+          <input type="text" id="add-term-name" class="input-field" placeholder="e.g. Spring 2024, Fall 2023" value="Spring 2024">
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
@@ -1117,7 +1139,7 @@
 
         <div style="margin-bottom: 10px;">
           <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
-          <input type="text" id="csv-term-name" class="input-field" placeholder="e.g. Fall 2024" value="">
+          <input type="text" id="csv-term-name" class="input-field" placeholder="e.g. Fall 2023" value="Fall 2023">
         </div>
 
         <div style="margin-bottom: 12px;">
@@ -1144,7 +1166,7 @@
 
         <div style="margin-bottom: 10px;">
           <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
-          <input type="text" id="pdf-term-name" class="input-field" placeholder="e.g. Spring 2025" value="">
+          <input type="text" id="pdf-term-name" class="input-field" placeholder="e.g. Spring 2024" value="Spring 2024">
         </div>
 
         <div style="margin-bottom: 12px;">
@@ -1171,7 +1193,7 @@
 
         <div style="margin-bottom: 10px;">
           <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Trimester Name</label>
-          <input type="text" id="img-term-name" class="input-field" placeholder="e.g. Summer 2024" value="">
+          <input type="text" id="img-term-name" class="input-field" placeholder="e.g. Summer 2023" value="Summer 2023">
         </div>
 
         <div style="margin-bottom: 12px;">
@@ -1237,7 +1259,7 @@
           <input type="text" id="edit-prof-dept" class="input-field" placeholder="e.g. Computer Science & Engineering">
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
           <div>
             <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Batch</label>
             <input type="text" id="edit-prof-batch" class="input-field" placeholder="e.g. 201">
@@ -1246,6 +1268,11 @@
             <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Target CGPA</label>
             <input type="number" step="0.01" id="edit-prof-target" class="input-field" placeholder="e.g. 3.85">
           </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block;">Total Degree Required Credits (Out of)</label>
+          <input type="number" step="0.5" id="edit-prof-total-cr" class="input-field" placeholder="e.g. 138.0, 120.0" value="138.0">
         </div>
 
         <button class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;" onclick="saveProfileChanges()">
@@ -1290,44 +1317,30 @@
     <!-- 8. ABOUT MODAL -->
     <div id="aboutModal" class="modal-overlay" onclick="closeAboutModal()">
       <div class="modal-content" onclick="event.stopPropagation()">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-          <div>
-            <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 17px; color: var(--navy);">About UIU CGPA Calculator AI</div>
-            <div style="font-size: 11px; color: var(--text-secondary);">Academic Companion for UIU Students</div>
-          </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 18px; color: var(--navy);">About UIU CGPA Calculator AI</div>
           <i class="bi bi-x-circle-fill" style="font-size: 22px; color: var(--text-tertiary); cursor: pointer;" onclick="closeAboutModal()"></i>
         </div>
-
-        <div style="text-align: center; padding: 12px 0 16px;">
-          <div style="width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, #F58220 0%, #D96000 100%); display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 32px; box-shadow: 0 4px 16px rgba(245, 130, 32, 0.35); margin-bottom: 10px;">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div style="width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 10px 24px rgba(245, 124, 0, 0.35);">
             <i class="bi bi-mortarboard-fill"></i>
           </div>
-          <div style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 900; color: var(--navy);">UIU CGPA Calculator AI</div>
-          <div style="font-size: 12px; font-weight: 700; color: var(--primary); margin-top: 2px;">Version 1.0.0 (Release)</div>
+          <div style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 18px; color: var(--navy);">UIU CGPA Calculator AI</div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Version 1.0.0 (Release)</div>
         </div>
-
-        <div class="stat-card" style="margin-bottom: 14px; font-size: 12px; line-height: 1.6;">
-          <div style="margin-bottom: 6px;">
-            <strong>Lead Developer:</strong> Sourav Saha
-          </div>
-          <div style="margin-bottom: 6px;">
-            <strong>Official Website:</strong> <a href="https://www.sourav.com.bd" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: none;">www.sourav.com.bd</a>
-          </div>
-          <div style="margin-bottom: 6px;">
-            <strong>University:</strong> United International University (UIU)
-          </div>
-          <div>
-            <strong>Open Source Repository:</strong> <a href="https://github.com/souravsahapartho/uiu-cgpa-calculator-ai" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: none;">GitHub Releases</a>
+        <div class="stat-card" style="margin-bottom: 12px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Developer</div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--navy);">Sourav Saha</div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+            Website: <a href="https://www.sourav.com.bd" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: none;">www.sourav.com.bd</a>
           </div>
         </div>
-
-        <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.5; text-align: center; margin-bottom: 16px;">
-          Designed specifically for UIU trimester system students with 4.00 grading scale, convocation honors tracking, degree credit planner, and local JSON backup safety.
+        <div class="stat-card" style="margin-bottom: 16px;">
+          <div style="font-size: 12px; line-height: 1.5; color: var(--text-secondary);">
+            Engineered exclusively for students of <strong>United International University (UIU)</strong>. Designed with UIU brand identity, authentic 4.00 grading scale, intelligent retake grade replacement calculation, convocation honors detection, JSON backups, and full dark theme support.
+          </div>
         </div>
-
-        <button class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;" onclick="closeAboutModal()">
-          Close
-        </button>
+        <button class="btn-primary" style="width: 100%; justify-content: center;" onclick="closeAboutModal()">Close</button>
       </div>
     </div>
 
@@ -1349,10 +1362,10 @@
     const DEFAULT_DATA = {
       profile: {
         name: 'UIU Student',
-        studentId: '011 231 000',
+        studentId: '',
         department: 'Department of Computer Science & Engineering',
         program: 'B.Sc. in CSE',
-        batch: '231',
+        batch: '',
         currentCGPA: 0.00,
         completedCredits: 0.0,
         totalDegreeCredits: 138.0,
@@ -1368,13 +1381,14 @@
         const stored = localStorage.getItem('uiu_student_app_data');
         if (stored) {
           const parsed = JSON.parse(stored);
+          // Purge legacy demo data so user starts with clean slate
+          const isLegacyDemo = parsed.profile?.name === 'Sourav Ahmed' ||
+            (parsed.semesters && parsed.semesters.some(s => s.semesterName === 'Fall 2023' || s.semesterName === 'Summer 2023' || (s.courses && s.courses.some(c => c.code === 'CSE 4165' || c.code === 'CSE 3521'))));
+          if (isLegacyDemo) {
+            localStorage.removeItem('uiu_student_app_data');
+            return JSON.parse(JSON.stringify(DEFAULT_DATA));
+          }
           if (parsed.profile && Array.isArray(parsed.semesters)) {
-            // Automatically clear legacy default demo trimesters from previous sessions
-            if (parsed.semesters.length === 2 && parsed.semesters[0].semesterName === 'Fall 2023' && parsed.semesters[1].semesterName === 'Summer 2023') {
-              parsed.semesters = [];
-              parsed.profile.currentCGPA = 0.00;
-              parsed.profile.completedCredits = 0.0;
-            }
             return parsed;
           }
         }
@@ -1403,7 +1417,7 @@
           semCr += cr;
         });
         sem.creditsEarned = semCr;
-        sem.sgpa = semCr > 0 ? parseFloat((semPts / semCr).toFixed(2)) : 0.00;
+        sem.gpa = semCr > 0 ? parseFloat((semPts / semCr).toFixed(2)) : 0.00;
         totalPts += semPts;
         totalCr += semCr;
       });
@@ -1411,6 +1425,9 @@
       if (totalCr > 0) {
         appData.profile.currentCGPA = parseFloat((totalPts / totalCr).toFixed(2));
         appData.profile.completedCredits = totalCr;
+      } else {
+        appData.profile.currentCGPA = 0.00;
+        appData.profile.completedCredits = 0.0;
       }
     }
 
@@ -1468,7 +1485,7 @@
           <div class="stat-card" style="margin-bottom: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <span style="font-weight: 800; font-size: 14px; color: var(--navy);">${escapeHtml(sem.semesterName)}</span>
-              <span style="background: var(--primary-subtle); color: var(--primary-dark); font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 8px;">GPA ${sem.sgpa.toFixed(2)}</span>
+              <span style="background: var(--primary-subtle); color: var(--primary-dark); font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 8px;">GPA ${(sem.gpa !== undefined ? sem.gpa : (sem.sgpa || 0)).toFixed(2)}</span>
             </div>
             ${coursesHtml}
           </div>
@@ -1538,7 +1555,7 @@
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="background: var(--primary-subtle); color: var(--primary-dark); font-weight: 800; font-size: 12px; padding: 4px 8px; border-radius: 8px;">
-                  GPA ${sem.sgpa.toFixed(2)}
+                  GPA ${(sem.gpa !== undefined ? sem.gpa : (sem.sgpa || 0)).toFixed(2)}
                 </span>
                 <button class="btn-danger-ghost" title="Delete Trimester" onclick="event.stopPropagation(); deleteSemester(${idx});">
                   <i class="bi bi-trash3"></i>
@@ -1556,16 +1573,17 @@
 
     function renderProfileScreen() {
       const p = appData.profile;
-      document.getElementById('prof-name').innerText = p.name;
-      document.getElementById('prof-id').innerText = `UIU Student ID: ${p.studentId}`;
-      document.getElementById('prof-dept').innerText = p.department;
-      document.getElementById('prof-batch').innerText = `Batch ${p.batch} • ${p.program}`;
+      document.getElementById('prof-name').innerText = p.name || 'UIU Student';
+      document.getElementById('prof-id').innerText = p.studentId ? `UIU Student ID: ${p.studentId}` : 'UIU Student ID: Not set';
+      document.getElementById('prof-dept').innerText = p.department || 'Department of Computer Science & Engineering';
+      document.getElementById('prof-batch').innerText = p.batch ? `Batch ${p.batch} • ${p.program}` : `Batch • ${p.program}`;
 
-      const initials = p.name.trim().split(' ').map(n => n ? n[0] : '').take(2).join('').toUpperCase() || 'SA';
+      const nameTokens = (p.name || 'UI').trim().split(' ');
+      const initials = nameTokens.map(n => n ? n[0] : '').take(2).join('').toUpperCase() || 'UI';
       document.getElementById('prof-avatar').innerText = initials;
 
-      // Calculate Academic Honors for all 4 UIU Honors
-      const cgpa = p.currentCGPA;
+      // Calculate Academic Honors
+      const cgpa = p.currentCGPA || 0.00;
       const courseCodes = new Set();
       let hasRetakes = false;
       appData.semesters.forEach(s => {
@@ -1578,70 +1596,98 @@
         });
       });
 
-      const goldEl = document.getElementById('badge-gold');
-      const summaEl = document.getElementById('badge-summa');
-      const magnaEl = document.getElementById('badge-magna');
-      const cumEl = document.getElementById('badge-cum');
+      // Render 4 UIU Convocation Honors horizontally scrollable cards
+      const honorsContainer = document.getElementById('honors-cards-scroll');
+      if (honorsContainer) {
+        const honorsData = [
+          {
+            title: 'Gold Medal',
+            sub: 'সর্বোচ্চ সম্মান',
+            cgpaRange: 'Highest in Batch',
+            icon: 'bi-trophy-fill',
+            color: '#B45309',
+            bg: '#FEF3C7',
+            border: '#FCD34D',
+            desc: 'Undergraduate-এ সর্বোচ্চ CGPA অর্জনকারী (এবং Graduate-এ আলাদাভাবে একজন)। শুধু 4.00 পেলেই Gold Medal নিশ্চিত নয়—নিজের ব্যাচে সর্বোচ্চ হতে হবে।',
+            retakeRule: 'শর্ত: ব্যাচে সর্বোচ্চ CGPA হতে হবে',
+            isEligible: cgpa >= 3.98
+          },
+          {
+            title: 'Summa Cum Laude',
+            sub: 'Highest Honor',
+            cgpaRange: 'CGPA 3.95 – 4.00',
+            icon: 'bi-award-fill',
+            color: '#6D28D9',
+            bg: '#EDE9FE',
+            border: '#C4B5FD',
+            desc: 'সর্বোচ্চ সম্মানজনক ডিগ্রি অ্যাওয়ার্ড। কোনো কোর্সে Retake থাকা যাবে না। Retake থাকলে Summa-এর জন্য সরাসরি অযোগ্য।',
+            retakeRule: 'কঠোর শর্ত: কোনো Retake করা যাবে না',
+            isEligible: cgpa >= 3.95 && !hasRetakes
+          },
+          {
+            title: 'Magna Cum Laude',
+            sub: 'Great Honor',
+            cgpaRange: 'CGPA 3.85 – 3.94',
+            icon: 'bi-patch-check-fill',
+            color: '#1D4ED8',
+            bg: '#DBEAFE',
+            border: '#93C5FD',
+            desc: 'অতি উচ্চমানের ফলাফলের জন্য সম্মান। Retake থাকলেও এই সম্মান পাওয়া সম্ভব, যদি CGPA রেঞ্জ পূরণ থাকে।',
+            retakeRule: 'Retake থাকলেও এই সম্মান পাওয়া যেতে পারে',
+            isEligible: cgpa >= 3.85 && cgpa <= 3.94
+          },
+          {
+            title: 'Cum Laude',
+            sub: 'Honor',
+            cgpaRange: 'CGPA 3.75 – 3.84',
+            icon: 'bi-star-fill',
+            color: '#047857',
+            bg: '#D1FAE5',
+            border: '#6EE7B7',
+            desc: 'সম্মানজনক ফলাফল অর্জনকারী শিক্ষার্থীদের সমাবর্তনে প্রদান করা হয়।',
+            retakeRule: 'Retake থাকলেও এই সম্মান পাওয়া সম্ভব',
+            isEligible: cgpa >= 3.75 && cgpa <= 3.84
+          }
+        ];
 
-      if (goldEl) {
-        if (cgpa >= 3.98) {
-          goldEl.innerText = 'Top Candidate 🥇';
-          goldEl.style.background = '#FEF3C7';
-          goldEl.style.color = '#B45309';
-        } else {
-          goldEl.innerText = 'Top in Batch';
-          goldEl.style.background = 'var(--surface-muted)';
-          goldEl.style.color = 'var(--text-secondary)';
-        }
+        let html = '';
+        honorsData.forEach(h => {
+          const badgeBg = h.isEligible ? '#10B981' : 'var(--surface-muted)';
+          const badgeTxt = h.isEligible ? '#FFFFFF' : 'var(--text-tertiary)';
+          const badgeLabel = h.isEligible ? 'QUALIFIED' : 'TARGET';
+
+          html += `
+            <div style="flex: 0 0 280px; min-width: 280px; background: var(--surface); border: 1.5px solid ${h.isEligible ? h.border : 'var(--border)'}; border-radius: 18px; padding: 16px; box-shadow: var(--shadow-soft); display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 34px; height: 34px; border-radius: 10px; background: ${h.bg}; color: ${h.color}; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                      <i class="bi ${h.icon}"></i>
+                    </div>
+                    <div>
+                      <div style="font-weight: 800; font-size: 14px; color: var(--navy);">${h.title}</div>
+                      <div style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">${h.sub}</div>
+                    </div>
+                  </div>
+                  <span style="font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px; background: ${badgeBg}; color: ${badgeTxt};">
+                    ${badgeLabel}
+                  </span>
+                </div>
+                <div style="font-size: 12px; font-weight: 800; color: ${h.color}; margin: 6px 0 4px 0;">
+                  ${h.cgpaRange}
+                </div>
+                <div style="font-size: 11px; line-height: 1.4; color: var(--text-secondary); margin-bottom: 8px;">
+                  ${h.desc}
+                </div>
+              </div>
+              <div style="font-size: 10px; font-weight: 700; color: var(--text-tertiary); padding-top: 8px; border-top: 1px dashed var(--border);">
+                <i class="bi bi-shield-check"></i> ${h.retakeRule}
+              </div>
+            </div>
+          `;
+        });
+        honorsContainer.innerHTML = html;
       }
-
-      if (summaEl) {
-        if (hasRetakes) {
-          summaEl.innerText = 'Disqualified (Retake)';
-          summaEl.style.background = '#FEE2E2';
-          summaEl.style.color = '#B91C1C';
-        } else if (cgpa >= 3.95) {
-          summaEl.innerText = 'Eligible 🏆';
-          summaEl.style.background = '#EDE9FE';
-          summaEl.style.color = '#6D28D9';
-        } else {
-          summaEl.innerText = 'No Retakes OK';
-          summaEl.style.background = 'var(--surface-muted)';
-          summaEl.style.color = 'var(--text-secondary)';
-        }
-      }
-
-      if (magnaEl) {
-        if (cgpa >= 3.85 && cgpa <= 4.00) {
-          magnaEl.innerText = 'Eligible 🎖️';
-          magnaEl.style.background = '#DBEAFE';
-          magnaEl.style.color = '#1D4ED8';
-        } else {
-          magnaEl.innerText = 'Retake OK';
-          magnaEl.style.background = 'var(--surface-muted)';
-          magnaEl.style.color = 'var(--text-secondary)';
-        }
-      }
-
-      if (cumEl) {
-        if (cgpa >= 3.75 && cgpa <= 4.00) {
-          cumEl.innerText = 'Eligible 🏅';
-          cumEl.style.background = '#D1FAE5';
-          cumEl.style.color = '#047857';
-        } else {
-          cumEl.innerText = 'Retake OK';
-          cumEl.style.background = 'var(--surface-muted)';
-          cumEl.style.color = 'var(--text-secondary)';
-        }
-      }
-    }
-
-    function openAboutModal() {
-      document.getElementById('aboutModal').classList.add('active');
-    }
-
-    function closeAboutModal() {
-      document.getElementById('aboutModal').classList.remove('active');
     }
 
     // Helper to take first N elements
@@ -1677,9 +1723,11 @@
 
     function openAddTrimesterModal() {
       const modal = document.getElementById('addTrimesterModal');
-      document.getElementById('add-term-name').value = '';
+      document.getElementById('add-term-name').value = 'Spring 2024';
       modalCourses = [
-        { code: '', title: '', credit: 3.0, grade: 'A' }
+        { code: '', title: '', credit: 3.0, grade: 'A' },
+        { code: '', title: '', credit: 1.0, grade: 'A' },
+        { code: '', title: '', credit: 3.0, grade: 'A-' }
       ];
       renderModalCourseRows();
       modal.classList.add('active');
@@ -1708,12 +1756,12 @@
       modalCourses.forEach((c, idx) => {
         container.innerHTML += `
           <div class="new-course-card">
-            <div class="form-row" style="margin-bottom: 8px;">
-              <input type="text" class="input-field" style="flex: 4; font-weight: 800;" placeholder="Code (e.g. CSE 1111)" value="${escapeHtml(c.code)}" oninput="modalCourses[${idx}].code = this.value">
-              <input type="text" class="input-field" style="flex: 6;" placeholder="Course Title (e.g. Structured Programming)" value="${escapeHtml(c.title)}" oninput="modalCourses[${idx}].title = this.value">
+            <div class="form-row">
+              <input type="text" class="input-field" style="flex: 2; font-weight: 800;" placeholder="Code (e.g. CSE 1111)" value="${escapeHtml(c.code)}" oninput="modalCourses[${idx}].code = this.value">
+              <input type="text" class="input-field" style="flex: 3;" placeholder="Course Title (e.g. Structured Programming)" value="${escapeHtml(c.title)}" oninput="modalCourses[${idx}].title = this.value">
             </div>
             <div class="form-row">
-              <select class="select-field" style="flex: 4;" onchange="modalCourses[${idx}].credit = parseFloat(this.value); updateModalLiveGPA();">
+              <select class="select-field" style="flex: 1;" onchange="modalCourses[${idx}].credit = parseFloat(this.value); updateModalLiveGPA();">
                 <option value="1.0" ${c.credit == 1.0 ? 'selected' : ''}>1.0 Cr</option>
                 <option value="1.5" ${c.credit == 1.5 ? 'selected' : ''}>1.5 Cr</option>
                 <option value="2.0" ${c.credit == 2.0 ? 'selected' : ''}>2.0 Cr</option>
@@ -1721,7 +1769,7 @@
                 <option value="4.0" ${c.credit == 4.0 ? 'selected' : ''}>4.0 Cr</option>
                 <option value="6.0" ${c.credit == 6.0 ? 'selected' : ''}>6.0 Cr</option>
               </select>
-              <select class="select-field" style="flex: 5; font-weight: 800;" onchange="modalCourses[${idx}].grade = this.value; updateModalLiveGPA();">
+              <select class="select-field" style="flex: 1; font-weight: 800;" onchange="modalCourses[${idx}].grade = this.value; updateModalLiveGPA();">
                 <option value="A" ${c.grade == 'A' ? 'selected' : ''}>A (4.00)</option>
                 <option value="A-" ${c.grade == 'A-' ? 'selected' : ''}>A- (3.67)</option>
                 <option value="B+" ${c.grade == 'B+' ? 'selected' : ''}>B+ (3.33)</option>
@@ -1734,7 +1782,7 @@
                 <option value="D" ${c.grade == 'D' ? 'selected' : ''}>D (1.00)</option>
                 <option value="F" ${c.grade == 'F' ? 'selected' : ''}>F (0.00)</option>
               </select>
-              ${modalCourses.length > 1 ? `<button type="button" class="btn-danger-ghost" style="padding: 6px 10px;" onclick="removeCourseRowFromModal(${idx})"><i class="bi bi-trash3"></i></button>` : ''}
+              ${modalCourses.length > 1 ? `<button type="button" class="btn-danger-ghost" onclick="removeCourseRowFromModal(${idx})"><i class="bi bi-dash-circle"></i></button>` : ''}
             </div>
           </div>
         `;
@@ -1781,13 +1829,13 @@
         termCr += cr;
       });
 
-      const sgpa = termCr > 0 ? parseFloat((termPts / termCr).toFixed(2)) : 0.00;
+      const termGPA = termCr > 0 ? parseFloat((termPts / termCr).toFixed(2)) : 0.00;
 
       appData.semesters.unshift({
         semesterName: termName,
         creditsEarned: termCr,
-        sgpa: sgpa,
-        cgpa: sgpa,
+        gpa: termGPA,
+        cgpa: termGPA,
         courses: cleanCourses
       });
 
@@ -1855,12 +1903,12 @@
         return;
       }
 
-      const sgpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
+      const gpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
       appData.semesters.unshift({
         semesterName: termName,
         creditsEarned: totalCr,
-        sgpa: sgpa,
-        cgpa: sgpa,
+        gpa: gpa,
+        cgpa: gpa,
         courses: courses
       });
 
@@ -1935,12 +1983,12 @@
         return;
       }
 
-      const sgpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
+      const gpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
       appData.semesters.unshift({
         semesterName: termName,
         creditsEarned: totalCr,
-        sgpa: sgpa,
-        cgpa: sgpa,
+        gpa: gpa,
+        cgpa: gpa,
         courses: courses
       });
 
@@ -2006,12 +2054,12 @@
         return;
       }
 
-      const sgpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
+      const gpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
       appData.semesters.unshift({
         semesterName: termName,
         creditsEarned: totalCr,
-        sgpa: sgpa,
-        cgpa: sgpa,
+        gpa: gpa,
+        cgpa: gpa,
         courses: courses
       });
 
@@ -2087,11 +2135,12 @@
     // ================= EDIT PROFILE MODAL =================
     function openEditProfileModal() {
       const p = appData.profile;
-      document.getElementById('edit-prof-name').value = p.name;
-      document.getElementById('edit-prof-id').value = p.studentId;
-      document.getElementById('edit-prof-dept').value = p.department;
-      document.getElementById('edit-prof-batch').value = p.batch;
-      document.getElementById('edit-prof-target').value = p.targetCGPA;
+      document.getElementById('edit-prof-name').value = p.name || '';
+      document.getElementById('edit-prof-id').value = p.studentId || '';
+      document.getElementById('edit-prof-dept').value = p.department || '';
+      document.getElementById('edit-prof-batch').value = p.batch || '';
+      document.getElementById('edit-prof-target').value = p.targetCGPA || 3.75;
+      document.getElementById('edit-prof-total-cr').value = p.totalDegreeCredits || 138.0;
       document.getElementById('editProfileModal').classList.add('active');
     }
 
@@ -2100,15 +2149,25 @@
     }
 
     function saveProfileChanges() {
-      appData.profile.name = document.getElementById('edit-prof-name').value.trim() || 'Sourav Ahmed';
-      appData.profile.studentId = document.getElementById('edit-prof-id').value.trim() || '011 201 042';
+      appData.profile.name = document.getElementById('edit-prof-name').value.trim() || 'UIU Student';
+      appData.profile.studentId = document.getElementById('edit-prof-id').value.trim() || '';
       appData.profile.department = document.getElementById('edit-prof-dept').value.trim() || 'Department of Computer Science & Engineering';
-      appData.profile.batch = document.getElementById('edit-prof-batch').value.trim() || '201';
-      appData.profile.targetCGPA = parseFloat(document.getElementById('edit-prof-target').value) || 3.85;
+      appData.profile.batch = document.getElementById('edit-prof-batch').value.trim() || '';
+      appData.profile.targetCGPA = parseFloat(document.getElementById('edit-prof-target').value) || 3.75;
+      appData.profile.totalDegreeCredits = parseFloat(document.getElementById('edit-prof-total-cr').value) || 138.0;
 
       saveAppData();
       closeEditProfileModal();
       showToast('Profile updated successfully!');
+    }
+
+    // ================= ABOUT MODAL =================
+    function openAboutModal() {
+      document.getElementById('aboutModal').classList.add('active');
+    }
+
+    function closeAboutModal() {
+      document.getElementById('aboutModal').classList.remove('active');
     }
 
     // ================= NAVIGATION & TAB SWITCHING =================
