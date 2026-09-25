@@ -201,6 +201,46 @@ class UserProfileProvider extends ChangeNotifier {
     return 0;
   }
 
+  /// Detects and normalizes trimester names (e.g. Spring 2022, Summer'23, Fall-2024, 2023 Spring, 211, etc.)
+  static String? detectTrimester(String text) {
+    if (text.trim().isEmpty) return null;
+    final clean = text.replaceAll('"', '').trim();
+
+    // 1. Season with year: Spring 2021, Summer-22, Fall 2023, Spring'24
+    final exp1 = RegExp(r'\b(spring|summer|fall)\s*[-_/\s]?\s*(\d{2,4})\b', caseSensitive: false);
+    final match1 = exp1.firstMatch(clean);
+    if (match1 != null) {
+      final season = match1.group(1)![0].toUpperCase() + match1.group(1)!.substring(1).toLowerCase();
+      int year = int.tryParse(match1.group(2)!) ?? 0;
+      if (year < 100) {
+        year = year < 50 ? 2000 + year : 1900 + year;
+      }
+      return '$season $year';
+    }
+
+    // 2. Year then Season: 2022 Spring, 2023-Fall
+    final exp2 = RegExp(r'\b(20\d{2})\s*[-_/\s]?\s*(spring|summer|fall)\b', caseSensitive: false);
+    final match2 = exp2.firstMatch(clean);
+    if (match2 != null) {
+      final year = match2.group(1)!;
+      final season = match2.group(2)![0].toUpperCase() + match2.group(2)!.substring(1).toLowerCase();
+      return '$season $year';
+    }
+
+    // 3. UIU 3-digit term code: 211, 212, 213, 221, etc.
+    final exp3 = RegExp(r'\b([12]\d)(1|2|3)\b');
+    final match3 = exp3.firstMatch(clean);
+    if (match3 != null) {
+      final yrShort = int.parse(match3.group(1)!);
+      final termDigit = match3.group(2)!;
+      final fullYear = yrShort < 50 ? 2000 + yrShort : 1900 + yrShort;
+      final season = termDigit == '1' ? 'Spring' : (termDigit == '2' ? 'Summer' : 'Fall');
+      return '$season $fullYear';
+    }
+
+    return null;
+  }
+
   void _sortAndRecomputeSemesters() {
     if (_semesters.isEmpty) return;
 
@@ -357,68 +397,109 @@ class UserProfileProvider extends ChangeNotifier {
   }
 
   /// Imports multi-trimester content (CSV, PDF text, OCR) by auto-detecting trimester headers or columns.
+  /// Imports multi-trimester content (CSV, PDF text, OCR) by auto-detecting trimester headers or columns.
   /// Automatically creates and groups courses into their respective trimesters according to UIU order.
   Future<Map<String, int>> importMultiTrimesterContent(String defaultTerm, String content) async {
     final trimestersMap = <String, List<Course>>{};
-    String currentTerm = defaultTerm.trim().isEmpty ? 'Spring 2024' : defaultTerm.trim();
+    String currentTerm = detectTrimester(defaultTerm) ?? (defaultTerm.trim().isEmpty ? 'Spring 2024' : defaultTerm.trim());
 
     final lines = content.split(RegExp(r'\r?\n'));
-    final headerRegex = RegExp(r'^(?:trimester|semester|term)?\s*[:\-]?\s*(spring|summer|fall)\s*(\d{4})', caseSensitive: false);
-    final rowTermRegex = RegExp(r'^(spring|summer|fall)\s*(\d{4})$', caseSensitive: false);
-    final spaceCourseRegex = RegExp(r'^([A-Za-z]{2,5}\s*\d{3,4})\s+(.+?)\s+([0-9.]+)\s+([A-D][+-]?|F)\b', caseSensitive: false);
+    final codeRegex = RegExp(r'^[A-Za-z]{2,5}\s*[-]?\s*\d{3,4}$', caseSensitive: false);
+    final gradeRegex = RegExp(r'^(A|A-|B\+|B|B-|C\+|C|C-|D\+|D|F|W|I)$', caseSensitive: false);
+    final spaceCourseRegex = RegExp(
+      r'([A-Za-z]{2,5}\s*\d{3,4})\s+(.+?)\s+([0-9.]+)\s+([A-D][+-]?|F)\b',
+      caseSensitive: false,
+    );
 
     for (var rawLine in lines) {
       final line = rawLine.trim();
       if (line.isEmpty) continue;
 
-      // 1. Check if line is an explicit header e.g. "Spring 2022" or "Trimester: Summer 2023"
-      if (line.length < 35 && !line.contains(',')) {
-        final hMatch = headerRegex.firstMatch(line);
-        if (hMatch != null) {
-          final season = hMatch.group(1)![0].toUpperCase() + hMatch.group(1)!.substring(1).toLowerCase();
-          final yr = hMatch.group(2)!;
-          currentTerm = '$season $yr';
+      // Check if line contains an explicit or embedded trimester mention
+      final lineTrimester = detectTrimester(line);
+      final hasGrade = gradeRegex.hasMatch(line) || spaceCourseRegex.hasMatch(line);
+      final isHeaderKeyword = RegExp(r'(trimester|semester|term|academic year)', caseSensitive: false).hasMatch(line);
+
+      // If this line indicates a trimester header, switch currentTerm
+      if (lineTrimester != null && (isHeaderKeyword || !hasGrade || line.length < 45)) {
+        currentTerm = lineTrimester;
+        // If this line does not contain course columns, move to next line
+        if (!hasGrade && !line.contains(',')) {
           continue;
         }
       }
 
       // 2. CSV / Tab-separated row
       if (line.contains(',') || line.contains('\t')) {
-        final parts = line.split(RegExp(r'[,\t]')).map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+        final parts = line
+            .split(RegExp(r'[,\t]'))
+            .map((s) => s.replaceAll('"', '').trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+
         if (parts.length >= 3) {
           String rowTerm = currentTerm;
+
+          // Check if any column contains a trimester name
+          int termColIdx = -1;
+          for (int i = 0; i < parts.length; i++) {
+            final detected = detectTrimester(parts[i]);
+            if (detected != null) {
+              rowTerm = detected;
+              currentTerm = detected;
+              termColIdx = i;
+              break;
+            }
+          }
+          if (termColIdx != -1) {
+            parts.removeAt(termColIdx);
+          }
+
+          if (parts.length < 3) continue;
+
+          // Skip header rows like "Course Code, Title, Credit, Grade"
+          if (parts[0].toLowerCase().contains('code') || parts[0].toLowerCase().contains('course')) {
+            continue;
+          }
+
           String code = '';
           String title = '';
           double cr = 3.0;
           String gr = 'A';
 
-          if (rowTermRegex.hasMatch(parts[0])) {
-            final m = rowTermRegex.firstMatch(parts[0])!;
-            final s = m.group(1)![0].toUpperCase() + m.group(1)!.substring(1).toLowerCase();
-            rowTerm = '$s ${m.group(2)}';
-            code = parts[1];
-            title = parts.length >= 4 ? parts[2] : code;
-            if (parts.length >= 5) {
-              cr = double.tryParse(parts[3]) ?? 3.0;
-              gr = parts[4].toUpperCase();
-            } else if (parts.length == 4) {
-              if (double.tryParse(parts[2]) != null) {
-                cr = double.tryParse(parts[2]) ?? 3.0;
-                gr = parts[3].toUpperCase();
-                title = code;
-              } else {
-                title = parts[2];
-                gr = parts[3].toUpperCase();
+          int codeIdx = -1;
+          int gradeIdx = -1;
+          int creditIdx = -1;
+
+          for (int i = 0; i < parts.length; i++) {
+            final p = parts[i];
+            if (codeIdx == -1 && codeRegex.hasMatch(p)) {
+              codeIdx = i;
+            } else if (gradeIdx == -1 && gradeRegex.hasMatch(p)) {
+              gradeIdx = i;
+            } else if (creditIdx == -1) {
+              final d = double.tryParse(p);
+              if (d != null && d > 0 && d <= 9.0) {
+                creditIdx = i;
               }
             }
-          } else if (rowTermRegex.hasMatch(parts.last)) {
-            final m = rowTermRegex.firstMatch(parts.last)!;
-            final s = m.group(1)![0].toUpperCase() + m.group(1)!.substring(1).toLowerCase();
-            rowTerm = '$s ${m.group(2)}';
-            code = parts[0];
-            title = parts.length >= 4 ? parts[1] : code;
-            cr = double.tryParse(parts.length >= 4 ? parts[2] : '') ?? 3.0;
-            gr = (parts.length >= 5 ? parts[3] : parts[parts.length - 2]).toUpperCase();
+          }
+
+          if (codeIdx != -1 && gradeIdx != -1) {
+            code = parts[codeIdx].toUpperCase();
+            gr = parts[gradeIdx].toUpperCase();
+            if (creditIdx != -1) {
+              cr = double.tryParse(parts[creditIdx]) ?? 3.0;
+            }
+            final titleParts = <String>[];
+            for (int i = 0; i < parts.length; i++) {
+              if (i != codeIdx && i != gradeIdx && i != creditIdx) {
+                if (int.tryParse(parts[i]) == null) {
+                  titleParts.add(parts[i]);
+                }
+              }
+            }
+            title = titleParts.isNotEmpty ? titleParts.join(' ') : code;
           } else {
             code = parts[0];
             title = parts.length >= 4 ? parts[1] : code;
@@ -427,7 +508,7 @@ class UserProfileProvider extends ChangeNotifier {
           }
 
           final gp = UIUGradingScale.getGradePoint(gr);
-          if (code.isNotEmpty) {
+          if (code.isNotEmpty && (UIUGradingScale.isValidGrade(gr) || gr == 'F' || gr == 'W' || gr == 'I')) {
             trimestersMap.putIfAbsent(rowTerm, () => []);
             trimestersMap[rowTerm]!.add(Course(
               code: code,
@@ -444,7 +525,7 @@ class UserProfileProvider extends ChangeNotifier {
       // 3. Space-separated format: CSE 1111 Structured Programming 3.00 A
       final sMatch = spaceCourseRegex.firstMatch(line);
       if (sMatch != null) {
-        final code = sMatch.group(1)!.trim();
+        final code = sMatch.group(1)!.trim().toUpperCase();
         final title = sMatch.group(2)!.trim();
         final cr = double.tryParse(sMatch.group(3)!) ?? 3.0;
         final gr = sMatch.group(4)!.toUpperCase();

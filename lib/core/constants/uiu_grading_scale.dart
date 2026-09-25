@@ -111,6 +111,11 @@ class UIUGradingScale {
     return 0.0;
   }
 
+  static bool isValidGrade(String grade) {
+    final g = grade.trim().toUpperCase();
+    return scale.any((item) => item.grade.toUpperCase() == g) || g == 'W' || g == 'I';
+  }
+
   static Color getGradeColor(String grade) {
     for (var item in scale) {
       if (item.grade.toUpperCase() == grade.toUpperCase()) {

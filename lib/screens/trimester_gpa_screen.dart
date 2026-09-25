@@ -6,6 +6,7 @@ import '../theme/app_typography.dart';
 import '../theme/app_shadows.dart';
 import '../widgets/subtle_background.dart';
 import '../widgets/uiu_bottom_sheet.dart';
+import 'profile_screen.dart';
 
 class _TrimesterCourse {
   String name;
@@ -153,12 +154,18 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
                     ),
                     IconButton(
                       onPressed: () => UIUBottomSheet.showGradingScale(context),
-                      icon: Icon(Icons.info_outline_rounded, color: textSec, size: 22),
-                      tooltip: 'Grading Policy',
+                      icon: Icon(Icons.help_outline_rounded, color: textSec, size: 22),
+                      tooltip: 'UIU Grading Scale & Policy',
                     ),
                     IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.more_vert_rounded, color: textSec, size: 22),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                        );
+                      },
+                      icon: Icon(Icons.person_rounded, color: textSec, size: 22),
+                      tooltip: 'Student Profile',
                     ),
                   ],
                 ),

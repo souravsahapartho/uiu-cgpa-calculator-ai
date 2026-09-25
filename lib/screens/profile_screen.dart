@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
 import '../main.dart';
 import '../core/providers/user_profile_provider.dart';
 import '../theme/app_colors.dart';
@@ -220,6 +224,102 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
 
+              // ── Direct JSON Backup & Restore Action Row ──
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: surface,
+                      borderRadius: AppRadius.borderXl,
+                      border: Border.all(color: borderColor),
+                      boxShadow: AppShadows.soft,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.12),
+                                borderRadius: AppRadius.borderSm,
+                              ),
+                              child: const Icon(Icons.cloud_sync_rounded, color: AppColors.primary, size: 16),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'BACKUP & RESTORE DATA',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: textPri,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.5,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Export before uninstalling, or direct import JSON to restore all academic records.',
+                          style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            // 📥 Import JSON Button
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _handleDirectImportJson(context, provider),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                                  foregroundColor: const Color(0xFF2563EB),
+                                  elevation: 0,
+                                  side: BorderSide(
+                                    color: const Color(0xFF2563EB).withValues(alpha: 0.35),
+                                    width: 1.2,
+                                  ),
+                                  shape: RoundedRectangleBorder(borderRadius: AppRadius.borderBase),
+                                  padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 8),
+                                ),
+                                icon: const Icon(Icons.file_upload_outlined, size: 18),
+                                label: const Text(
+                                  'Import JSON',
+                                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            // 📤 Export JSON Button
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _handleDirectExportJson(context, provider),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: AppRadius.borderBase),
+                                  padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 8),
+                                ),
+                                icon: const Icon(Icons.file_download_outlined, size: 18),
+                                label: const Text(
+                                  'Export JSON',
+                                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
               // ── Achievements ──
               SliverToBoxAdapter(
                 child: Padding(
@@ -376,24 +476,24 @@ class ProfileScreen extends StatelessWidget {
                     _settingItem(
                       icon: Icons.file_download_outlined,
                       title: 'Download JSON Backup',
-                      subtitle: 'Export complete profile & grades before uninstalling',
+                      subtitle: 'Directly download/save complete profile & grades before uninstalling',
                       surface: surface,
                       borderColor: borderColor,
                       textPri: textPri,
                       textSec: textSec,
                       trailing: const Icon(Icons.download_rounded, color: AppColors.primary, size: 20),
-                      onTap: () => _showExportJsonDialog(context, provider.exportBackupJson(), isDark, surface),
+                      onTap: () => _handleDirectExportJson(context, provider),
                     ),
                     _settingItem(
                       icon: Icons.restore_page_outlined,
                       title: 'Import JSON Backup',
-                      subtitle: 'Restore previous profile & trimesters after reinstalling',
+                      subtitle: 'Directly select .json file to restore previous records',
                       surface: surface,
                       borderColor: borderColor,
                       textPri: textPri,
                       textSec: textSec,
                       trailing: const Icon(Icons.upload_rounded, color: AppColors.primary, size: 20),
-                      onTap: () => _showImportJsonDialog(context, provider, isDark, surface),
+                      onTap: () => _handleDirectImportJson(context, provider),
                     ),
                     _settingItem(
                       icon: Icons.policy_rounded,
@@ -842,130 +942,122 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showExportJsonDialog(BuildContext context, String json, bool isDark, Color surface) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: surface,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
-        title: const Row(
-          children: [
-            Icon(Icons.file_download_outlined, color: AppColors.primary),
-            SizedBox(width: 8),
-            Text('Backup JSON Data', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Save this JSON data before uninstalling. You can restore your entire profile, trimesters, and grades anytime.',
-              style: TextStyle(fontSize: 12, height: 1.4),
+  Future<void> _handleDirectImportJson(BuildContext context, UserProfileProvider provider) async {
+    try {
+      final file = await FilePicker.pickFile(
+        dialogTitle: 'Select Academic Backup JSON',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (file == null) return;
+
+      final bytes = await file.readAsBytes();
+      final content = utf8.decode(bytes);
+
+      if (content.trim().isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Selected JSON backup file is empty.'),
+              backgroundColor: AppColors.danger,
             ),
-            const SizedBox(height: 12),
-            Container(
-              height: 140,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSection : AppColors.section,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: SingleChildScrollView(
-                child: SelectableText(
-                  json,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+          );
+        }
+        return;
+      }
+
+      final success = await provider.importBackupJson(content.trim());
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success
+                ? 'Academic history & profile restored successfully from JSON!'
+                : 'Invalid backup JSON file structure.'),
+            backgroundColor: success ? AppColors.success : AppColors.danger,
           ),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            icon: const Icon(Icons.copy_rounded, size: 16),
-            label: const Text('Copy to Clipboard'),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: json));
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Backup JSON copied to clipboard!')),
-              );
-            },
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to import JSON file: $e'),
+            backgroundColor: AppColors.danger,
           ),
-        ],
-      ),
-    );
+        );
+      }
+    }
   }
 
-  void _showImportJsonDialog(BuildContext context, UserProfileProvider provider, bool isDark, Color surface) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: surface,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
-        title: const Row(
-          children: [
-            Icon(Icons.restore_page_outlined, color: AppColors.primary),
-            SizedBox(width: 8),
-            Text('Restore Backup JSON', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Paste your previously exported JSON backup to restore all your academic data and profile info.',
-              style: TextStyle(fontSize: 12, height: 1.4),
+  Future<void> _handleDirectExportJson(BuildContext context, UserProfileProvider provider) async {
+    try {
+      final jsonStr = provider.exportBackupJson();
+      final bytes = Uint8List.fromList(utf8.encode(jsonStr));
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filename = 'uiu_academic_backup_$timestamp.json';
+
+      bool saved = false;
+      String savedLocation = filename;
+
+      try {
+        final uri = await FilePicker.saveFile(
+          dialogTitle: 'Save Academic Backup JSON',
+          fileName: filename,
+          bytes: bytes,
+          mimeType: 'application/json',
+          type: FileType.custom,
+          allowedExtensions: ['json'],
+        );
+        if (uri != null) {
+          saved = true;
+          savedLocation = uri.path.isNotEmpty ? uri.path.split('/').last : filename;
+        }
+      } catch (_) {}
+
+      // On Android fallback to Download folder if picker was dismissed/unavailable
+      if (!saved && !kIsWeb && Platform.isAndroid) {
+        try {
+          final downloadDir = Directory('/storage/emulated/0/Download');
+          if (await downloadDir.exists()) {
+            final target = File('${downloadDir.path}/$filename');
+            await target.writeAsBytes(bytes);
+            saved = true;
+            savedLocation = 'Downloads/$filename';
+          }
+        } catch (_) {}
+      }
+
+      if (saved) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Backup file saved successfully: $savedLocation'),
+              backgroundColor: AppColors.success,
+              duration: const Duration(seconds: 4),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              maxLines: 6,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
-              decoration: InputDecoration(
-                hintText: '{\n  "version": 1,\n  "profile": {...},\n  "semesters": [...]\n}',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
+          );
+        }
+      } else {
+        await Clipboard.setData(ClipboardData(text: jsonStr));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Backup JSON downloaded & copied to clipboard!'),
+              backgroundColor: AppColors.success,
             ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              final raw = controller.text.trim();
-              if (raw.isEmpty) return;
-              final success = await provider.importBackupJson(raw);
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Successfully restored academic history & profile!' : 'Invalid backup JSON format.'),
-                    backgroundColor: success ? AppColors.success : AppColors.danger,
-                  ),
-                );
-              }
-            },
-            child: const Text('Restore Data'),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Export failed: $e'),
+            backgroundColor: AppColors.danger,
           ),
-        ],
-      ),
-    );
+        );
+      }
+    }
   }
 }
 
