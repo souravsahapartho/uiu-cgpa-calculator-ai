@@ -24,6 +24,27 @@ class ProfileScreen extends StatelessWidget {
     final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
+    // Academic Honors calculation
+    final courseCodes = <String>{};
+    bool hasRetakes = false;
+    for (final sem in provider.semesters) {
+      for (final c in sem.courses) {
+        if (c.code.trim().isNotEmpty) {
+          final codeUpper = c.code.trim().toUpperCase();
+          if (courseCodes.contains(codeUpper)) {
+            hasRetakes = true;
+          } else {
+            courseCodes.add(codeUpper);
+          }
+        }
+      }
+    }
+    final cgpa = student.currentCGPA;
+    final isGoldEligible = cgpa >= 3.98;
+    final isSummaEligible = cgpa >= 3.95 && !hasRetakes;
+    final isMagnaEligible = cgpa >= 3.85 && cgpa < 3.95;
+    final isCumLaudeEligible = cgpa >= 3.75 && cgpa < 3.85;
+
     // Avatar initials
     final initials = student.name.isNotEmpty
         ? student.name.trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase()
@@ -189,31 +210,110 @@ class ProfileScreen extends StatelessWidget {
               // ── Achievements ──
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: Text('ACADEMIC ACHIEVEMENTS',
-                      style: AppTypography.labelSmall.copyWith(
-                          color: textSec, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'UIU CONVOCATION HONORS',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: textSec,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => UIUBottomSheet.showConvocationHonors(context),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Criteria & Rules',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            SizedBox(width: 2),
+                            Icon(Icons.arrow_forward_ios_rounded,
+                                size: 10, color: AppColors.primary),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: Row(
+                child: SizedBox(
+                  height: 148,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     children: [
-                      Expanded(
-                        child: _badgeCard(Icons.emoji_events_rounded, "Dean's List",
-                            '4 Trimesters', AppColors.accent, surface, borderColor),
+                      _honorCard(
+                        context: context,
+                        icon: Icons.military_tech_rounded,
+                        title: 'Gold Medal',
+                        subtitle: 'সর্বোচ্চ সম্মান',
+                        cgpaRange: 'Batch Topper • Top CGPA',
+                        badge: isGoldEligible ? 'Top Runner' : 'Batch Top',
+                        badgeColor: const Color(0xFFD97706),
+                        isQualified: isGoldEligible,
+                        surface: surface,
+                        borderColor: borderColor,
+                        textPri: textPri,
+                        textSec: textSec,
                       ),
                       const SizedBox(width: 10),
-                      Expanded(
-                        child: _badgeCard(Icons.code_rounded, 'Code Master',
-                            '4.00 in labs', AppColors.primary, surface, borderColor),
+                      _honorCard(
+                        context: context,
+                        icon: Icons.stars_rounded,
+                        title: 'Summa Cum Laude',
+                        subtitle: 'Highest Honor',
+                        cgpaRange: 'CGPA 3.95 – 4.00',
+                        badge: isSummaEligible
+                            ? 'On Track'
+                            : (hasRetakes ? 'Retake Restricted' : 'No Retakes'),
+                        badgeColor: const Color(0xFF8B5CF6),
+                        isQualified: isSummaEligible,
+                        surface: surface,
+                        borderColor: borderColor,
+                        textPri: textPri,
+                        textSec: textSec,
                       ),
                       const SizedBox(width: 10),
-                      Expanded(
-                        child: _badgeCard(Icons.speed_rounded, 'Fast Track',
-                            'Top 5% batch', AppColors.success, surface, borderColor),
+                      _honorCard(
+                        context: context,
+                        icon: Icons.verified_rounded,
+                        title: 'Magna Cum Laude',
+                        subtitle: 'Great Honor',
+                        cgpaRange: 'CGPA 3.85 – 3.94',
+                        badge: isMagnaEligible ? 'On Track' : 'Retake OK',
+                        badgeColor: const Color(0xFF2563EB),
+                        isQualified: isMagnaEligible,
+                        surface: surface,
+                        borderColor: borderColor,
+                        textPri: textPri,
+                        textSec: textSec,
+                      ),
+                      const SizedBox(width: 10),
+                      _honorCard(
+                        context: context,
+                        icon: Icons.emoji_events_rounded,
+                        title: 'Cum Laude',
+                        subtitle: 'Honor',
+                        cgpaRange: 'CGPA 3.75 – 3.84',
+                        badge: isCumLaudeEligible ? 'On Track' : 'Retake OK',
+                        badgeColor: const Color(0xFF059669),
+                        isQualified: isCumLaudeEligible,
+                        surface: surface,
+                        borderColor: borderColor,
+                        textPri: textPri,
+                        textSec: textSec,
                       ),
                     ],
                   ),
@@ -271,6 +371,16 @@ class ProfileScreen extends StatelessWidget {
                       onTap: () => UIUBottomSheet.showGradingScale(context),
                     ),
                     _settingItem(
+                      icon: Icons.workspace_premium_rounded,
+                      title: 'UIU Convocation Honors Criteria',
+                      subtitle: 'Gold Medal, Summa, Magna & Cum Laude requirements',
+                      surface: surface,
+                      borderColor: borderColor,
+                      textPri: textPri,
+                      textSec: textSec,
+                      onTap: () => UIUBottomSheet.showConvocationHonors(context),
+                    ),
+                    _settingItem(
                       icon: Icons.sync_rounded,
                       title: 'Data Storage Status',
                       subtitle: 'Progress is saved locally on your device',
@@ -283,11 +393,12 @@ class ProfileScreen extends StatelessWidget {
                     _settingItem(
                       icon: Icons.info_outline_rounded,
                       title: 'About UIU CGPA Calculator AI',
-                      subtitle: 'Version 1.0.0 • United International University',
+                      subtitle: 'Version 1.0.0 • Developer: Sourav Saha (sourav.com.bd)',
                       surface: surface,
                       borderColor: borderColor,
                       textPri: textPri,
                       textSec: textSec,
+                      onTap: () => _showAboutDialog(context, isDark, surface, borderColor, textPri, textSec),
                     ),
                   ]),
                 ),
@@ -318,39 +429,210 @@ class ProfileScreen extends StatelessWidget {
       height: 30,
       color: Colors.white.withValues(alpha: 0.25));
 
-  Widget _badgeCard(IconData icon, String title, String subtitle, Color color,
-      Color surface, Color borderColor) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: surface,
+  Widget _honorCard({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String cgpaRange,
+    required String badge,
+    required Color badgeColor,
+    required bool isQualified,
+    required Color surface,
+    required Color borderColor,
+    required Color textPri,
+    required Color textSec,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => UIUBottomSheet.showConvocationHonors(context),
         borderRadius: AppRadius.borderLg,
-        border: Border.all(color: borderColor),
-        boxShadow: AppShadows.soft,
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+        child: Container(
+          width: 172,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: AppRadius.borderLg,
+            border: Border.all(
+              color: isQualified ? badgeColor.withValues(alpha: 0.6) : borderColor,
+              width: isQualified ? 1.5 : 1,
             ),
-            child: Icon(icon, color: color, size: 20),
+            boxShadow: AppShadows.soft,
           ),
-          const SizedBox(height: 6),
-          Text(title,
-              style: AppTypography.labelSmall.copyWith(
-                  fontWeight: FontWeight.w800, fontSize: 11),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-          Text(subtitle,
-              style: AppTypography.bodySmall.copyWith(
-                  fontSize: 9, color: AppColors.textTertiary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: badgeColor.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderMd,
+                    ),
+                    child: Icon(icon, color: badgeColor, size: 20),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: (isQualified ? AppColors.success : badgeColor).withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderFull,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isQualified) ...[
+                          const Icon(Icons.check_circle_rounded, size: 10, color: AppColors.success),
+                          const SizedBox(width: 3),
+                        ],
+                        Text(
+                          badge,
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: isQualified ? AppColors.success : badgeColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.labelLarge.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      color: textPri,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    subtitle,
+                    style: AppTypography.bodySmall.copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: textSec,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: badgeColor.withValues(alpha: 0.08),
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Text(
+                  cgpaRange,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: badgeColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAboutDialog(
+    BuildContext context,
+    bool isDark,
+    Color surface,
+    Color borderColor,
+    Color textPri,
+    Color textSec,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: surface,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: AppRadius.borderMd,
+              ),
+              child: const Icon(Icons.school_rounded, color: AppColors.primary, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'UIU CGPA Calculator AI',
+                style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.w900, color: textPri),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'A dedicated academic companion for students of United International University (UIU). Calculate CGPA, plan trimesters, predict target grades, and track academic honors.',
+              style: AppTypography.bodySmall.copyWith(color: textSec, height: 1.4),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primarySubtle,
+                borderRadius: AppRadius.borderMd,
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _aboutRow('Developer', 'Sourav Saha', AppColors.primaryDark),
+                  const SizedBox(height: 6),
+                  _aboutRow('Website', 'www.sourav.com.bd', AppColors.primary),
+                  const SizedBox(height: 6),
+                  _aboutRow('Version', '1.0.0 (Release)', AppColors.primaryDark),
+                  const SizedBox(height: 6),
+                  _aboutRow('Institution', 'United International University', AppColors.primaryDark),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _aboutRow(String label, String value, Color valColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+        Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: valColor)),
+      ],
     );
   }
 
