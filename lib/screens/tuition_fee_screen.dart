@@ -31,6 +31,8 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
   late final TextEditingController _sessionFeeCtrl;
   late final TextEditingController _registeredCreditsCtrl;
   late final TextEditingController _customWaiverCtrl;
+  late final TextEditingController _firstRetakeCreditsCtrl;
+  late final TextEditingController _subsequentRetakeCreditsCtrl;
 
   final List<RetakeCourseItem> _firstRetakes = [];
   final List<RetakeCourseItem> _subsequentRetakes = [];
@@ -42,10 +44,12 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
   @override
   void initState() {
     super.initState();
-    _creditFeeCtrl = TextEditingController(text: '6500');
-    _sessionFeeCtrl = TextEditingController(text: '5000');
-    _registeredCreditsCtrl = TextEditingController(text: '13.0');
+    _creditFeeCtrl = TextEditingController();
+    _sessionFeeCtrl = TextEditingController();
+    _registeredCreditsCtrl = TextEditingController();
     _customWaiverCtrl = TextEditingController();
+    _firstRetakeCreditsCtrl = TextEditingController();
+    _subsequentRetakeCreditsCtrl = TextEditingController();
   }
 
   @override
@@ -54,6 +58,8 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     _sessionFeeCtrl.dispose();
     _registeredCreditsCtrl.dispose();
     _customWaiverCtrl.dispose();
+    _firstRetakeCreditsCtrl.dispose();
+    _subsequentRetakeCreditsCtrl.dispose();
     super.dispose();
   }
 
@@ -93,23 +99,25 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-    // Numerical Calculations
-    final creditFee = double.tryParse(_creditFeeCtrl.text) ?? 6500.0;
-    final sessionFee = double.tryParse(_sessionFeeCtrl.text) ?? 5000.0;
-    final totalRegCredits = double.tryParse(_registeredCreditsCtrl.text) ?? 13.0;
+    // Numerical Calculations (Placeholders: 6500, 5000, 0)
+    final creditFee = double.tryParse(_creditFeeCtrl.text.trim()) ?? 6500.0;
+    final sessionFee = double.tryParse(_sessionFeeCtrl.text.trim()) ?? 5000.0;
+    final totalRegCredits = double.tryParse(_registeredCreditsCtrl.text.trim()) ?? 0.0;
 
-    double firstRetakeCr = 0.0;
+    double firstRetakeCr = double.tryParse(_firstRetakeCreditsCtrl.text.trim()) ?? 0.0;
     for (final c in _firstRetakes) {
       firstRetakeCr += c.credit;
     }
 
-    double subRetakeCr = 0.0;
+    double subRetakeCr = double.tryParse(_subsequentRetakeCreditsCtrl.text.trim()) ?? 0.0;
     for (final c in _subsequentRetakes) {
       subRetakeCr += c.credit;
     }
 
     final totalRetakeCr = firstRetakeCr + subRetakeCr;
-    final regularCredits = (totalRegCredits - totalRetakeCr).clamp(0.0, 999.0);
+    final regularCredits = totalRegCredits > 0
+        ? (totalRegCredits - totalRetakeCr).clamp(0.0, 999.0)
+        : 0.0;
 
     // Step 2: Tuition per category
     final regularTuition = regularCredits * creditFee;
@@ -215,6 +223,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                     const SizedBox(height: 4),
                                     _numberInput(
                                       controller: _creditFeeCtrl,
+                                      hintText: '6500',
                                       surface: sectionColor,
                                       borderColor: borderColor,
                                       textPri: textPri,
@@ -234,6 +243,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                     const SizedBox(height: 4),
                                     _numberInput(
                                       controller: _sessionFeeCtrl,
+                                      hintText: '5000',
                                       surface: sectionColor,
                                       borderColor: borderColor,
                                       textPri: textPri,
@@ -251,6 +261,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                           const SizedBox(height: 4),
                           _numberInput(
                             controller: _registeredCreditsCtrl,
+                            hintText: 'e.g. 13.0',
                             surface: sectionColor,
                             borderColor: borderColor,
                             textPri: textPri,
@@ -302,6 +313,41 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                   shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
                                 ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text('ENTER RETAKE CREDITS (DEFAULT 0)',
+                              style: AppTypography.labelSmall.copyWith(
+                                  fontSize: 10, fontWeight: FontWeight.w800, color: textSec)),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _numberInput(
+                                  controller: _firstRetakeCreditsCtrl,
+                                  hintText: '0',
+                                  surface: sectionColor,
+                                  borderColor: borderColor,
+                                  textPri: textPri,
+                                  stepDecimals: true,
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              _quickCreditChip('0 Cr', () {
+                                _firstRetakeCreditsCtrl.text = '0';
+                                setState(() {});
+                              }, sectionColor, borderColor, textPri),
+                              const SizedBox(width: 4),
+                              _quickCreditChip('3 Cr', () {
+                                _firstRetakeCreditsCtrl.text = '3';
+                                setState(() {});
+                              }, sectionColor, borderColor, textPri),
+                              const SizedBox(width: 4),
+                              _quickCreditChip('6 Cr', () {
+                                _firstRetakeCreditsCtrl.text = '6';
+                                setState(() {});
+                              }, sectionColor, borderColor, textPri),
                             ],
                           ),
                           if (_firstRetakes.isNotEmpty) ...[
@@ -419,6 +465,41 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                   shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
                                 ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text('ENTER RETAKE CREDITS (DEFAULT 0)',
+                              style: AppTypography.labelSmall.copyWith(
+                                  fontSize: 10, fontWeight: FontWeight.w800, color: textSec)),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _numberInput(
+                                  controller: _subsequentRetakeCreditsCtrl,
+                                  hintText: '0',
+                                  surface: sectionColor,
+                                  borderColor: borderColor,
+                                  textPri: textPri,
+                                  stepDecimals: true,
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              _quickCreditChip('0 Cr', () {
+                                _subsequentRetakeCreditsCtrl.text = '0';
+                                setState(() {});
+                              }, sectionColor, borderColor, textPri),
+                              const SizedBox(width: 4),
+                              _quickCreditChip('3 Cr', () {
+                                _subsequentRetakeCreditsCtrl.text = '3';
+                                setState(() {});
+                              }, sectionColor, borderColor, textPri),
+                              const SizedBox(width: 4),
+                              _quickCreditChip('6 Cr', () {
+                                _subsequentRetakeCreditsCtrl.text = '6';
+                                setState(() {});
+                              }, sectionColor, borderColor, textPri),
                             ],
                           ),
                           if (_subsequentRetakes.isNotEmpty) ...[
@@ -834,6 +915,25 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
             color: isSelected ? AppColors.primary : AppColors.textSecondary,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _quickCreditChip(String label, VoidCallback onTap, Color surface, Color border, Color textPri) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.borderMd,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: AppRadius.borderMd,
+          border: Border.all(color: border),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: textPri),
         ),
       ),
     );

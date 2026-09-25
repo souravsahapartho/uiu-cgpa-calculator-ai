@@ -1195,16 +1195,16 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
             <div>
               <label style="font-size: 10px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">CREDIT FEE (BDT)</label>
-              <input type="number" id="tuition-credit-fee" class="input-field" value="6500" step="100" oninput="calculateTuition()">
+              <input type="number" id="tuition-credit-fee" class="input-field" placeholder="6500" value="" step="100" oninput="calculateTuition()">
             </div>
             <div>
               <label style="font-size: 10px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">SESSION FEE (BDT)</label>
-              <input type="number" id="tuition-session-fee" class="input-field" value="5000" step="500" oninput="calculateTuition()">
+              <input type="number" id="tuition-session-fee" class="input-field" placeholder="5000" value="" step="500" oninput="calculateTuition()">
             </div>
           </div>
           <div>
             <label style="font-size: 10px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">TOTAL REGISTERED CREDITS THIS TERM</label>
-            <input type="number" id="tuition-registered-credits" class="input-field" value="13.0" step="0.5" oninput="calculateTuition()">
+            <input type="number" id="tuition-registered-credits" class="input-field" placeholder="e.g. 13.0" value="" step="0.5" oninput="calculateTuition()">
           </div>
         </div>
 
@@ -1220,6 +1220,15 @@
             <button type="button" class="btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="addFirstRetakeCourse()">
               <i class="bi bi-plus-lg"></i> Add Course
             </button>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <label style="font-size: 10px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">ENTER RETAKE CREDITS (DEFAULT 0)</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="number" id="tuition-first-retake-credits" class="input-field" placeholder="0" value="" step="0.5" oninput="calculateTuition()" style="flex: 1;">
+              <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="document.getElementById('tuition-first-retake-credits').value='0'; calculateTuition();">0 Cr</button>
+              <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="document.getElementById('tuition-first-retake-credits').value='3'; calculateTuition();">3 Cr</button>
+              <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="document.getElementById('tuition-first-retake-credits').value='6'; calculateTuition();">6 Cr</button>
+            </div>
           </div>
           <div id="first-retake-list"></div>
           <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="first-retake-summary">0 courses (0.0 Cr)</div>
@@ -1237,6 +1246,15 @@
             <button type="button" class="btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="addSubsequentRetakeCourse()">
               <i class="bi bi-plus-lg"></i> Add Course
             </button>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <label style="font-size: 10px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">ENTER RETAKE CREDITS (DEFAULT 0)</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="number" id="tuition-subsequent-retake-credits" class="input-field" placeholder="0" value="" step="0.5" oninput="calculateTuition()" style="flex: 1;">
+              <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="document.getElementById('tuition-subsequent-retake-credits').value='0'; calculateTuition();">0 Cr</button>
+              <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="document.getElementById('tuition-subsequent-retake-credits').value='3'; calculateTuition();">3 Cr</button>
+              <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="document.getElementById('tuition-subsequent-retake-credits').value='6'; calculateTuition();">6 Cr</button>
+            </div>
           </div>
           <div id="subsequent-retake-list"></div>
           <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="subsequent-retake-summary">0 courses (0.0 Cr)</div>
@@ -2823,7 +2841,7 @@
 
     function calculateTuition() {
       const creditFee = parseFloat(document.getElementById('tuition-credit-fee')?.value) || 6500;
-      const sessionFee = parseFloat(document.getElementById('tuition-session-fee')?.value) || 0;
+      const sessionFee = parseFloat(document.getElementById('tuition-session-fee')?.value) || 5000;
       const totalRegCredits = parseFloat(document.getElementById('tuition-registered-credits')?.value) || 0;
 
       if (document.getElementById('waiver-opt-custom')?.classList.contains('active')) {
@@ -2831,10 +2849,10 @@
       }
 
       // Step 1: Separate credits into categories
-      let firstRetakeCredits = 0;
+      let firstRetakeCredits = parseFloat(document.getElementById('tuition-first-retake-credits')?.value) || 0;
       tuitionState.firstRetakes.forEach(c => firstRetakeCredits += (parseFloat(c.credit) || 0));
 
-      let subRetakeCredits = 0;
+      let subRetakeCredits = parseFloat(document.getElementById('tuition-subsequent-retake-credits')?.value) || 0;
       tuitionState.subsequentRetakes.forEach(c => subRetakeCredits += (parseFloat(c.credit) || 0));
 
       const totalRetakeCredits = firstRetakeCredits + subRetakeCredits;

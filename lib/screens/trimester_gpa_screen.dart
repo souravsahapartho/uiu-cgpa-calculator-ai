@@ -119,6 +119,7 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
 
     return Scaffold(
       backgroundColor: bg,
+      resizeToAvoidBottomInset: false,
       body: SubtleBackground(
         child: SafeArea(
           bottom: false,
@@ -318,7 +319,7 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
 
         // Calculate result card
         Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: AppColors.primary,
