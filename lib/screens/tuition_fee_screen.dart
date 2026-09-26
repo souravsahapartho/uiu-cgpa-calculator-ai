@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
@@ -25,7 +26,11 @@ class TuitionFeeScreen extends StatefulWidget {
 }
 
 class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
-  String _system = 'trimester'; // 'trimester' or 'semester'
+  static const _keyTuitionSystem = 'uiu_tuition_system';
+  static const _keyCreditFee = 'uiu_tuition_credit_fee';
+  static const _keySessionFee = 'uiu_tuition_session_fee';
+
+  String? _system; // null initially if user hasn't selected or saved yet!
   String _discountType = 'scholarship'; // 'scholarship' or 'waiver'
 
   late final TextEditingController _creditFeeCtrl;
@@ -51,6 +56,53 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     _customWaiverCtrl = TextEditingController();
     _firstRetakeCreditsCtrl = TextEditingController();
     _subsequentRetakeCreditsCtrl = TextEditingController();
+    _loadSavedPreferences();
+  }
+
+  Future<void> _loadSavedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedSystem = prefs.getString(_keyTuitionSystem);
+    final savedCreditFee = prefs.getString(_keyCreditFee);
+    final savedSessionFee = prefs.getString(_keySessionFee);
+
+    if (mounted) {
+      setState(() {
+        if (savedSystem != null && (savedSystem == 'trimester' || savedSystem == 'semester')) {
+          _system = savedSystem;
+        }
+        if (savedCreditFee != null && savedCreditFee.isNotEmpty) {
+          _creditFeeCtrl.text = savedCreditFee;
+        }
+        if (savedSessionFee != null && savedSessionFee.isNotEmpty) {
+          _sessionFeeCtrl.text = savedSessionFee;
+        }
+      });
+    }
+  }
+
+  Future<void> _saveSystemPreference(String sys) async {
+    setState(() => _system = sys);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyTuitionSystem, sys);
+  }
+
+  Future<void> _saveCreditFeePreference(String val) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyCreditFee, val.trim());
+  }
+
+  Future<void> _saveSessionFeePreference(String val) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keySessionFee, val.trim());
+  }
+
+  int get _tutorialCurrentStep {
+    if (_system == null) return 1;
+    if (_creditFeeCtrl.text.trim().isEmpty) return 2;
+    final regCr = double.tryParse(_registeredCreditsCtrl.text.trim()) ?? 0.0;
+    if (regCr <= 0) return 3;
+    if (_waiverPercent == 0 && !_isCustomWaiver) return 4;
+    return 5;
   }
 
   @override
@@ -174,32 +226,73 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 90),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    // Academic System Selector Toggle
+                    // Guided Step Tracker
+                    _buildStepTracker(_tutorialCurrentStep, surface, borderColor, textPri, textSec, isDark),
+
+                    // Interactive Step Banner
+                    _buildGuidedStepBanner(_tutorialCurrentStep, surface, borderColor, textPri, textSec, isDark),
+
+                    // Academic System Selector Toggle (User must choose!)
                     Container(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
                         color: sectionColor,
                         borderRadius: AppRadius.borderLg,
-                        border: Border.all(color: borderColor),
+                        border: Border.all(
+                          color: _system == null ? AppColors.primary : borderColor,
+                          width: _system == null ? 1.5 : 1.0,
+                        ),
                       ),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: _systemTabButton(
-                              label: 'Trimester (3 Terms)',
-                              icon: Icons.calendar_month_rounded,
-                              isSelected: _system == 'trimester',
-                              onTap: () => setState(() => _system = 'trimester'),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'STEP 1: ACADEMIC SYSTEM',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    color: _system == null ? AppColors.primary : textSec,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                if (_system != null)
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.check_circle_rounded, size: 13, color: AppColors.success),
+                                      const SizedBox(width: 4),
+                                      Text('Saved', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.success)),
+                                    ],
+                                  )
+                                else
+                                  Text('Select One', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.primary)),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: _systemTabButton(
-                              label: 'Semester (2 Terms)',
-                              icon: Icons.date_range_rounded,
-                              isSelected: _system == 'semester',
-                              onTap: () => setState(() => _system = 'semester'),
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _systemTabButton(
+                                  label: 'Trimester (3 Terms)',
+                                  icon: Icons.calendar_month_rounded,
+                                  isSelected: _system == 'trimester',
+                                  onTap: () => _saveSystemPreference('trimester'),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: _systemTabButton(
+                                  label: 'Semester (2 Terms)',
+                                  icon: Icons.date_range_rounded,
+                                  isSelected: _system == 'semester',
+                                  onTap: () => _saveSystemPreference('semester'),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -240,7 +333,10 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                       surface: sectionColor,
                                       borderColor: borderColor,
                                       textPri: textPri,
-                                      onChanged: (_) => setState(() {}),
+                                      onChanged: (val) {
+                                        _saveCreditFeePreference(val);
+                                        setState(() {});
+                                      },
                                     ),
                                   ],
                                 ),
@@ -260,7 +356,10 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                       surface: sectionColor,
                                       borderColor: borderColor,
                                       textPri: textPri,
-                                      onChanged: (_) => setState(() {}),
+                                      onChanged: (val) {
+                                        _saveSessionFeePreference(val);
+                                        setState(() {});
+                                      },
                                     ),
                                   ],
                                 ),
@@ -806,7 +905,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                               style: AppTypography.titleSmall.copyWith(
                                   fontWeight: FontWeight.w900, color: textPri)),
                           const SizedBox(height: 10),
-                          _feeRow('Academic System', _system == 'trimester' ? 'Trimester (3 Terms)' : 'Semester (2 Terms)', textSec, textPri, isBold: true),
+                          _feeRow('Academic System', _system == 'trimester' ? 'Trimester (3 Terms)' : (_system == 'semester' ? 'Semester (2 Terms)' : 'Not Selected Yet'), textSec, textPri, isBold: true),
                           _feeRow('Credit Fee', '${creditFee.round()} BDT', textSec, textPri),
                           _feeRow('Trimester/Semester Fee', '${sessionFee.round()} BDT', textSec, textPri),
                           _feeRow('Registered Credits', '${totalRegCredits.toStringAsFixed(1)} Cr', textSec, textPri, isBold: true),
@@ -855,7 +954,28 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          if (_system == 'trimester') ...[
+                          if (_system == null) ...[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.08),
+                                borderRadius: AppRadius.borderMd,
+                                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Please select your Academic System (Trimester or Semester) in Step 1 to generate your exact installment schedule.',
+                                      style: TextStyle(color: textPri, fontSize: 11, fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ] else if (_system == 'trimester') ...[
                             _installmentRow('1st Installment (40%)', totalPayable * 0.40, 'Registration & term start', surface, sectionColor, borderColor, textPri, textSec),
                             _installmentRow('2nd Installment (30%)', totalPayable * 0.30, 'Before Midterm examinations', surface, sectionColor, borderColor, textPri, textSec),
                             _installmentRow('3rd Installment (30%)', totalPayable * 0.30, 'Before Final examinations', surface, sectionColor, borderColor, textPri, textSec),
@@ -1284,4 +1404,188 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
       ),
     );
   }
+
+  Widget _buildStepTracker(int currentStep, Color surface, Color borderColor, Color textPri, Color textSec, bool isDark) {
+    final steps = [
+      {'num': 1, 'label': 'System'},
+      {'num': 2, 'label': 'Fees'},
+      {'num': 3, 'label': 'Credits'},
+      {'num': 4, 'label': 'Waiver'},
+      {'num': 5, 'label': 'Result'},
+    ];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: steps.map((s) {
+          final sNum = s['num'] as int;
+          final sLabel = s['label'] as String;
+          final isDone = sNum < currentStep;
+          final isCurrent = sNum == currentStep;
+
+          Color badgeBg = isDone
+              ? AppColors.success
+              : (isCurrent ? AppColors.primary : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)));
+          Color textColor = (isDone || isCurrent) ? textPri : textSec;
+
+          return Row(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: badgeBg,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: isDone
+                      ? const Icon(Icons.check_rounded, size: 13, color: Colors.white)
+                      : Text(
+                          '$sNum',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: isCurrent ? Colors.white : textSec,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                sLabel,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
+              if (sNum < 5) ...[
+                const SizedBox(width: 6),
+                Icon(Icons.chevron_right_rounded, size: 14, color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+                const SizedBox(width: 2),
+              ],
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildGuidedStepBanner(int currentStep, Color surface, Color borderColor, Color textPri, Color textSec, bool isDark) {
+    String stepBadge;
+    String stepTitle;
+    String stepDesc;
+    IconData stepIcon;
+    Color stepColor;
+
+    switch (currentStep) {
+      case 1:
+        stepBadge = 'STEP 1 OF 5 • CHOOSE ACADEMIC SYSTEM';
+        stepTitle = 'Select Trimester or Semester First';
+        stepDesc = 'Choose whether your program operates on UIU\'s Trimester (3 terms/yr) or Semester (2 terms/yr) system. This choice is remembered automatically.';
+        stepIcon = Icons.touch_app_rounded;
+        stepColor = AppColors.primary;
+        break;
+      case 2:
+        stepBadge = 'STEP 2 OF 5 • AUTO-SAVED PARAMETERS';
+        stepTitle = 'Confirm Credit Fee & Session Fee';
+        stepDesc = 'Enter your per-credit fee (e.g. 6500) and session fee (e.g. 5000). Once typed, they are saved locally so you won\'t need to type them again!';
+        stepIcon = Icons.payments_rounded;
+        stepColor = const Color(0xFF0284C7);
+        break;
+      case 3:
+        stepBadge = 'STEP 3 OF 5 • TERM CREDITS';
+        stepTitle = 'Enter Registered Credits This Term';
+        stepDesc = 'Type the total registered credits you are taking this term. Add any 1st-time retake (50% off) or subsequent retake courses below.';
+        stepIcon = Icons.format_list_numbered_rounded;
+        stepColor = const Color(0xFF10B981);
+        break;
+      case 4:
+        stepBadge = 'STEP 4 OF 5 • SCHOLARSHIP / WAIVER';
+        stepTitle = 'Select Scholarship or Tuition Waiver';
+        stepDesc = 'Choose Scholarship (max 13 Cr discount) or Waiver (unlimited). Both apply to regular and subsequent retake courses!';
+        stepIcon = Icons.military_tech_rounded;
+        stepColor = const Color(0xFF8B5CF6);
+        break;
+      default:
+        stepBadge = 'STEP 5 OF 5 • OFFICIAL CALCULATION READY';
+        stepTitle = 'Payable Tuition & Installment Schedule';
+        stepDesc = 'Your payable tuition fee and installments are calculated below according to UIU\'s official policy.';
+        stepIcon = Icons.check_circle_rounded;
+        stepColor = AppColors.success;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: stepColor.withValues(alpha: isDark ? 0.12 : 0.08),
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: stepColor.withValues(alpha: isDark ? 0.35 : 0.25), width: 1.2),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: stepColor.withValues(alpha: 0.18),
+              borderRadius: AppRadius.borderMd,
+            ),
+            child: Icon(stepIcon, color: stepColor, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: stepColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    stepBadge,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  stepTitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: textPri,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  stepDesc,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: textSec,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
