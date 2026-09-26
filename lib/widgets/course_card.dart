@@ -59,9 +59,7 @@ class _CourseCardState extends State<CourseCard> {
     final surface = isDark ? AppColors.darkSurface : AppColors.surface;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
     final textTert = isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
-    final sectionBg = isDark ? AppColors.darkSection : AppColors.section;
 
     final gradeColor = _getGradeColor(widget.course.grade);
     final catColor = _getCategoryColor(widget.course.category);
@@ -132,35 +130,18 @@ class _CourseCardState extends State<CourseCard> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (widget.showCategory) ...[
+                    if (widget.showCategory && widget.course.gradePoint != null) ...[
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: sectionBg,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              widget.course.category.name.toUpperCase(),
-                              style: AppTypography.labelSmall.copyWith(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: textSec,
-                              ),
+                          Text(
+                            'Point: ${widget.course.gradePoint!.toStringAsFixed(2)}',
+                            style: AppTypography.bodySmall.copyWith(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: textTert,
                             ),
                           ),
-                          if (widget.course.gradePoint != null) ...[
-                            const SizedBox(width: 6),
-                            Text(
-                              '•  Point: ${widget.course.gradePoint!.toStringAsFixed(2)}',
-                              style: AppTypography.bodySmall.copyWith(
-                                fontSize: 10,
-                                color: textTert,
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                     ],

@@ -2815,6 +2815,14 @@
       switchTab(previousTab || 'home');
     }
 
+    
+    function openAcademicHelpModal() {
+      document.getElementById('academicHelpModal').classList.add('active');
+    }
+    function closeAcademicHelpModal() {
+      document.getElementById('academicHelpModal').classList.remove('active');
+    }
+
     function openScaleModal() { document.getElementById('scaleModal').classList.add('active'); }
     function closeScaleModal() { document.getElementById('scaleModal').classList.remove('active'); }
 

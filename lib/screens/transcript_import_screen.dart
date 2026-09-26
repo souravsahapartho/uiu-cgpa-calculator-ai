@@ -71,16 +71,14 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        tooltip: 'Export / Backup JSON',
-                        onPressed: semesters.isEmpty
-                            ? null
-                            : () => _showExportJsonModal(context, provider.exportBackupJson()),
-                        icon: const Icon(Icons.file_download_outlined, color: AppColors.primary),
+                        tooltip: 'Academic Guidelines & Policy',
+                        onPressed: () => _showAcademicGuidelinesModal(context, isDark, surface, borderClr, textPri, textSec),
+                        icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
                       ),
                       IconButton(
-                        tooltip: 'UIU Grading Policy',
-                        onPressed: () => UIUBottomSheet.showGradingScale(context),
-                        icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
+                        tooltip: 'Student Profile',
+                        onPressed: () => Navigator.pushNamed(context, '/profile'),
+                        icon: const Icon(Icons.person_rounded, color: AppColors.primary),
                       ),
                     ],
                   ),
@@ -187,62 +185,6 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                               label: const Text('Import Image', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
                             ),
                           ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Safe Import & Quality Notice Banner
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 4),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF0FDF4),
-                      borderRadius: AppRadius.borderLg,
-                      border: Border.all(
-                        color: isDark ? const Color(0xFF334155) : const Color(0xFFBBF7D0),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 16),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'File Import Note & Manual Editing',
-                                style: AppTypography.labelMedium.copyWith(
-                                  color: textPri,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Analysis accuracy may vary depending on CSV/PDF/Image scan quality. Importing only adds or updates trimester courses — your main profile CGPA & credits are NEVER altered. You can tap any course anytime to manually edit or delete with instant auto-save.',
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: textSec,
-                                  fontSize: 11,
-                                  height: 1.35,
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
                       ],
                     ),
@@ -406,7 +348,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s8, AppSpacing.s16, 80),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s8, AppSpacing.s16, 20),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
@@ -451,6 +393,208 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // ── ACADEMIC GUIDELINES & RETAKE POLICY MODAL ──
+  void _showAcademicGuidelinesModal(
+    BuildContext context,
+    bool isDark,
+    Color surface,
+    Color borderClr,
+    Color textPri,
+    Color textSec,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        maxChildSize: 0.92,
+        minChildSize: 0.5,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: AppShadows.card,
+          ),
+          child: Column(
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 10, bottom: 8),
+                  width: 38,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: AppRadius.borderFull,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.borderMd,
+                      ),
+                      child: const Icon(Icons.menu_book_rounded, color: AppColors.primary, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Academic Records & Policies',
+                            style: AppTypography.titleLarge.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: textPri,
+                              fontSize: 17,
+                            ),
+                          ),
+                          Text(
+                            'UIU official guidelines & calculation rules',
+                            style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => Navigator.pop(ctx),
+                      color: textSec,
+                    ),
+                  ],
+                ),
+              ),
+              Divider(height: 1, color: borderClr),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                  children: [
+                    _policyCard(
+                      icon: Icons.replay_rounded,
+                      iconColor: AppColors.success,
+                      title: 'Retake Policy • Highest GPA Applied',
+                      desc: 'If you take the same course multiple times (1st time or subsequent retakes), the system automatically takes your HIGHEST / BEST grade point for cumulative CGPA calculation. Course credits are counted only once in your degree.',
+                      isDark: isDark,
+                      borderClr: borderClr,
+                      textPri: textPri,
+                      textSec: textSec,
+                    ),
+                    const SizedBox(height: 12),
+                    _policyCard(
+                      icon: Icons.document_scanner_rounded,
+                      iconColor: const Color(0xFF0284C7),
+                      title: 'File Import Accuracy & Safety',
+                      desc: 'Analysis accuracy may vary depending on CSV, PDF, or Image scan quality. Importing only detects and populates trimester courses — your main profile CGPA & credits are NEVER altered without your confirmation.',
+                      isDark: isDark,
+                      borderClr: borderClr,
+                      textPri: textPri,
+                      textSec: textSec,
+                    ),
+                    const SizedBox(height: 12),
+                    _policyCard(
+                      icon: Icons.edit_note_rounded,
+                      iconColor: AppColors.primary,
+                      title: 'Manual Course Editing & Auto-Save',
+                      desc: 'You can tap any course card inside an expanded trimester to edit its code, title, credits, or grade. All additions, edits, or deletions are instantly auto-saved to your device storage.',
+                      isDark: isDark,
+                      borderClr: borderClr,
+                      textPri: textPri,
+                      textSec: textSec,
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          UIUBottomSheet.showGradingScale(context);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.primary, width: 1.2),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: AppRadius.borderBase),
+                        ),
+                        icon: const Icon(Icons.school_rounded, color: AppColors.primary, size: 18),
+                        label: const Text(
+                          'View UIU Official Grading Scale (A to F)',
+                          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _policyCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String desc,
+    required bool isDark,
+    required Color borderClr,
+    required Color textPri,
+    required Color textSec,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: iconColor.withValues(alpha: isDark ? 0.12 : 0.06),
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: iconColor.withValues(alpha: isDark ? 0.35 : 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.15),
+              borderRadius: AppRadius.borderMd,
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: textPri,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  desc,
+                  style: TextStyle(
+                    color: textSec,
+                    fontSize: 11.5,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

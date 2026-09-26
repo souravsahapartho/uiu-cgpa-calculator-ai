@@ -553,7 +553,7 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
   Widget _buildGradingPolicyTab(Color surface, Color sectionColor, Color borderColor,
       Color textPri, Color textSec) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       children: [
         Container(
           decoration: BoxDecoration(

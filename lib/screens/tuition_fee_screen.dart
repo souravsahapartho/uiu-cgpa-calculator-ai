@@ -247,7 +247,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
               ),
 
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 90),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     // Guided Step Tracker

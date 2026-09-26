@@ -444,7 +444,7 @@ class ProfileScreen extends StatelessWidget {
               ),
 
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     _settingItem(
