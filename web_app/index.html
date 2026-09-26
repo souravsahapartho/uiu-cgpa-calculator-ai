@@ -944,6 +944,9 @@
             <div class="header-sub">UIU Course Sequence & Workload Analyzer</div>
           </div>
           <div style="display: flex; gap: 8px;">
+            <div class="header-action-btn" onclick="openTuitionRulesModal()" title="Summary of UIU Rules" style="color: var(--primary); font-weight: 900;">
+              <i class="bi bi-question-circle-fill"></i>
+            </div>
             <div class="header-action-btn" onclick="openScaleModal()" title="UIU Policy">
               <i class="bi bi-mortarboard-fill"></i>
             </div>
@@ -1016,6 +1019,15 @@
             <div class="header-action-btn" onclick="switchTab('profile')" title="Student Profile">
               <i class="bi bi-person-fill"></i>
             </div>
+          </div>
+        </div>
+
+        <!-- Safe Import & Quality Notice Banner -->
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 12px; margin-bottom: 14px; display: flex; gap: 10px; align-items: flex-start;">
+          <i class="bi bi-info-circle-fill" style="color: var(--primary); font-size: 16px; margin-top: 1px;"></i>
+          <div style="font-size: 11px; line-height: 1.4; color: var(--text-secondary);">
+            <strong style="color: var(--navy); display: block; margin-bottom: 2px;">File Import Note & Manual Editing</strong>
+            Analysis accuracy may vary depending on CSV/PDF/Image scan quality. Importing only adds or updates trimester courses — your main profile CGPA & credits are NEVER altered. You can click any course anytime to manually edit or delete with instant auto-save.
           </div>
         </div>
 
@@ -1794,10 +1806,10 @@
 
       appData.semesters.slice(0, 2).forEach(sem => {
         let coursesHtml = '';
-        sem.courses.forEach(c => {
+        sem.courses.forEach((c, cIdx) => {
           const gClass = getGradeBadgeClass(c.grade);
           coursesHtml += `
-            <div class="course-card">
+            <div class="course-card" onclick="openEditCourseModal(${idx}, ${cIdx})" style="cursor: pointer;" title="Click to edit course">
               <div class="code-badge">
                 <div class="code-text">${escapeHtml(c.code)}</div>
                 <div class="cr-text">${c.credit} Cr</div>
@@ -1805,7 +1817,10 @@
               <div class="course-info">
                 <div class="course-title">${escapeHtml(c.title || c.code)}</div>
               </div>
-              <div class="grade-badge ${gClass}">${c.grade} (${(c.gradePoint || GRADE_MAP[c.grade] || 0).toFixed(2)})</div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div class="grade-badge ${gClass}">${c.grade} (${(c.gradePoint || GRADE_MAP[c.grade] || 0).toFixed(2)})</div>
+                <i class="bi bi-pencil-square" style="color: var(--text-tertiary); font-size: 13px;"></i>
+              </div>
             </div>
           `;
         });
@@ -1894,6 +1909,9 @@
             </div>
             <div class="trimester-body">
               ${coursesHtml}
+              <button type="button" class="btn-outline" style="width: 100%; margin-top: 8px; font-size: 12px; padding: 7px;" onclick="openAddCourseToSemModal(${idx})">
+                <i class="bi bi-plus-lg"></i> Add Course to ${escapeHtml(sem.semesterName)}
+              </button>
             </div>
           </div>
         `;
@@ -2249,10 +2267,7 @@
         return (b.semesterName || '').localeCompare(a.semesterName || '');
       });
 
-      if (runningCr > 0) {
-        appData.profile.currentCGPA = parseFloat((runningPts / runningCr).toFixed(2));
-        appData.profile.completedCredits = runningCr;
-      }
+      // Note: User profile metrics (currentCGPA & completedCredits) remain protected and are never overwritten by imports or trimester recalculations.
     }
 
     // ================= MULTI-TRIMESTER PARSER =================
@@ -3024,6 +3039,337 @@
     // Initialize View
     renderAllViews();
     calculateTuition();
-  </script>
+  
+    // ================= TUITION RULES MODAL =================
+    function openTuitionRulesModal() {
+      document.getElementById('tuitionRulesModal').classList.add('active');
+    }
+    function closeTuitionRulesModal() {
+      document.getElementById('tuitionRulesModal').classList.remove('active');
+    }
+
+    // ================= COURSE EDIT & ADD MODALS =================
+    function openEditCourseModal(semIdx, courseIdx) {
+      const sem = appData.semesters[semIdx];
+      if (!sem || !sem.courses[courseIdx]) return;
+      const c = sem.courses[courseIdx];
+
+      document.getElementById('edit-sem-idx').value = semIdx;
+      document.getElementById('edit-course-idx').value = courseIdx;
+      document.getElementById('edit-course-sem-title').innerText = sem.semesterName;
+      document.getElementById('edit-course-code').value = c.code || '';
+      document.getElementById('edit-course-title').value = c.title || c.code || '';
+      document.getElementById('edit-course-credit').value = (c.credit || 3.0).toFixed(1);
+      document.getElementById('edit-course-grade').value = (c.grade || 'A').toUpperCase();
+
+      document.getElementById('editCourseModal').classList.add('active');
+    }
+
+    function closeEditCourseModal() {
+      document.getElementById('editCourseModal').classList.remove('active');
+    }
+
+    function saveCourseEdits() {
+      const semIdx = parseInt(document.getElementById('edit-sem-idx').value, 10);
+      const courseIdx = parseInt(document.getElementById('edit-course-idx').value, 10);
+      const code = document.getElementById('edit-course-code').value.trim();
+      const title = document.getElementById('edit-course-title').value.trim() || code;
+      const cr = parseFloat(document.getElementById('edit-course-credit').value) || 3.0;
+      const grade = document.getElementById('edit-course-grade').value;
+      const gp = GRADE_MAP[grade] || 4.0;
+
+      if (!code) {
+        alert('Please enter course code');
+        return;
+      }
+
+      if (appData.semesters[semIdx] && appData.semesters[semIdx].courses[courseIdx]) {
+        appData.semesters[semIdx].courses[courseIdx] = {
+          code: code,
+          title: title,
+          credit: cr,
+          grade: grade,
+          gradePoint: gp
+        };
+
+        sortAndRecomputeSemesters();
+        saveAppData();
+        renderTranscript();
+        closeEditCourseModal();
+        showToast(`Course "${code}" updated & saved!`);
+      }
+    }
+
+    function deleteCourseFromModal() {
+      const semIdx = parseInt(document.getElementById('edit-sem-idx').value, 10);
+      const courseIdx = parseInt(document.getElementById('edit-course-idx').value, 10);
+      if (appData.semesters[semIdx] && appData.semesters[semIdx].courses[courseIdx]) {
+        const code = appData.semesters[semIdx].courses[courseIdx].code;
+        appData.semesters[semIdx].courses.splice(courseIdx, 1);
+        sortAndRecomputeSemesters();
+        saveAppData();
+        renderTranscript();
+        closeEditCourseModal();
+        showToast(`Course "${code}" removed & saved!`);
+      }
+    }
+
+    function openAddCourseToSemModal(semIdx) {
+      const sem = appData.semesters[semIdx];
+      if (!sem) return;
+      document.getElementById('add-course-sem-idx').value = semIdx;
+      document.getElementById('add-course-sem-title').innerText = sem.semesterName;
+      document.getElementById('add-course-code').value = '';
+      document.getElementById('add-course-title').value = '';
+      document.getElementById('add-course-credit').value = '3.0';
+      document.getElementById('add-course-grade').value = 'A';
+      document.getElementById('addCourseToSemModal').classList.add('active');
+    }
+
+    function closeAddCourseToSemModal() {
+      document.getElementById('addCourseToSemModal').classList.remove('active');
+    }
+
+    function submitAddCourseToSem() {
+      const semIdx = parseInt(document.getElementById('add-course-sem-idx').value, 10);
+      const code = document.getElementById('add-course-code').value.trim();
+      const title = document.getElementById('add-course-title').value.trim() || code;
+      const cr = parseFloat(document.getElementById('add-course-credit').value) || 3.0;
+      const grade = document.getElementById('add-course-grade').value;
+      const gp = GRADE_MAP[grade] || 4.0;
+
+      if (!code) {
+        alert('Please enter course code');
+        return;
+      }
+
+      if (appData.semesters[semIdx]) {
+        appData.semesters[semIdx].courses.push({
+          code: code,
+          title: title,
+          credit: cr,
+          grade: grade,
+          gradePoint: gp
+        });
+
+        sortAndRecomputeSemesters();
+        saveAppData();
+        renderTranscript();
+        closeAddCourseToSemModal();
+        showToast(`Course "${code}" added to ${appData.semesters[semIdx].semesterName}!`);
+      }
+    }
+
+</script>
+
+  <!-- UIU TUITION FEE RULES MODAL -->
+  <div id="tuitionRulesModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 480px; max-height: 85vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="background: rgba(249, 115, 22, 0.12); color: var(--primary); padding: 6px; border-radius: 10px;">
+            <i class="bi bi-book-half" style="font-size: 18px;"></i>
+          </div>
+          <div>
+            <div class="modal-title">Summary of UIU Rules</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Official Tuition Fee & Payment Policies</div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeTuitionRulesModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+        <div style="background: var(--surface-subtle); border: 1px solid var(--border); border-radius: 14px; padding: 12px;">
+          <div style="font-weight: 800; font-size: 13px; color: #10B981; margin-bottom: 2px;">
+            <i class="bi bi-arrow-repeat"></i> First-Time Retake Policy
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+            First-time retake courses receive a <strong>50% discount</strong> on that course's tuition fee.
+          </div>
+        </div>
+
+        <div style="background: var(--surface-subtle); border: 1px solid var(--border); border-radius: 14px; padding: 12px;">
+          <div style="font-weight: 800; font-size: 13px; color: #F59E0B; margin-bottom: 2px;">
+            <i class="bi bi-exclamation-triangle-fill"></i> Subsequent Retake Policy
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+            Subsequent retakes (taken for the 2nd time or more) receive <strong>NO discount</strong> (100% full course fee is payable).
+          </div>
+        </div>
+
+        <div style="background: var(--surface-subtle); border: 1px solid var(--border); border-radius: 14px; padding: 12px;">
+          <div style="font-weight: 800; font-size: 13px; color: #0284C7; margin-bottom: 2px;">
+            <i class="bi bi-award-fill"></i> Scholarship & Tuition Waiver
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+            Scholarship or tuition waiver applies <strong>ONLY to regular (non-retake)</strong> course tuition. Retakes and session fees are NOT eligible.
+          </div>
+        </div>
+
+        <div style="background: var(--surface-subtle); border: 1px solid var(--border); border-radius: 14px; padding: 12px;">
+          <div style="font-weight: 800; font-size: 13px; color: #8B5CF6; margin-bottom: 2px;">
+            <i class="bi bi-bank"></i> Trimester / Semester Session Fee
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+            Fixed academic session fee is NOT subject to any discount or waiver and is always added as-is.
+          </div>
+        </div>
+
+        <div style="background: var(--surface-subtle); border: 1px solid var(--border); border-radius: 14px; padding: 12px;">
+          <div style="font-weight: 800; font-size: 13px; color: var(--primary); margin-bottom: 2px;">
+            <i class="bi bi-calendar3"></i> Installment Schedules
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+            • <strong>Trimester Students (3 Installments):</strong> 40% (1st) &rarr; 30% (2nd) &rarr; 30% (3rd)<br>
+            • <strong>Semester Students (4 Installments):</strong> 25% &rarr; 25% &rarr; 25% &rarr; 25%
+          </div>
+        </div>
+
+        <div style="background: var(--surface-subtle); border: 1px solid var(--border); border-radius: 14px; padding: 12px;">
+          <div style="font-weight: 800; font-size: 13px; color: #EF4444; margin-bottom: 2px;">
+            <i class="bi bi-exclamation-octagon-fill"></i> Payment Failure Policy
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+            If a student misses an installment payment deadline, a late fine of <strong>500 BDT</strong> per missed installment is strictly added.
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" style="width: 100%; margin-top: 14px;" onclick="closeTuitionRulesModal()">
+        Understood
+      </button>
+    </div>
+  </div>
+
+  <!-- EDIT COURSE MODAL -->
+  <div id="editCourseModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="background: rgba(249, 115, 22, 0.12); color: var(--primary); padding: 6px; border-radius: 10px;">
+            <i class="bi bi-pencil-square" style="font-size: 18px;"></i>
+          </div>
+          <div>
+            <div class="modal-title">Edit Course</div>
+            <div style="font-size: 11px; color: var(--text-secondary);" id="edit-course-sem-title">Trimester</div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeEditCourseModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <input type="hidden" id="edit-sem-idx">
+      <input type="hidden" id="edit-course-idx">
+
+      <div style="margin-top: 10px;">
+        <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">COURSE CODE</label>
+        <input type="text" id="edit-course-code" class="input-field" placeholder="e.g. CSE 1111" style="font-weight: 800; margin-bottom: 10px;">
+
+        <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">COURSE TITLE</label>
+        <input type="text" id="edit-course-title" class="input-field" placeholder="e.g. Structured Programming" style="margin-bottom: 10px;">
+
+        <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+          <div style="flex: 1;">
+            <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">CREDITS</label>
+            <select id="edit-course-credit" class="select-field">
+              <option value="1.0">1.0 Cr</option>
+              <option value="1.5">1.5 Cr</option>
+              <option value="2.0">2.0 Cr</option>
+              <option value="3.0">3.0 Cr</option>
+              <option value="4.0">4.0 Cr</option>
+              <option value="6.0">6.0 Cr</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">GRADE</label>
+            <select id="edit-course-grade" class="select-field" style="font-weight: 800;">
+              <option value="A">A (4.00)</option>
+              <option value="A-">A- (3.67)</option>
+              <option value="B+">B+ (3.33)</option>
+              <option value="B">B (3.00)</option>
+              <option value="B-">B- (2.67)</option>
+              <option value="C+">C+ (2.33)</option>
+              <option value="C">C (2.00)</option>
+              <option value="C-">C- (1.67)</option>
+              <option value="D+">D+ (1.33)</option>
+              <option value="D">D (1.00)</option>
+              <option value="F">F (0.00)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-danger-ghost" style="flex: 1; border: 1px solid rgba(239, 68, 68, 0.3);" onclick="deleteCourseFromModal()">
+            <i class="bi bi-trash3"></i> Delete
+          </button>
+          <button type="button" class="btn-primary" style="flex: 2;" onclick="saveCourseEdits()">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD COURSE TO SEMESTER MODAL -->
+  <div id="addCourseToSemModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="background: rgba(249, 115, 22, 0.12); color: var(--primary); padding: 6px; border-radius: 10px;">
+            <i class="bi bi-plus-circle" style="font-size: 18px;"></i>
+          </div>
+          <div>
+            <div class="modal-title">Add Course</div>
+            <div style="font-size: 11px; color: var(--text-secondary);" id="add-course-sem-title">Trimester</div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeAddCourseToSemModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <input type="hidden" id="add-course-sem-idx">
+
+      <div style="margin-top: 10px;">
+        <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">COURSE CODE *</label>
+        <input type="text" id="add-course-code" class="input-field" placeholder="e.g. CSE 1111" style="font-weight: 800; margin-bottom: 10px;">
+
+        <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">COURSE TITLE</label>
+        <input type="text" id="add-course-title" class="input-field" placeholder="e.g. Structured Programming" style="margin-bottom: 10px;">
+
+        <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+          <div style="flex: 1;">
+            <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">CREDITS</label>
+            <select id="add-course-credit" class="select-field">
+              <option value="1.0">1.0 Cr</option>
+              <option value="1.5">1.5 Cr</option>
+              <option value="2.0">2.0 Cr</option>
+              <option value="3.0" selected>3.0 Cr</option>
+              <option value="4.0">4.0 Cr</option>
+              <option value="6.0">6.0 Cr</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="font-size: 11px; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 4px;">GRADE</label>
+            <select id="add-course-grade" class="select-field" style="font-weight: 800;">
+              <option value="A" selected>A (4.00)</option>
+              <option value="A-">A- (3.67)</option>
+              <option value="B+">B+ (3.33)</option>
+              <option value="B">B (3.00)</option>
+              <option value="B-">B- (2.67)</option>
+              <option value="C+">C+ (2.33)</option>
+              <option value="C">C (2.00)</option>
+              <option value="C-">C- (1.67)</option>
+              <option value="D+">D+ (1.33)</option>
+              <option value="D">D (1.00)</option>
+              <option value="F">F (0.00)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary" style="width: 100%;" onclick="submitAddCourseToSem()">
+          Add Course
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

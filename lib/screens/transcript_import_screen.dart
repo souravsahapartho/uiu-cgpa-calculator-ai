@@ -184,6 +184,62 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                 ),
               ),
 
+              // Safe Import & Quality Notice Banner
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 4),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF0FDF4),
+                      borderRadius: AppRadius.borderLg,
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFBBF7D0),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 16),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'File Import Note & Manual Editing',
+                                style: AppTypography.labelMedium.copyWith(
+                                  color: textPri,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Analysis accuracy may vary depending on CSV/PDF/Image scan quality. Importing only adds or updates trimester courses — your main profile CGPA & credits are NEVER altered. You can tap any course anytime to manually edit or delete with instant auto-save.',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: textSec,
+                                  fontSize: 11,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
               // Filter Chips
               if (semesters.isNotEmpty)
                 SliverToBoxAdapter(

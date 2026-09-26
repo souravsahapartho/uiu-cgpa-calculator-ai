@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../models/semester_transcript.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';

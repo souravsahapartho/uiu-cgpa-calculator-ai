@@ -151,9 +151,14 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
             slivers: [
               // Header
               SliverToBoxAdapter(
-                child: const UIUHeader(
+                child: UIUHeader(
                   title: 'Tuition Fee',
                   subtitle: 'Official UIU Fee Structure & Policies',
+                  trailing: IconButton(
+                    icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 22),
+                    tooltip: 'Summary of UIU Rules',
+                    onPressed: () => _showTuitionFeeRulesModal(context),
+                  ),
                 ),
               ),
 
@@ -1026,6 +1031,198 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                   TextSpan(text: desc),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTuitionFeeRulesModal(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.5,
+        maxChildSize: 0.92,
+        expand: false,
+        builder: (_, scrollController) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: ListView(
+            controller: scrollController,
+            children: [
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: borderClr,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderMd,
+                    ),
+                    child: const Icon(Icons.menu_book_rounded, color: AppColors.primary, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Summary of UIU Rules',
+                          style: AppTypography.titleLarge.copyWith(
+                            color: textPri,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                          ),
+                        ),
+                        Text(
+                          'Official Fee Structure & Policies',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: textSec,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _ruleCard(
+                icon: Icons.replay_rounded,
+                iconColor: const Color(0xFF10B981),
+                title: 'First-Time Retake Policy',
+                description: 'First-time retake courses receive a 50% discount on that course\'s tuition fee.',
+                isDark: isDark,
+                textPri: textPri,
+                textSec: textSec,
+              ),
+              const SizedBox(height: 10),
+              _ruleCard(
+                icon: Icons.sync_problem_rounded,
+                iconColor: const Color(0xFFF59E0B),
+                title: 'Subsequent Retake Policy',
+                description: 'Subsequent retake courses (2nd time or more) receive NO discount (100% full course fee is payable).',
+                isDark: isDark,
+                textPri: textPri,
+                textSec: textSec,
+              ),
+              const SizedBox(height: 10),
+              _ruleCard(
+                icon: Icons.military_tech_rounded,
+                iconColor: const Color(0xFF0284C7),
+                title: 'Scholarship & Tuition Waiver',
+                description: 'Scholarship or tuition waiver applies ONLY to regular (non-retake) course tuition. Retakes and session fees are NOT eligible.',
+                isDark: isDark,
+                textPri: textPri,
+                textSec: textSec,
+              ),
+              const SizedBox(height: 10),
+              _ruleCard(
+                icon: Icons.account_balance_rounded,
+                iconColor: const Color(0xFF8B5CF6),
+                title: 'Trimester / Semester Session Fee',
+                description: 'Fixed academic session fee is NOT subject to any discount and is always added as-is.',
+                isDark: isDark,
+                textPri: textPri,
+                textSec: textSec,
+              ),
+              const SizedBox(height: 10),
+              _ruleCard(
+                icon: Icons.calendar_month_rounded,
+                iconColor: AppColors.primary,
+                title: 'Installment Schedules',
+                description: '• Trimester Students (3 Installments): 40% (1st) → 30% (2nd) → 30% (3rd)\n• Semester Students (4 Installments): 25% → 25% → 25% → 25%',
+                isDark: isDark,
+                textPri: textPri,
+                textSec: textSec,
+              ),
+              const SizedBox(height: 10),
+              _ruleCard(
+                icon: Icons.warning_amber_rounded,
+                iconColor: AppColors.danger,
+                title: 'Payment Failure Policy',
+                description: 'If a student misses an installment payment deadline, a late fine of 500 BDT per missed installment will be added.',
+                isDark: isDark,
+                textPri: textPri,
+                textSec: textSec,
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _ruleCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String description,
+    required bool isDark,
+    required Color textPri,
+    required Color textSec,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: AppRadius.borderMd,
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(color: textPri, fontWeight: FontWeight.w800, fontSize: 13),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  style: TextStyle(color: textSec, fontSize: 12, height: 1.4),
+                ),
+              ],
             ),
           ),
         ],
