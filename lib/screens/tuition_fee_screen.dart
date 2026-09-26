@@ -26,6 +26,7 @@ class TuitionFeeScreen extends StatefulWidget {
 
 class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
   String _system = 'trimester'; // 'trimester' or 'semester'
+  String _discountType = 'scholarship'; // 'scholarship' or 'waiver'
 
   late final TextEditingController _creditFeeCtrl;
   late final TextEditingController _sessionFeeCtrl;
@@ -119,22 +120,29 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
         ? (totalRegCredits - totalRetakeCr).clamp(0.0, 999.0)
         : 0.0;
 
-    // Step 2: Tuition per category
-    final regularTuition = regularCredits * creditFee;
+    // Step 2: 1st-time Retake (Automatic 50% discount for everyone)
     final firstRetakeNormal = firstRetakeCr * creditFee;
-    final firstRetakeDiscount = firstRetakeNormal * 0.50; // 50% discount
+    final firstRetakeDiscount = firstRetakeNormal * 0.50;
     final firstRetakeTuition = firstRetakeNormal - firstRetakeDiscount;
-    final subRetakeTuition = subRetakeCr * creditFee; // 0% discount
 
-    // Step 3: Apply Scholarship/Waiver ONLY to Regular Tuition
-    final double waiverPct = _isCustomWaiver
+    // Step 3: Regular & Subsequent Retake Credits are eligible for Scholarship / Waiver
+    final eligibleCredits = regularCredits + subRetakeCr;
+    final double discountPct = _isCustomWaiver
         ? (double.tryParse(_customWaiverCtrl.text) ?? 0.0)
         : _waiverPercent;
-    final waiverDiscount = regularTuition * (waiverPct / 100.0);
-    final finalRegularTuition = regularTuition - waiverDiscount;
+
+    // Scholarship has a maximum cap of 13 credits; Tuition Waiver has no credit limit
+    final double discountCredits = _discountType == 'scholarship'
+        ? eligibleCredits.clamp(0.0, 13.0)
+        : eligibleCredits;
+
+    final waiverDiscount = (discountCredits * creditFee) * (discountPct / 100.0);
+    final regularAndSubTuition = (eligibleCredits * creditFee) - waiverDiscount;
+    final subRetakeTuition = subRetakeCr * creditFee;
+    final regularTuition = regularCredits * creditFee;
 
     // Step 4: Totals
-    final totalTuition = finalRegularTuition + firstRetakeTuition + subRetakeTuition;
+    final totalTuition = regularAndSubTuition + firstRetakeTuition;
     final totalDiscount = firstRetakeDiscount + waiverDiscount;
     final totalPayable = totalTuition + sessionFee;
 
@@ -603,9 +611,50 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                       fontWeight: FontWeight.w800, color: textPri)),
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Text('*Applies ONLY to Regular Courses. Retakes & session fees excluded.',
-                              style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 10)),
+                          const SizedBox(height: 10),
+                          // Scholarship vs Waiver selector
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _discountTypeTab(
+                                  label: 'Scholarship',
+                                  subLabel: 'Max 13 Credits',
+                                  icon: Icons.school_rounded,
+                                  isSelected: _discountType == 'scholarship',
+                                  onTap: () => setState(() => _discountType = 'scholarship'),
+                                  sectionColor: sectionColor,
+                                  borderColor: borderColor,
+                                  textPri: textPri,
+                                  textSec: textSec,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _discountTypeTab(
+                                  label: 'Tuition Waiver',
+                                  subLabel: 'No Credit Limit',
+                                  icon: Icons.stars_rounded,
+                                  isSelected: _discountType == 'waiver',
+                                  onTap: () => setState(() => _discountType = 'waiver'),
+                                  sectionColor: sectionColor,
+                                  borderColor: borderColor,
+                                  textPri: textPri,
+                                  textSec: textSec,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _discountType == 'scholarship'
+                                ? '• Scholarship applies to regular & subsequent retakes up to max 13 credits.'
+                                : '• Tuition Waiver has no credit limit and applies to all eligible credits.',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: const Color(0xFF0284C7),
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const SizedBox(height: 10),
                           Wrap(
                             spacing: 6,
@@ -770,7 +819,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                           _feeRow('Subsequent Retake Tuition', '${subRetakeTuition.round()} BDT', textSec, textPri),
                           const Divider(height: 16),
                           _feeRow('1st Retake Discount (50%)', '−${firstRetakeDiscount.round()} BDT', AppColors.success, AppColors.success, isBold: true),
-                          _feeRow('Scholarship / Waiver Discount (${waiverPct.toStringAsFixed(0)}%)', '−${waiverDiscount.round()} BDT', const Color(0xFF0284C7), const Color(0xFF0284C7), isBold: true),
+                          _feeRow('${_discountType == 'scholarship' ? 'Scholarship (Max 13 Cr)' : 'Waiver (No Limit)'} (${discountPct.toStringAsFixed(0)}%)', '−${waiverDiscount.round()} BDT', const Color(0xFF0284C7), const Color(0xFF0284C7), isBold: true),
                           _feeRow('Total Savings / Discount', '−${totalDiscount.round()} BDT', AppColors.success, AppColors.success, isBold: true),
                           const Divider(height: 16),
                           _feeRow('FINAL PAYABLE', '${totalPayable.round()} BDT', textPri, AppColors.primary, isBold: true, isLarge: true),
@@ -820,35 +869,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 14),
 
-                    // POLICY SUMMARY NOTES
-                    _cardWrapper(
-                      surface: surface,
-                      borderColor: borderColor,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 18),
-                              const SizedBox(width: 8),
-                              Text('Summary of Official UIU Rules',
-                                  style: AppTypography.titleSmall.copyWith(
-                                      fontWeight: FontWeight.w800, color: textPri)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          _policyBullet('First-time retake:', '50% discount on that course\'s tuition.', textPri, textSec),
-                          _policyBullet('Subsequent retake (2nd+):', 'No discount (100% full course fee).', textPri, textSec),
-                          _policyBullet('Scholarship / Waiver:', 'Applies ONLY to regular courses. Retakes and session fees excluded.', textPri, textSec),
-                          _policyBullet('Session Fee:', 'Always added as-is without any discounts.', textPri, textSec),
-                          _policyBullet('Trimester Plan:', '3 installments: 40% → 30% → 30%.', textPri, textSec),
-                          _policyBullet('Semester Plan:', '4 installments: 25% → 25% → 25% → 25%.', textPri, textSec),
-                          _policyBullet('Missed Payment:', '500 BDT fine per missed installment deadline.', textPri, textSec),
-                        ],
-                      ),
-                    ),
                   ]),
                 ),
               ),
@@ -1015,25 +1036,59 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     );
   }
 
-  Widget _policyBullet(String title, String desc, Color textPri, Color textSec) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('• ', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: TextStyle(fontSize: 11, color: textSec, height: 1.3),
+  Widget _discountTypeTab({
+    required String label,
+    required String subLabel,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Color sectionColor,
+    required Color borderColor,
+    required Color textPri,
+    required Color textSec,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary.withValues(alpha: 0.12) : sectionColor,
+          borderRadius: AppRadius.borderMd,
+          border: Border.all(
+            color: isSelected ? AppColors.primary : borderColor,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: isSelected ? AppColors.primary : textSec),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextSpan(text: '$title ', style: TextStyle(fontWeight: FontWeight.bold, color: textPri)),
-                  TextSpan(text: desc),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected ? AppColors.primary : textPri,
+                    ),
+                  ),
+                  Text(
+                    subLabel,
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? AppColors.primary : textSec,
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1115,10 +1170,20 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
               ),
               const SizedBox(height: 16),
               _ruleCard(
+                icon: Icons.school_rounded,
+                iconColor: const Color(0xFF0284C7),
+                title: 'Scholarship vs. Tuition Waiver',
+                description: '• Scholarship: Discount applies to regular & subsequent retakes up to a maximum of 13 credits.\n• Tuition Waiver: Has NO credit limit and applies to all registered eligible credits.',
+                isDark: isDark,
+                textPri: textPri,
+                textSec: textSec,
+              ),
+              const SizedBox(height: 10),
+              _ruleCard(
                 icon: Icons.replay_rounded,
                 iconColor: const Color(0xFF10B981),
-                title: 'First-Time Retake Policy',
-                description: 'First-time retake courses receive a 50% discount on that course\'s tuition fee.',
+                title: 'First-Time Retake (50% Flat Discount)',
+                description: 'Every student automatically receives a 50% discount on credit tuition for 1st-time retake courses, regardless of scholarship or waiver.',
                 isDark: isDark,
                 textPri: textPri,
                 textSec: textSec,
@@ -1127,18 +1192,8 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
               _ruleCard(
                 icon: Icons.sync_problem_rounded,
                 iconColor: const Color(0xFFF59E0B),
-                title: 'Subsequent Retake Policy',
-                description: 'Subsequent retake courses (2nd time or more) receive NO discount (100% full course fee is payable).',
-                isDark: isDark,
-                textPri: textPri,
-                textSec: textSec,
-              ),
-              const SizedBox(height: 10),
-              _ruleCard(
-                icon: Icons.military_tech_rounded,
-                iconColor: const Color(0xFF0284C7),
-                title: 'Scholarship & Tuition Waiver',
-                description: 'Scholarship or tuition waiver applies ONLY to regular (non-retake) course tuition. Retakes and session fees are NOT eligible.',
+                title: 'Subsequent Retakes & Scholarship/Waiver',
+                description: 'Subsequent retakes (taken for the 2nd time or more) do not get the automatic 50% discount, but ARE eligible for Scholarship or Tuition Waiver discounts.',
                 isDark: isDark,
                 textPri: textPri,
                 textSec: textSec,
