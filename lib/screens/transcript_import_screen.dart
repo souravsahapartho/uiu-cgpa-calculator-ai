@@ -25,8 +25,7 @@ class TranscriptImportScreen extends StatefulWidget {
 }
 
 class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
-  int _selectedFilterIndex = 0;
-  final List<String> _filters = ['All Trimesters', 'Year 1', 'Year 2', 'Year 3', 'Year 4'];
+  String _selectedTrimesterFilter = 'All Trimesters';
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +41,16 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
     final totalCompletedCredits = semesters.fold(0.0, (sum, s) => sum + s.creditsEarned);
+
+    // Dynamic dropdown filter options from user's actual trimesters
+    final filterOptions = ['All Trimesters', ...semesters.map((s) => s.semesterName)];
+    if (!filterOptions.contains(_selectedTrimesterFilter)) {
+      _selectedTrimesterFilter = 'All Trimesters';
+    }
+
+    final displayedSemesters = _selectedTrimesterFilter == 'All Trimesters'
+        ? semesters
+        : semesters.where((s) => s.semesterName == _selectedTrimesterFilter).toList();
 
     return Scaffold(
       backgroundColor: bg,
@@ -241,45 +250,104 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                 ),
               ),
 
-              // Filter Chips
+              // Dynamic Trimester Filter Dropdown
               if (semesters.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
-                    child: SizedBox(
-                      height: 38,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: _filters.length,
-                        separatorBuilder: (context, index) => const SizedBox(width: AppSpacing.s8),
-                        itemBuilder: (context, index) {
-                          final isSelected = _selectedFilterIndex == index;
-                          return ChoiceChip(
-                            label: Text(
-                              _filters[index],
-                              style: AppTypography.labelSmall.copyWith(
-                                color: isSelected ? Colors.white : textSec,
-                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: surface,
+                        borderRadius: AppRadius.borderLg,
+                        border: Border.all(color: borderClr),
+                        boxShadow: AppShadows.soft,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.12),
+                              borderRadius: AppRadius.borderSm,
+                            ),
+                            child: const Icon(Icons.filter_list_rounded, color: AppColors.primary, size: 18),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'FILTER BY TRIMESTER / SEMESTER',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: textSec,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: _selectedTrimesterFilter,
+                                    isDense: true,
+                                    isExpanded: true,
+                                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary, size: 20),
+                                    dropdownColor: surface,
+                                    style: AppTypography.titleSmall.copyWith(
+                                      color: textPri,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                    ),
+                                    items: filterOptions.map((term) {
+                                      return DropdownMenuItem<String>(
+                                        value: term,
+                                        child: Text(
+                                          term == 'All Trimesters' ? 'All Trimesters (${semesters.length})' : term,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setState(() => _selectedTrimesterFilter = val);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (_selectedTrimesterFilter != 'All Trimesters') ...[
+                            const SizedBox(width: 6),
+                            InkWell(
+                              onTap: () => setState(() => _selectedTrimesterFilter = 'All Trimesters'),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  borderRadius: AppRadius.borderSm,
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.close_rounded, size: 12, color: AppColors.primary),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      'Reset',
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            selected: isSelected,
-                            selectedColor: AppColors.primary,
-                            backgroundColor: sectionClr,
-                            elevation: 0,
-                            pressElevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.borderFull,
-                              side: BorderSide(
-                                color: isSelected ? AppColors.primary : borderClr,
-                                width: 1,
-                              ),
-                            ),
-                            onSelected: (val) {
-                              if (val) setState(() => _selectedFilterIndex = index);
-                            },
-                          );
-                        },
+                          ],
+                        ],
                       ),
                     ),
                   ),
@@ -342,7 +410,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        final semester = semesters[index];
+                        final semester = displayedSemesters[index];
                         return SemesterAccordion(
                           semester: semester,
                           isInitiallyExpanded: index == 0,
@@ -363,7 +431,10 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                               ),
                             );
                             if (confirm == true) {
-                              await provider.deleteSemester(index);
+                              final originalIndex = provider.semesters.indexOf(semester);
+                              if (originalIndex != -1) {
+                                await provider.deleteSemester(originalIndex);
+                              }
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text('Removed ${semester.semesterName} instantly.')),
@@ -373,7 +444,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                           },
                         );
                       },
-                      childCount: semesters.length,
+                      childCount: displayedSemesters.length,
                     ),
                   ),
                 ),

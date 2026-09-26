@@ -172,32 +172,62 @@ class UserProfileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  static int getTrimesterWeight(String name) {
-    if (name.isEmpty) return 0;
-    final exp = RegExp(r'(spring|summer|fall)\s*(\d{4})', caseSensitive: false);
-    final match = exp.firstMatch(name);
-    if (match != null) {
-      final season = match.group(1)!.toLowerCase();
-      final year = int.tryParse(match.group(2)!) ?? 0;
-      int seasonOrder = 1;
-      if (season == 'spring') {
-        seasonOrder = 1;
-      } else if (season == 'summer') {
-        seasonOrder = 2;
-      } else if (season == 'fall') {
-        seasonOrder = 3;
-      }
+    static int getTrimesterWeight(String name) {
+    if (name.trim().isEmpty) return 0;
+    final clean = name.replaceAll('"', '').trim();
+
+    // 1. Season with 4-digit year: Spring 2023, Summer-2023, Fall_2023, Spring2023
+    final exp1 = RegExp(r'\b(spring|summer|fall)\s*[-_/#\s]?\s*(\d{4})\b', caseSensitive: false);
+    final match1 = exp1.firstMatch(clean);
+    if (match1 != null) {
+      final season = match1.group(1)!.toLowerCase();
+      final year = int.parse(match1.group(2)!);
+      final seasonOrder = season == 'spring' ? 1 : (season == 'summer' ? 2 : 3);
       return year * 10 + seasonOrder;
     }
-    final shortExp = RegExp(r"(spring|summer|fall)\s*'?(\d{2})\b", caseSensitive: false);
-    final shortMatch = shortExp.firstMatch(name);
-    if (shortMatch != null) {
-      final season = shortMatch.group(1)!.toLowerCase();
-      int year = int.tryParse(shortMatch.group(2)!) ?? 0;
-      year = year < 50 ? 2000 + year : 1900 + year;
-      int seasonOrder = season == 'spring' ? 1 : (season == 'summer' ? 2 : 3);
+
+    // 2. Year then Season: 2023 Spring, 2023-Summer, 2023_Fall
+    final exp2 = RegExp(r'\b(\d{4})\s*[-_/#\s]?\s*(spring|summer|fall)\b', caseSensitive: false);
+    final match2 = exp2.firstMatch(clean);
+    if (match2 != null) {
+      final year = int.parse(match2.group(1)!);
+      final season = match2.group(2)!.toLowerCase();
+      final seasonOrder = season == 'spring' ? 1 : (season == 'summer' ? 2 : 3);
       return year * 10 + seasonOrder;
     }
+
+    // 3. Season with 2-digit year: Spring 23, Summer'23, Fall-23
+    final exp3 = RegExp(r"\b(spring|summer|fall)\s*[-_/'#\s]?\s*(\d{2})\b", caseSensitive: false);
+    final match3 = exp3.firstMatch(clean);
+    if (match3 != null) {
+      final season = match3.group(1)!.toLowerCase();
+      int yr = int.parse(match3.group(2)!);
+      yr = yr < 50 ? 2000 + yr : 1900 + yr;
+      final seasonOrder = season == 'spring' ? 1 : (season == 'summer' ? 2 : 3);
+      return yr * 10 + seasonOrder;
+    }
+
+    // 4. UIU 3-digit term code: 231, 232, 233, 241, etc.
+    final exp4 = RegExp(r'\b([12]\d)(1|2|3)\b');
+    final match4 = exp4.firstMatch(clean);
+    if (match4 != null) {
+      final yrShort = int.parse(match4.group(1)!);
+      final termDigit = int.parse(match4.group(2)!);
+      final yr = yrShort < 50 ? 2000 + yrShort : 1900 + yrShort;
+      return yr * 10 + termDigit;
+    }
+
+    // 5. Semester terms (Spring / Fall)
+    final exp5 = RegExp(r'\b(spring|fall)\s*[-_/#\s]?\s*(\d{2,4})\b', caseSensitive: false);
+    final match5 = exp5.firstMatch(clean);
+    if (match5 != null) {
+      final season = match5.group(1)!.toLowerCase();
+      int yr = int.parse(match5.group(2)!);
+      if (yr < 100) yr = yr < 50 ? 2000 + yr : 1900 + yr;
+      final seasonOrder = season == 'spring' ? 1 : 2;
+      return yr * 10 + seasonOrder;
+    }
+
     return 0;
   }
 
@@ -241,7 +271,14 @@ class UserProfileProvider extends ChangeNotifier {
     return null;
   }
 
-  void _sortAndRecomputeSemesters() {
+  
+  static String getCourseKey(Course course) {
+    final cleanCode = course.code.replaceAll(RegExp(r'[^A-Za-z0-9]'), '').toUpperCase();
+    if (cleanCode.isNotEmpty) return cleanCode;
+    return course.title.replaceAll(RegExp(r'[^A-Za-z0-9]'), '').toLowerCase();
+  }
+
+    void _sortAndRecomputeSemesters() {
     if (_semesters.isEmpty) return;
 
     // 1. Sort chronologically ascending to compute progressive CGPA (Spring -> Summer -> Fall)
@@ -252,10 +289,9 @@ class UserProfileProvider extends ChangeNotifier {
       return a.semesterName.compareTo(b.semesterName);
     });
 
-    double runningPoints = 0.0;
-    double runningCredits = 0.0;
-
     final updatedSemesters = <SemesterTranscript>[];
+    // Map of unique course key -> best attempt up to current semester
+    final bestAttemptsUpToNow = <String, Map<String, double>>{};
 
     for (final sem in _semesters) {
       double termPoints = 0.0;
@@ -266,13 +302,25 @@ class UserProfileProvider extends ChangeNotifier {
         if (course.credit > 0) {
           termPoints += (gp * course.credit);
           termCredits += course.credit;
+
+          // Track best attempt for overall cumulative CGPA & credits
+          final key = getCourseKey(course);
+          if (!bestAttemptsUpToNow.containsKey(key) || gp > (bestAttemptsUpToNow[key]!['gp'] ?? 0.0)) {
+            bestAttemptsUpToNow[key] = {'gp': gp, 'credit': course.credit};
+          }
         }
       }
 
       final termGPA = termCredits > 0 ? (termPoints / termCredits) : 0.0;
-      runningPoints += termPoints;
-      runningCredits += termCredits;
-      final progressiveCGPA = runningCredits > 0 ? (runningPoints / runningCredits) : 0.0;
+
+      // Cumulative progressive CGPA using best attempts of unique courses up to this trimester
+      double progPoints = 0.0;
+      double progCredits = 0.0;
+      for (final item in bestAttemptsUpToNow.values) {
+        progPoints += item['gp']! * item['credit']!;
+        progCredits += item['credit']!;
+      }
+      final progressiveCGPA = progCredits > 0 ? (progPoints / progCredits) : 0.0;
 
       updatedSemesters.add(sem.copyWith(
         creditsEarned: termCredits,
@@ -282,6 +330,7 @@ class UserProfileProvider extends ChangeNotifier {
     }
 
     // 2. Sort descending so the most recent trimester is at the top for transcript view
+    // (Spring 2023 is at the very bottom, Summer 2023 above it, Fall 2023 above that, Spring 2024 above that, etc.)
     updatedSemesters.sort((a, b) {
       final wa = getTrimesterWeight(a.semesterName);
       final wb = getTrimesterWeight(b.semesterName);
@@ -299,23 +348,31 @@ class UserProfileProvider extends ChangeNotifier {
   }
 
   
-  Map<String, double> getTranscriptCumulativeMetrics() {
-    double runningPoints = 0.0;
-    double runningCredits = 0.0;
+    Map<String, double> getTranscriptCumulativeMetrics() {
+    final bestAttempts = <String, Map<String, double>>{};
     for (final sem in _semesters) {
       for (final course in sem.courses) {
+        if (course.credit <= 0) continue;
+        final key = getCourseKey(course);
         final gp = course.gradePoint ??
             (course.grade != null ? UIUGradingScale.getGradePoint(course.grade!) : 0.0);
-        if (course.credit > 0) {
-          runningPoints += (gp * course.credit);
-          runningCredits += course.credit;
+        if (!bestAttempts.containsKey(key) || gp > (bestAttempts[key]!['gp'] ?? 0.0)) {
+          bestAttempts[key] = {'gp': gp, 'credit': course.credit};
         }
       }
     }
-    final cumulativeCGPA = runningCredits > 0 ? (runningPoints / runningCredits) : 0.0;
+
+    double totalPoints = 0.0;
+    double totalCredits = 0.0;
+    for (final item in bestAttempts.values) {
+      totalPoints += item['gp']! * item['credit']!;
+      totalCredits += item['credit']!;
+    }
+
+    final cumulativeCGPA = totalCredits > 0 ? (totalPoints / totalCredits) : 0.0;
     return {
       'cgpa': double.parse(cumulativeCGPA.toStringAsFixed(2)),
-      'credits': runningCredits,
+      'credits': totalCredits,
     };
   }
 

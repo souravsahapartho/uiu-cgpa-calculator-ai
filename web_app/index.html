@@ -1054,6 +1054,25 @@
         </div>
 
         <!-- Trimesters Accordion List -->
+        
+        <!-- Dynamic Trimester Filter Dropdown -->
+        <div id="transcript-filter-container" style="background: var(--surface-card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+            <div style="background: rgba(249, 115, 22, 0.12); color: var(--primary); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+              <i class="bi bi-funnel-fill"></i>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.5px;">FILTER BY TRIMESTER</div>
+              <select id="transcript-filter-select" onchange="onTranscriptFilterChange()" style="width: 100%; border: none; background: transparent; font-weight: 800; font-size: 13px; color: var(--navy); outline: none; cursor: pointer;">
+                <option value="ALL">All Trimesters</option>
+              </select>
+            </div>
+          </div>
+          <button id="transcript-filter-reset-btn" type="button" onclick="resetTranscriptFilter()" style="display: none; background: rgba(249, 115, 22, 0.1); border: none; color: var(--primary); font-size: 11px; font-weight: 700; border-radius: 6px; padding: 4px 8px; cursor: pointer;">
+            <i class="bi bi-x"></i> Reset
+          </button>
+        </div>
+
         <div id="transcript-list"></div>
       </div>
 
@@ -1881,6 +1900,28 @@
       });
     }
 
+    
+    let currentTranscriptFilter = 'ALL';
+
+    function onTranscriptFilterChange() {
+      const sel = document.getElementById('transcript-filter-select');
+      if (sel) {
+        currentTranscriptFilter = sel.value;
+        const resetBtn = document.getElementById('transcript-filter-reset-btn');
+        if (resetBtn) resetBtn.style.display = currentTranscriptFilter === 'ALL' ? 'none' : 'inline-block';
+        renderTranscriptScreen();
+      }
+    }
+
+    function resetTranscriptFilter() {
+      currentTranscriptFilter = 'ALL';
+      const sel = document.getElementById('transcript-filter-select');
+      if (sel) sel.value = 'ALL';
+      const resetBtn = document.getElementById('transcript-filter-reset-btn');
+      if (resetBtn) resetBtn.style.display = 'none';
+      renderTranscriptScreen();
+    }
+
     function renderTranscriptScreen() {
       const listEl = document.getElementById('transcript-list');
       const countEl = document.getElementById('transcript-term-count');
@@ -2271,6 +2312,13 @@
       return 0;
     }
 
+    
+    function getCourseKey(c) {
+      const code = (c.code || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      if (code) return code;
+      return (c.title || '').replace(/[^A-Za-z0-9]/g, '').toLowerCase();
+    }
+
     function sortAndRecomputeSemesters() {
       if (!appData.semesters || appData.semesters.length === 0) return;
 
@@ -2410,17 +2458,25 @@
 
     
     function getTranscriptCumulativeMetrics() {
-      let totalPts = 0;
-      let totalCr = 0;
       if (!appData.semesters) return { cgpa: 0, credits: 0 };
+      const bestAttempts = {};
       appData.semesters.forEach(sem => {
         (sem.courses || []).forEach(c => {
           const cr = parseFloat(c.credit) || 0;
+          if (cr <= 0) return;
           const gp = c.gradePoint !== undefined ? c.gradePoint : (GRADE_MAP[(c.grade || '').toUpperCase()] || 0.0);
-          totalPts += gp * cr;
-          totalCr += cr;
+          const key = getCourseKey(c);
+          if (!bestAttempts[key] || gp > (bestAttempts[key].gp || 0.0)) {
+            bestAttempts[key] = { gp: gp, credit: cr };
+          }
         });
       });
+      let totalPts = 0;
+      let totalCr = 0;
+      for (const item of Object.values(bestAttempts)) {
+        totalPts += item.gp * item.credit;
+        totalCr += item.credit;
+      }
       const cgpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
       return { cgpa, credits: totalCr };
     }
