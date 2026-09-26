@@ -29,6 +29,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
   static const _keyTuitionSystem = 'uiu_tuition_system';
   static const _keyCreditFee = 'uiu_tuition_credit_fee';
   static const _keySessionFee = 'uiu_tuition_session_fee';
+  static const _keyTuitionTutorialCompleted = 'uiu_tuition_tutorial_completed';
 
   String? _system; // null initially if user hasn't selected or saved yet!
   String _discountType = 'scholarship'; // 'scholarship' or 'waiver'
@@ -46,6 +47,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
   double _waiverPercent = 0.0;
   bool _isCustomWaiver = false;
   int _missedInstallments = 0;
+  bool _tutorialCompleted = false;
 
   @override
   void initState() {
@@ -64,6 +66,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     final savedSystem = prefs.getString(_keyTuitionSystem);
     final savedCreditFee = prefs.getString(_keyCreditFee);
     final savedSessionFee = prefs.getString(_keySessionFee);
+    final tutorialDone = prefs.getBool(_keyTuitionTutorialCompleted) ?? false;
 
     if (mounted) {
       setState(() {
@@ -76,6 +79,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
         if (savedSessionFee != null && savedSessionFee.isNotEmpty) {
           _sessionFeeCtrl.text = savedSessionFee;
         }
+        _tutorialCompleted = tutorialDone;
       });
     }
   }
@@ -94,6 +98,21 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
   Future<void> _saveSessionFeePreference(String val) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keySessionFee, val.trim());
+  }
+
+  
+  Future<void> _dismissTutorial() async {
+    setState(() => _tutorialCompleted = true);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyTuitionTutorialCompleted, true);
+  }
+
+  Future<void> _checkCompleteTutorial() async {
+    if (!_tutorialCompleted) {
+      setState(() => _tutorialCompleted = true);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyTuitionTutorialCompleted, true);
+    }
   }
 
   int get _tutorialCurrentStep {
@@ -144,6 +163,11 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_tutorialCompleted && _tutorialCurrentStep == 5) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _checkCompleteTutorial();
+      });
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkScaffold : AppColors.scaffold;
     final surface = isDark ? AppColors.darkSurface : AppColors.surface;
@@ -227,10 +251,12 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     // Guided Step Tracker
-                    _buildStepTracker(_tutorialCurrentStep, surface, borderColor, textPri, textSec, isDark),
+                    if (!_tutorialCompleted)
+                      _buildStepTracker(_tutorialCurrentStep, surface, borderColor, textPri, textSec, isDark),
 
                     // Interactive Step Banner
-                    _buildGuidedStepBanner(_tutorialCurrentStep, surface, borderColor, textPri, textSec, isDark),
+                    if (!_tutorialCompleted)
+                      _buildGuidedStepBanner(_tutorialCurrentStep, surface, borderColor, textPri, textSec, isDark),
 
                     // Academic System Selector Toggle (User must choose!)
                     Container(
@@ -1494,9 +1520,9 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
         stepColor = AppColors.primary;
         break;
       case 2:
-        stepBadge = 'STEP 2 OF 5 • AUTO-SAVED PARAMETERS';
+        stepBadge = 'STEP 2 OF 5 • ACADEMIC FEES';
         stepTitle = 'Confirm Credit Fee & Session Fee';
-        stepDesc = 'Enter your per-credit fee (e.g. 6500) and session fee (e.g. 5000). Once typed, they are saved locally so you won\'t need to type them again!';
+        stepDesc = 'Enter your program per-credit fee (e.g. 6500) and session fee (e.g. 5000).';
         stepIcon = Icons.payments_rounded;
         stepColor = const Color(0xFF0284C7);
         break;
@@ -1546,21 +1572,38 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: stepColor,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    stepBadge,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 8.5,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.4,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: stepColor,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        stepBadge,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
                     ),
-                  ),
+                    InkWell(
+                      onTap: _dismissTutorial,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 16,
+                          color: textSec,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(

@@ -1248,7 +1248,7 @@
               <span style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--primary); color: white; font-size: 10px; font-weight: 900;">2</span>
               <span><i class="bi bi-cash-stack" style="color: var(--primary);"></i> Academic Fee Parameters</span>
             </div>
-            <span style="font-size: 10px; font-weight: 700; color: #059669; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 6px;">Auto-Saved</span>
+            
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
             <div>
@@ -1753,8 +1753,8 @@
         batch: '',
         currentCGPA: 0.00,
         completedCredits: 0.0,
-        totalDegreeCredits: 138.0,
-        targetCGPA: 3.75
+        totalDegreeCredits: 0.0,
+        targetCGPA: 0.00
       },
       semesters: []
     };
@@ -2408,6 +2408,40 @@
       return trimestersMap;
     }
 
+    
+    function getTranscriptCumulativeMetrics() {
+      let totalPts = 0;
+      let totalCr = 0;
+      if (!appData.semesters) return { cgpa: 0, credits: 0 };
+      appData.semesters.forEach(sem => {
+        (sem.courses || []).forEach(c => {
+          const cr = parseFloat(c.credit) || 0;
+          const gp = c.gradePoint !== undefined ? c.gradePoint : (GRADE_MAP[(c.grade || '').toUpperCase()] || 0.0);
+          totalPts += gp * cr;
+          totalCr += cr;
+        });
+      });
+      const cgpa = totalCr > 0 ? parseFloat((totalPts / totalCr).toFixed(2)) : 0.00;
+      return { cgpa, credits: totalCr };
+    }
+
+    function promptUpdateProfileAfterImport() {
+      const metrics = getTranscriptCumulativeMetrics();
+      if (metrics.credits > 0) {
+        setTimeout(() => {
+          const confirmed = confirm(
+            "Detected Transcript CGPA: " + metrics.cgpa.toFixed(2) + " (" + metrics.credits.toFixed(1) + " Credits).\n\nIs this your CGPA?\nWould you like to update your profile CGPA to " + metrics.cgpa.toFixed(2) + "?"
+          );
+          if (confirmed) {
+            appData.profile.currentCGPA = metrics.cgpa;
+            appData.profile.completedCredits = metrics.credits;
+            saveAppData();
+            showToast("Profile CGPA updated to " + metrics.cgpa.toFixed(2) + "!");
+          }
+        }, 350);
+      }
+    }
+
     function applyImportedTrimesters(trimestersMap) {
       let totalNewCourses = 0;
       let affectedTerms = 0;
@@ -2665,8 +2699,10 @@
       document.getElementById('edit-prof-id').value = p.studentId || '';
       document.getElementById('edit-prof-dept').value = p.department || '';
       document.getElementById('edit-prof-batch').value = p.batch || '';
-      document.getElementById('edit-prof-target').value = p.targetCGPA || 3.75;
-      document.getElementById('edit-prof-total-cr').value = p.totalDegreeCredits || 138.0;
+      document.getElementById('edit-prof-cgpa').value = p.currentCGPA !== undefined ? p.currentCGPA : 0.00;
+      document.getElementById('edit-prof-completed-cr').value = p.completedCredits !== undefined ? p.completedCredits : 0.0;
+      document.getElementById('edit-prof-target').value = p.targetCGPA !== undefined ? p.targetCGPA : 0.00;
+      document.getElementById('edit-prof-total-cr').value = p.totalDegreeCredits !== undefined ? p.totalDegreeCredits : 0.0;
       document.getElementById('editProfileModal').classList.add('active');
     }
 
@@ -2679,8 +2715,10 @@
       appData.profile.studentId = document.getElementById('edit-prof-id').value.trim() || '';
       appData.profile.department = document.getElementById('edit-prof-dept').value.trim() || 'Department of Computer Science & Engineering';
       appData.profile.batch = document.getElementById('edit-prof-batch').value.trim() || '';
-      appData.profile.targetCGPA = parseFloat(document.getElementById('edit-prof-target').value) || 3.75;
-      appData.profile.totalDegreeCredits = parseFloat(document.getElementById('edit-prof-total-cr').value) || 138.0;
+      appData.profile.currentCGPA = parseFloat(document.getElementById('edit-prof-cgpa').value) || 0.00;
+      appData.profile.completedCredits = parseFloat(document.getElementById('edit-prof-completed-cr').value) || 0.0;
+      appData.profile.targetCGPA = parseFloat(document.getElementById('edit-prof-target').value) || 0.00;
+      appData.profile.totalDegreeCredits = parseFloat(document.getElementById('edit-prof-total-cr').value) || 0.0;
 
       saveAppData();
       closeEditProfileModal();
@@ -2819,7 +2857,23 @@
       calculateTuition();
     }
 
+    
+    function dismissTuitionTutorial() {
+      localStorage.setItem('uiu_tuition_tutorial_completed', 'true');
+      const tracker = document.getElementById('tuition-step-tracker');
+      const banner = document.getElementById('tuition-guide-banner');
+      if (tracker) tracker.style.display = 'none';
+      if (banner) banner.style.display = 'none';
+    }
+
     function updateTuitionSteps() {
+      const isTutorialDismissed = localStorage.getItem('uiu_tuition_tutorial_completed') === 'true';
+      const trackerEl = document.getElementById('tuition-step-tracker');
+      const bannerEl = document.getElementById('tuition-guide-banner');
+      if (isTutorialDismissed) {
+        if (trackerEl) trackerEl.style.display = 'none';
+        if (bannerEl) bannerEl.style.display = 'none';
+      }
       // Step calculations:
       // Step 1: System chosen?
       const step1Done = tuitionState.system !== null;
@@ -2857,11 +2911,11 @@
       const sysBadge = document.getElementById('tuition-system-status-badge');
       if (sysBadge) {
         if (tuitionState.system === 'trimester') {
-          sysBadge.innerText = 'Saved: Trimester';
+          sysBadge.innerText = 'Trimester';
           sysBadge.style.background = 'rgba(16, 185, 129, 0.12)';
           sysBadge.style.color = '#059669';
         } else if (tuitionState.system === 'semester') {
-          sysBadge.innerText = 'Saved: Semester';
+          sysBadge.innerText = 'Semester';
           sysBadge.style.background = 'rgba(16, 185, 129, 0.12)';
           sysBadge.style.color = '#059669';
         } else {
@@ -2919,13 +2973,13 @@
             if (guideIcon) guideIcon.innerHTML = '<i class="bi bi-calendar-check-fill"></i>';
             if (guideBadge) guideBadge.innerText = 'STEP 1';
             guideTitle.innerText = 'Choose Academic System';
-            guideDesc.innerText = 'Select Trimester (3 terms/year) or Semester (2 terms/year). Your choice is saved locally so you don\'t have to re-select it.';
+            guideDesc.innerText = 'Select Trimester (3 terms/year) or Semester (2 terms/year). Select your academic system.';
             break;
           case 2:
             if (guideIcon) guideIcon.innerHTML = '<i class="bi bi-cash-coin"></i>';
             if (guideBadge) guideBadge.innerText = 'STEP 2';
             guideTitle.innerText = 'Set Per-Credit & Session Fees';
-            guideDesc.innerText = 'Enter your program\'s credit fee (e.g. 6,500 BDT) and session fee (e.g. 5,000 BDT). Auto-saved locally on your device.';
+            guideDesc.innerText = 'Enter your program\'s credit fee (e.g. 6,500 BDT) and session fee (e.g. 5,000 BDT). ';
             break;
           case 3:
             if (guideIcon) guideIcon.innerHTML = '<i class="bi bi-pencil-square"></i>';

@@ -125,8 +125,8 @@ class UserProfileProvider extends ChangeNotifier {
     batch: '',
     currentCGPA: 0.0,
     completedCredits: 0.0,
-    totalDegreeCredits: 138.0,
-    targetCGPA: 3.75,
+    totalDegreeCredits: 0.0,
+    targetCGPA: 0.0,
   );
 
   bool get isOnboarded => _isOnboarded;
@@ -149,8 +149,8 @@ class UserProfileProvider extends ChangeNotifier {
         batch: prefs.getString(_keyBatch) ?? '',
         currentCGPA: prefs.getDouble(_keyCGPA) ?? 0.0,
         completedCredits: prefs.getDouble(_keyCompletedCredits) ?? 0.0,
-        totalDegreeCredits: prefs.getDouble(_keyTotalCredits) ?? 138.0,
-        targetCGPA: prefs.getDouble(_keyTargetCGPA) ?? 3.75,
+        totalDegreeCredits: prefs.getDouble(_keyTotalCredits) ?? 0.0,
+        targetCGPA: prefs.getDouble(_keyTargetCGPA) ?? 0.0,
       );
     }
 
@@ -291,17 +291,40 @@ class UserProfileProvider extends ChangeNotifier {
 
     _semesters = updatedSemesters;
 
-    if (runningCredits > 0) {
-      final cumulativeCGPA = runningPoints / runningCredits;
-      _profile = _profile.copyWith(
-        currentCGPA: double.parse(cumulativeCGPA.toStringAsFixed(2)),
-        completedCredits: runningCredits,
-      );
-    }
+    // Profile currentCGPA & completedCredits remain protected and independent unless user confirms
   }
 
   void _recomputeMetricsFromSemesters() {
     _sortAndRecomputeSemesters();
+  }
+
+  
+  Map<String, double> getTranscriptCumulativeMetrics() {
+    double runningPoints = 0.0;
+    double runningCredits = 0.0;
+    for (final sem in _semesters) {
+      for (final course in sem.courses) {
+        final gp = course.gradePoint ??
+            (course.grade != null ? UIUGradingScale.getGradePoint(course.grade!) : 0.0);
+        if (course.credit > 0) {
+          runningPoints += (gp * course.credit);
+          runningCredits += course.credit;
+        }
+      }
+    }
+    final cumulativeCGPA = runningCredits > 0 ? (runningPoints / runningCredits) : 0.0;
+    return {
+      'cgpa': double.parse(cumulativeCGPA.toStringAsFixed(2)),
+      'credits': runningCredits,
+    };
+  }
+
+  Future<void> updateProfileFromTranscript(double cgpa, double credits) async {
+    final updated = _profile.copyWith(
+      currentCGPA: cgpa,
+      completedCredits: credits,
+    );
+    await saveProfile(updated);
   }
 
   Future<void> saveProfile(UserProfile profile) async {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import '../main.dart';
+import '../core/providers/user_profile_provider.dart';
 import '../models/course.dart';
 import '../models/semester_transcript.dart';
 import '../core/constants/uiu_grading_scale.dart';
@@ -854,6 +855,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     backgroundColor: AppColors.success,
                   ),
                 );
+                _checkAndUpdateProfileCgpa(context, provider);
               }
             },
             child: const Text('Import PDF Data'),
@@ -948,6 +950,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     backgroundColor: AppColors.success,
                   ),
                 );
+                _checkAndUpdateProfileCgpa(context, provider);
               }
             },
             child: const Text('Import Courses'),
@@ -1015,6 +1018,85 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
       ),
     );
   }
+
+  void _checkAndUpdateProfileCgpa(BuildContext context, UserProfileProvider provider) {
+    final metrics = provider.getTranscriptCumulativeMetrics();
+    final cgpa = metrics['cgpa'] ?? 0.0;
+    final credits = metrics['credits'] ?? 0.0;
+
+    if (credits <= 0) return;
+
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (!context.mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderMd,
+                ),
+                child: const Icon(Icons.school_rounded, color: AppColors.primary, size: 22),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Update Profile CGPA?',
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Detected Transcript CGPA: ${cgpa.toStringAsFixed(2)} (${credits.toInt()} Credits)',
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.primary),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Is this your current CGPA? Would you like to update your student profile with this result?',
+                style: TextStyle(fontSize: 13, height: 1.35),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('No, Keep Current', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w700)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await provider.updateProfileFromTranscript(cgpa, credits);
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Profile CGPA updated to ${cgpa.toStringAsFixed(2)}!'),
+                      backgroundColor: AppColors.success,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderBase),
+              ),
+              child: const Text('Yes, Update Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
 }
 
 class _NewCourseItem {
