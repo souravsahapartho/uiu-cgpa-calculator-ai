@@ -298,7 +298,11 @@ class UserProfileProvider extends ChangeNotifier {
       double termCredits = 0.0;
 
       for (final course in sem.courses) {
-        final gp = course.gradePoint ?? (course.grade != null ? UIUGradingScale.getGradePoint(course.grade!) : 0.0);
+        final grade = course.grade?.trim().toUpperCase() ?? '';
+        if (UIUGradingScale.isWithdrawn(grade)) continue; // 'W' completely excluded
+        final gp = UIUGradingScale.isIncomplete(grade)
+            ? 0.0 // 'I' counts as Fail (0.00 gp)
+            : (course.gradePoint ?? (course.grade != null ? UIUGradingScale.getGradePoint(course.grade!) : 0.0));
         if (course.credit > 0) {
           termPoints += (gp * course.credit);
           termCredits += course.credit;
@@ -348,14 +352,18 @@ class UserProfileProvider extends ChangeNotifier {
   }
 
   
-    Map<String, double> getTranscriptCumulativeMetrics() {
+  Map<String, double> getTranscriptCumulativeMetrics() {
     final bestAttempts = <String, Map<String, double>>{};
     for (final sem in _semesters) {
       for (final course in sem.courses) {
         if (course.credit <= 0) continue;
+        final grade = course.grade?.trim().toUpperCase() ?? '';
+        if (UIUGradingScale.isWithdrawn(grade)) continue; // 'W' completely excluded
         final key = getCourseKey(course);
-        final gp = course.gradePoint ??
-            (course.grade != null ? UIUGradingScale.getGradePoint(course.grade!) : 0.0);
+        final gp = UIUGradingScale.isIncomplete(grade)
+            ? 0.0 // 'I' counts as 0.00
+            : (course.gradePoint ??
+                (course.grade != null ? UIUGradingScale.getGradePoint(course.grade!) : 0.0));
         if (!bestAttempts.containsKey(key) || gp > (bestAttempts[key]!['gp'] ?? 0.0)) {
           bestAttempts[key] = {'gp': gp, 'credit': course.credit};
         }
@@ -464,9 +472,32 @@ class UserProfileProvider extends ChangeNotifier {
       }
       if (decoded.containsKey('semesters')) {
         final semList = decoded['semesters'] as List<dynamic>;
-        _semesters = semList
+        final incomingSemesters = semList
             .map((s) => SemesterTranscript.fromJson(s as Map<String, dynamic>))
             .toList();
+
+        // Merge incoming semesters with existing ones
+        for (final inc in incomingSemesters) {
+          final existingIdx = _semesters.indexWhere(
+            (s) => s.semesterName.trim().toLowerCase() == inc.semesterName.trim().toLowerCase(),
+          );
+          if (existingIdx >= 0) {
+            final mergedCourses = List<Course>.from(_semesters[existingIdx].courses);
+            for (final nc in inc.courses) {
+              final cIdx = mergedCourses.indexWhere(
+                (c) => c.code.trim().toUpperCase() == nc.code.trim().toUpperCase(),
+              );
+              if (cIdx >= 0) {
+                mergedCourses[cIdx] = nc;
+              } else {
+                mergedCourses.add(nc);
+              }
+            }
+            _semesters[existingIdx] = _semesters[existingIdx].copyWith(courses: mergedCourses);
+          } else {
+            _semesters.add(inc);
+          }
+        }
       }
       await saveProfile(_profile);
       await _saveSemestersToPrefs();

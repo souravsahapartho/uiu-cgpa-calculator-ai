@@ -6,7 +6,6 @@ import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_shadows.dart';
 import '../widgets/uiu_bottom_sheet.dart';
-import 'analytics_screen.dart';
 import 'main_navigation_screen.dart';
 import 'profile_screen.dart';
 
@@ -865,35 +864,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Required GPA / Trimester',
-                          style: AppTypography.bodySmall.copyWith(
-                              color: textSec, fontSize: 11)),
-                      const SizedBox(height: 2),
-                      Text(
-                        requiredSGPA.toStringAsFixed(2),
-                        style: AppTypography.displayLarge.copyWith(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w900,
-                          color: labelColor,
-                          letterSpacing: -1,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Required GPA / Trimester',
+                            style: AppTypography.bodySmall.copyWith(
+                                color: textSec, fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 2),
+                        Text(
+                          requiredSGPA.toStringAsFixed(2),
+                          style: AppTypography.displayLarge.copyWith(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w900,
+                            color: labelColor,
+                            letterSpacing: -1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: labelColor.withValues(alpha: 0.12),
+                          borderRadius: AppRadius.borderBase,
+                        ),
+                        child: Text(
+                          label,
+                          style: AppTypography.labelSmall.copyWith(
+                              color: labelColor,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 11),
                         ),
                       ),
-                    ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: labelColor.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.borderBase,
                     ),
-                    child: Text(label,
-                        style: AppTypography.labelSmall.copyWith(
-                            color: labelColor,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 11)),
                   ),
                 ],
               ),

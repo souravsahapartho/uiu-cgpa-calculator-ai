@@ -116,9 +116,15 @@ class UIUGradingScale {
     return scale.any((item) => item.grade.toUpperCase() == g) || g == 'W' || g == 'I';
   }
 
+  static bool isWithdrawn(String? grade) => grade?.trim().toUpperCase() == 'W';
+  static bool isIncomplete(String? grade) => grade?.trim().toUpperCase() == 'I';
+
   static Color getGradeColor(String grade) {
+    final g = grade.trim().toUpperCase();
+    if (g == 'W') return const Color(0xFF64748B); // Slate / blue-grey for Withdrawn
+    if (g == 'I') return const Color(0xFFDC2626); // Red for Incomplete (Fail equivalent)
     for (var item in scale) {
-      if (item.grade.toUpperCase() == grade.toUpperCase()) {
+      if (item.grade.toUpperCase() == g) {
         return item.color;
       }
     }

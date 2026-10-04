@@ -235,16 +235,6 @@ class _SemesterAccordionState extends State<SemesterAccordion> with SingleTicker
                         ],
                       ),
 
-                      if (widget.onDelete != null) ...[
-                        const SizedBox(width: 4),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline_rounded, size: 19, color: AppColors.danger),
-                          onPressed: widget.onDelete,
-                          tooltip: 'Delete Trimester',
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ],
-
                       // Animated Expand Chevron
                       AnimatedRotation(
                         turns: _isExpanded ? 0.5 : 0.0,
@@ -299,6 +289,40 @@ class _SemesterAccordionState extends State<SemesterAccordion> with SingleTicker
                             compact: true,
                           ),
                         ),
+                        if (widget.onDelete != null) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.swipe_left_rounded, size: 14, color: textSec.withValues(alpha: 0.7)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Swipe card left to delete',
+                                    style: TextStyle(fontSize: 11, color: textSec.withValues(alpha: 0.7)),
+                                  ),
+                                ],
+                              ),
+                              TextButton.icon(
+                                onPressed: widget.onDelete,
+                                icon: const Icon(Icons.delete_outline_rounded, size: 15, color: AppColors.danger),
+                                label: const Text(
+                                  'Delete Trimester',
+                                  style: TextStyle(
+                                    color: AppColors.danger,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

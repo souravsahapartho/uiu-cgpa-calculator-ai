@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import '../main.dart';
 import '../core/providers/user_profile_provider.dart';
@@ -35,7 +34,6 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
 
     final bg = isDark ? AppColors.darkScaffold : AppColors.scaffold;
     final surface = isDark ? AppColors.darkSurface : AppColors.surface;
-    final sectionClr = isDark ? AppColors.darkSection : AppColors.section;
     final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
     final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
@@ -353,11 +351,37 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final semester = displayedSemesters[index];
-                        return SemesterAccordion(
-                          semester: semester,
-                          isInitiallyExpanded: index == 0,
-                          onDelete: () async {
-                            final confirm = await showDialog<bool>(
+                        return Dismissible(
+                          key: ValueKey('${semester.semesterName}_$index'),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFDC2626), Color(0xFFEF4444)],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Icon(Icons.delete_sweep_rounded, color: Colors.white, size: 26),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Delete',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          confirmDismiss: (direction) async {
+                            return await showDialog<bool>(
                               context: context,
                               builder: (ctx) => AlertDialog(
                                 backgroundColor: surface,
@@ -372,18 +396,50 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                                 ],
                               ),
                             );
-                            if (confirm == true) {
-                              final originalIndex = provider.semesters.indexOf(semester);
-                              if (originalIndex != -1) {
-                                await provider.deleteSemester(originalIndex);
-                              }
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Removed ${semester.semesterName} instantly.')),
-                                );
-                              }
+                          },
+                          onDismissed: (direction) async {
+                            final originalIndex = provider.semesters.indexOf(semester);
+                            if (originalIndex != -1) {
+                              await provider.deleteSemester(originalIndex);
+                            }
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Removed ${semester.semesterName} instantly.')),
+                              );
                             }
                           },
+                          child: SemesterAccordion(
+                            semester: semester,
+                            isInitiallyExpanded: index == 0,
+                            onDelete: () async {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  backgroundColor: surface,
+                                  title: Text('Delete Trimester?', style: TextStyle(color: textPri, fontWeight: FontWeight.bold)),
+                                  content: Text('Are you sure you want to remove ${semester.semesterName}?', style: TextStyle(color: textSec)),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: const Text('Delete', style: TextStyle(color: AppColors.danger)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirm == true) {
+                                final originalIndex = provider.semesters.indexOf(semester);
+                                if (originalIndex != -1) {
+                                  await provider.deleteSemester(originalIndex);
+                                }
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Removed ${semester.semesterName} instantly.')),
+                                  );
+                                }
+                              }
+                            },
+                          ),
                         );
                       },
                       childCount: displayedSemesters.length,
@@ -1175,64 +1231,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     );
   }
 
-  // ── EXPORT JSON MODAL ──
-  void _showExportJsonModal(BuildContext context, String json) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
-        title: const Text('Backup JSON Data', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Copy this JSON code to keep a safe backup of your entire profile and grades. You can restore it anytime.',
-              style: TextStyle(fontSize: 12),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              height: 140,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSection : AppColors.section,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: SingleChildScrollView(
-                child: SelectableText(
-                  json,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
-          ),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            icon: const Icon(Icons.copy_rounded, size: 16),
-            label: const Text('Copy to Clipboard'),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: json));
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Backup JSON copied to clipboard!')),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+
 
   void _checkAndUpdateProfileCgpa(BuildContext context, UserProfileProvider provider) {
     final metrics = provider.getTranscriptCumulativeMetrics();
