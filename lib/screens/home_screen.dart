@@ -1291,13 +1291,7 @@ class _AnimatedAppEmblemState extends State<_AnimatedAppEmblem>
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFF8A4C), Color(0xFFEA580C)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.45), width: 1.5),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFFEA580C).withValues(alpha: 0.4),
@@ -1306,11 +1300,13 @@ class _AnimatedAppEmblemState extends State<_AnimatedAppEmblem>
             ),
           ],
         ),
-        child: const Center(
-          child: Icon(
-            Icons.school_rounded,
-            color: Colors.white,
-            size: 24,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.asset(
+            'assets/logo.png',
+            width: 44,
+            height: 44,
+            fit: BoxFit.contain,
           ),
         ),
       ),

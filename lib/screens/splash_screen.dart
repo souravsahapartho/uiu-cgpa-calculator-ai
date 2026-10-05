@@ -120,86 +120,34 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // App Icon Emblem with 3D Depth & Glow
+                  // App Icon Emblem with 3D Depth & Glow using official logo.png
                   Container(
-                    width: 104,
-                    height: 104,
+                    width: 110,
+                    height: 110,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFFFF7A00),
-                          Color(0xFFEA580C),
-                          Color(0xFFC2410C),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(26),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.38),
+                          color: AppColors.primary.withValues(alpha: 0.45),
                           blurRadius: 36,
                           spreadRadius: 2,
                           offset: const Offset(0, 14),
                         ),
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 12,
+                          offset: const Offset(0, 5),
                         ),
                       ],
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.35),
-                        width: 2,
-                      ),
                     ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Subtle inner glow
-                        Container(
-                          margin: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(24),
-                            gradient: RadialGradient(
-                              colors: [
-                                Colors.white.withValues(alpha: 0.25),
-                                Colors.transparent,
-                              ],
-                              radius: 0.8,
-                            ),
-                          ),
-                        ),
-                        const Icon(
-                          Icons.school_rounded,
-                          size: 52,
-                          color: Colors.white,
-                        ),
-                        // AI Sparkle Badge
-                        Positioned(
-                          top: 10,
-                          right: 10,
-                          child: Container(
-                            padding: const EdgeInsets.all(3.5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF3C7),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 4,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.auto_awesome_rounded,
-                              size: 13,
-                              color: Color(0xFFD97706),
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(26),
+                      child: Image.asset(
+                        'assets/logo.png',
+                        width: 110,
+                        height: 110,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),

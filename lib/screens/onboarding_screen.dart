@@ -215,17 +215,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       ScaleTransition(
                         scale: _logoScale,
                         child: Container(
-                          width: 44,
-                          height: 44,
+                          width: 46,
+                          height: 46,
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFFFF7A00),
-                                Color(0xFFEA580C),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
                             borderRadius: BorderRadius.circular(13),
                             boxShadow: [
                               BoxShadow(
@@ -234,33 +226,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 offset: const Offset(0, 4),
                               ),
                             ],
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              width: 1.2,
-                            ),
                           ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              const Icon(Icons.school_rounded,
-                                  color: Colors.white, size: 24),
-                              Positioned(
-                                top: 3,
-                                right: 3,
-                                child: Container(
-                                  padding: const EdgeInsets.all(1.5),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFFEF3C7),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.auto_awesome_rounded,
-                                    size: 7.5,
-                                    color: Color(0xFFD97706),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(13),
+                            child: Image.asset(
+                              'assets/logo.png',
+                              width: 46,
+                              height: 46,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ),
@@ -429,6 +403,32 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 4, bottom: 18),
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.32),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/logo.png',
+                  width: 76,
+                  height: 76,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
           Text('👋 Welcome!',
               style: AppTypography.displayMedium.copyWith(
                   fontSize: 26, fontWeight: FontWeight.w900, color: textPri)),
