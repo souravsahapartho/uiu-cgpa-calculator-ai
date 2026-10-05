@@ -13,6 +13,7 @@ import '../theme/app_typography.dart';
 import '../theme/app_shadows.dart';
 import '../widgets/subtle_background.dart';
 import '../widgets/uiu_bottom_sheet.dart';
+import '../widgets/academic_distinctions_modal.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -45,10 +46,9 @@ class ProfileScreen extends StatelessWidget {
       }
     }
     final cgpa = student.currentCGPA;
-    final isGoldEligible = cgpa >= 3.98;
-    final isSummaEligible = cgpa >= 3.95 && !hasRetakes;
-    final isMagnaEligible = cgpa >= 3.85 && cgpa < 3.95;
-    final isCumLaudeEligible = cgpa >= 3.75 && cgpa < 3.85;
+    final isGoldEligible = cgpa >= 3.80;
+    final isSummaEligible = cgpa >= 3.80 && !hasRetakes;
+    final isMagnaEligible = cgpa >= 3.65;
 
     // Avatar initials
     final initials = student.name.isNotEmpty
@@ -337,12 +337,17 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => UIUBottomSheet.showConvocationHonors(context),
+                        onTap: () => AcademicDistinctionsModal.show(
+                          context,
+                          profile: student,
+                          hasRetakes: hasRetakes,
+                          completedTrimesters: provider.semesters.length,
+                        ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Criteria & Rules',
+                              'Verified Criteria & Rules',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -374,13 +379,19 @@ class ProfileScreen extends StatelessWidget {
                         title: 'Chancellor\'s Gold Medal',
                         subtitle: 'Top Academic Distinction',
                         cgpaRange: 'Batch Topper • Top CGPA',
-                        badge: isGoldEligible ? '🔓 Unlocked' : '🔒 Locked (Min 3.98)',
+                        badge: isGoldEligible ? '🔓 Eligible (Rank #1 Req)' : '🔒 Locked (< 3.80)',
                         badgeColor: const Color(0xFFD97706),
                         isQualified: isGoldEligible,
                         surface: surface,
                         borderColor: borderColor,
                         textPri: textPri,
                         textSec: textSec,
+                        onTap: () => AcademicDistinctionsModal.show(
+                          context,
+                          profile: student,
+                          hasRetakes: hasRetakes,
+                          completedTrimesters: provider.semesters.length,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       _honorCard(
@@ -388,16 +399,22 @@ class ProfileScreen extends StatelessWidget {
                         icon: Icons.stars_rounded,
                         title: 'Summa Cum Laude',
                         subtitle: 'Highest Academic Honor',
-                        cgpaRange: 'CGPA 3.95 – 4.00',
+                        cgpaRange: 'CGPA 3.80 – 4.00',
                         badge: isSummaEligible
                             ? '🔓 Unlocked'
-                            : (hasRetakes ? '🔒 Retake Restricted' : '🔒 Locked (Min 3.95)'),
+                            : (hasRetakes ? '🔒 Retake Restricted' : '🔒 Locked (< 3.80)'),
                         badgeColor: const Color(0xFF8B5CF6),
                         isQualified: isSummaEligible,
                         surface: surface,
                         borderColor: borderColor,
                         textPri: textPri,
                         textSec: textSec,
+                        onTap: () => AcademicDistinctionsModal.show(
+                          context,
+                          profile: student,
+                          hasRetakes: hasRetakes,
+                          completedTrimesters: provider.semesters.length,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       _honorCard(
@@ -405,29 +422,41 @@ class ProfileScreen extends StatelessWidget {
                         icon: Icons.verified_rounded,
                         title: 'Magna Cum Laude',
                         subtitle: 'Great Academic Honor',
-                        cgpaRange: 'CGPA 3.85 – 3.94',
-                        badge: isMagnaEligible ? '🔓 Unlocked' : '🔒 Locked (3.85-3.94)',
+                        cgpaRange: 'CGPA 3.65 – 3.79',
+                        badge: isMagnaEligible ? '🔓 Unlocked' : '🔒 Locked (< 3.65)',
                         badgeColor: const Color(0xFF2563EB),
                         isQualified: isMagnaEligible,
                         surface: surface,
                         borderColor: borderColor,
                         textPri: textPri,
                         textSec: textSec,
+                        onTap: () => AcademicDistinctionsModal.show(
+                          context,
+                          profile: student,
+                          hasRetakes: hasRetakes,
+                          completedTrimesters: provider.semesters.length,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       _honorCard(
                         context: context,
-                        icon: Icons.emoji_events_rounded,
-                        title: 'Cum Laude',
-                        subtitle: 'Academic Distinction',
-                        cgpaRange: 'CGPA 3.75 – 3.84',
-                        badge: isCumLaudeEligible ? '🔓 Unlocked' : '🔒 Locked (3.75-3.84)',
-                        badgeColor: const Color(0xFF059669),
-                        isQualified: isCumLaudeEligible,
+                        icon: Icons.info_outline_rounded,
+                        title: 'Cum Laude (Not at UIU)',
+                        subtitle: 'Official UIU Policy Check',
+                        cgpaRange: 'Not Conferred',
+                        badge: 'Official: Not Awarded',
+                        badgeColor: const Color(0xFF64748B),
+                        isQualified: false,
                         surface: surface,
                         borderColor: borderColor,
                         textPri: textPri,
                         textSec: textSec,
+                        onTap: () => AcademicDistinctionsModal.show(
+                          context,
+                          profile: student,
+                          hasRetakes: hasRetakes,
+                          completedTrimesters: provider.semesters.length,
+                        ),
                       ),
                     ],
                   ),
@@ -487,12 +516,17 @@ class ProfileScreen extends StatelessWidget {
                     _settingItem(
                       icon: Icons.workspace_premium_rounded,
                       title: 'UIU Convocation Honors Criteria',
-                      subtitle: 'Gold Medal, Summa, Magna & Cum Laude requirements',
+                      subtitle: 'Gold Medal, Summa & Magna Cum Laude verified rules',
                       surface: surface,
                       borderColor: borderColor,
                       textPri: textPri,
                       textSec: textSec,
-                      onTap: () => UIUBottomSheet.showConvocationHonors(context),
+                      onTap: () => AcademicDistinctionsModal.show(
+                        context,
+                        profile: provider.profile,
+                        hasRetakes: hasRetakes,
+                        completedTrimesters: provider.semesters.length,
+                      ),
                     ),
                     _settingItem(
                       icon: Icons.sync_rounded,
@@ -556,12 +590,13 @@ class ProfileScreen extends StatelessWidget {
     required Color borderColor,
     required Color textPri,
     required Color textSec,
+    VoidCallback? onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => UIUBottomSheet.showConvocationHonors(context),
+        onTap: onTap ?? () => UIUBottomSheet.showConvocationHonors(context),
         borderRadius: AppRadius.borderLg,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),

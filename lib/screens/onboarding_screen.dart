@@ -64,7 +64,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   // Page 1 – personal info
   final _nameController = TextEditingController();
   final _idController = TextEditingController();
-  final _customDeptController = TextEditingController();
   String? _selectedDept;
   String _batchController = '';
   bool _batchEdited = false;
@@ -103,7 +102,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _pageController.dispose();
     _nameController.dispose();
     _idController.dispose();
-    _customDeptController.dispose();
     _cgpaController.dispose();
     _creditsController.dispose();
     _targetController.dispose();
@@ -112,43 +110,33 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     super.dispose();
   }
 
-  bool get _page1Valid {
-    if (_nameController.text.trim().isEmpty ||
-        _idController.text.trim().isEmpty ||
-        _selectedDept == null) {
-      return false;
-    }
-    if (_selectedDept == 'Other' && _customDeptController.text.trim().isEmpty) {
-      return false;
-    }
-    return true;
-  }
+  bool get _page1Valid =>
+      _nameController.text.trim().isNotEmpty &&
+      _idController.text.trim().isNotEmpty &&
+      _selectedDept != null;
 
   bool get _page2Valid {
-    final cgpa = double.tryParse(_cgpaController.text.trim()) ?? -1;
-    final credits = double.tryParse(_creditsController.text.trim()) ?? -1;
-    final target = double.tryParse(_targetController.text.trim()) ?? -1;
-    final totalReq = double.tryParse(_totalRequiredCreditsController.text.trim()) ?? -1;
+    final cgpa = double.tryParse(_cgpaController.text) ?? -1;
+    final credits = double.tryParse(_creditsController.text) ?? -1;
+    final target = double.tryParse(_targetController.text) ?? -1;
+    final totalReq = double.tryParse(_totalRequiredCreditsController.text) ?? -1;
     return cgpa >= 0 && cgpa <= 4.0 && credits >= 0 && target >= 0 && target <= 4.0 && totalReq > 0;
   }
 
   Future<void> _finish() async {
     final provider = ProfileProviderScope.of(context);
-    final isOther = _selectedDept == 'Other';
-    final dept = isOther
-        ? (_customDeptController.text.trim().isNotEmpty ? _customDeptController.text.trim() : 'Other')
-        : (_selectedDept ?? 'Computer Science & Engineering');
-    final totalCredits = double.tryParse(_totalRequiredCreditsController.text.trim()) ?? 0.0;
+    final dept = _selectedDept ?? 'Computer Science & Engineering';
+    final totalCredits = double.tryParse(_totalRequiredCreditsController.text) ?? (_totalCreditsByProgram[dept] ?? 138.0);
     final profile = UserProfile(
       name: _nameController.text.trim(),
       studentId: _idController.text.trim(),
       department: dept,
-      program: _programs[dept] ?? (isOther ? 'Undergraduate' : 'B.Sc.'),
+      program: _programs[dept] ?? 'B.Sc.',
       batch: _batchController.isNotEmpty ? _batchController : '—',
-      currentCGPA: double.tryParse(_cgpaController.text.trim()) ?? 0.0,
-      completedCredits: double.tryParse(_creditsController.text.trim()) ?? 0.0,
+      currentCGPA: double.tryParse(_cgpaController.text) ?? 0.0,
+      completedCredits: double.tryParse(_creditsController.text) ?? 0.0,
       totalDegreeCredits: totalCredits,
-      targetCGPA: double.tryParse(_targetController.text.trim()) ?? 3.75,
+      targetCGPA: double.tryParse(_targetController.text) ?? 3.75,
     );
     await provider.saveProfile(profile);
 
@@ -230,7 +218,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFFFF7A00),
+                                Color(0xFFEA580C),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(13),
                             boxShadow: [
                               BoxShadow(
                                 color: AppColors.primary.withValues(alpha: 0.35),
@@ -238,24 +234,33 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 offset: const Offset(0, 4),
                               ),
                             ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.asset(
-                              'assets/logo.png',
-                              width: 44,
-                              height: 44,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(Icons.school_rounded, color: Colors.white, size: 24),
-                              ),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 1.2,
                             ),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              const Icon(Icons.school_rounded,
+                                  color: Colors.white, size: 24),
+                              Positioned(
+                                top: 3,
+                                right: 3,
+                                child: Container(
+                                  padding: const EdgeInsets.all(1.5),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFFEF3C7),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.auto_awesome_rounded,
+                                    size: 7.5,
+                                    color: Color(0xFFD97706),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -531,6 +536,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   if (v != null) {
                     setState(() {
                       _selectedDept = v;
+                      final credits = _totalCreditsByProgram[v] ?? 138.0;
+                      _totalRequiredCreditsController.text = credits.toInt().toString();
                     });
                   }
                 },
@@ -539,18 +546,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ),
             ),
           ),
-          if (_selectedDept == 'Other') ...[
-            const SizedBox(height: 14),
-            _fieldLabel('Specify Department Name *', textSec),
-            _buildTextField(
-              controller: _customDeptController,
-              hint: 'e.g. Data Science / Software Engineering',
-              icon: Icons.edit_note_rounded,
-              surface: surface,
-              border: border,
-              textPri: textPri,
-            ),
-          ],
           const SizedBox(height: 16),
 
           // Academic System (Trimester vs Semester)
@@ -748,7 +743,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           _fieldLabel('Total Required Credits (Degree Total) *', textSec),
           _buildTextField(
             controller: _totalRequiredCreditsController,
-            hint: 'e.g. 138',
+            hint: '138',
             icon: Icons.grade_rounded,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],

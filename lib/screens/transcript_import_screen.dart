@@ -56,25 +56,25 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
       body: SubtleBackground(
         child: SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              // Pinned Top Header / Navbar
-              UIUHeader(
-                title: 'Academic Records',
-                subtitle: semesters.isEmpty
-                    ? 'No recorded trimesters yet'
-                    : '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed',
-                trailing: IconButton(
-                  tooltip: 'Academic Guidelines & Policy',
-                  onPressed: () => _showAcademicGuidelinesModal(context, isDark, surface, borderClr, textPri, textSec),
-                  icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Header
+              SliverToBoxAdapter(
+                child: UIUHeader(
+                  title: 'Academic Records',
+                  subtitle: semesters.isEmpty
+                      ? 'No recorded trimesters yet'
+                      : '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed',
+                  trailing: IconButton(
+                    tooltip: 'Academic Guidelines & Policy',
+                    onPressed: () => _showAcademicGuidelinesModal(context, isDark, surface, borderClr, textPri, textSec),
+                    icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
+                  ),
                 ),
               ),
-              Expanded(
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                    // Action Buttons Bar (Add Trimester, Import CSV, Import PDF, Import Image)
+
+              // Action Buttons Bar (Add Trimester, Import CSV, Import PDF, Import Image)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
@@ -451,11 +451,8 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ],
           ),
         ),
-      ],
-    ),
-  ),
-),
-);
+      ),
+    );
   }
 
   // ── ACADEMIC GUIDELINES & RETAKE POLICY MODAL ──
@@ -567,6 +564,17 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                       iconColor: AppColors.primary,
                       title: 'Manual Course Editing & Auto-Save',
                       desc: 'You can tap any course card inside an expanded trimester to edit its code, title, credits, or grade. All additions, edits, or deletions are instantly auto-saved to your device storage.',
+                      isDark: isDark,
+                      borderClr: borderClr,
+                      textPri: textPri,
+                      textSec: textSec,
+                    ),
+                    const SizedBox(height: 12),
+                    _policyCard(
+                      icon: Icons.warning_amber_rounded,
+                      iconColor: const Color(0xFFEF4444),
+                      title: 'Academic Probation Policy (UIU Regulation)',
+                      desc: 'A student whose Term GPA is less than 2.00 for two consecutive trimesters/semesters or whose cumulative GPA falls below 2.00 will be placed on Academic Probation. A maximum of 3 probations are permitted before dismissal under UIU Academic Regulations.',
                       isDark: isDark,
                       borderClr: borderClr,
                       textPri: textPri,
@@ -982,8 +990,12 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ? 'CSE 2213 Object Oriented Programming 3.00 A\nCSE 2214 OOP Lab 1.00 A\nMATH 2183 Calculus and Linear Algebra 3.00 B+'
             : 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Lab, 1.0, A');
 
-    final termController = TextEditingController();
-    final contentController = TextEditingController();
+    final termController = TextEditingController(
+      text: mode == 'image' ? 'Summer 2023' : 'Spring 2024',
+    );
+    final contentController = TextEditingController(
+      text: mode == 'image' ? 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Lab, 1.0, A' : '',
+    );
 
     String? pickedFileName;
     String? pickedFileSize;
@@ -1176,12 +1188,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                         'Target Trimester Name *',
                         style: AppTypography.labelSmall.copyWith(color: textSec, fontWeight: FontWeight.w700),
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'The trimester/term to assign imported courses to (e.g. Fall 2026). If importing a multi-term transcript, trimesters are auto-detected.',
-                        style: AppTypography.bodySmall.copyWith(color: textSec.withValues(alpha: 0.7), fontSize: 10.5),
-                      ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 5),
                       Container(
                         decoration: BoxDecoration(
                           color: sectionBg,
@@ -1193,7 +1200,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                           style: AppTypography.bodyMedium.copyWith(color: textPri, fontWeight: FontWeight.w700),
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            hintText: 'e.g. Fall 2026',
+                            hintText: 'e.g. Spring 2024',
                             hintStyle: AppTypography.bodyMedium.copyWith(
                               color: textPri.withValues(alpha: 0.35),
                               fontWeight: FontWeight.w400,

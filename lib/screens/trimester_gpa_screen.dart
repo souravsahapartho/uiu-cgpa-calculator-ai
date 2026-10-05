@@ -6,7 +6,7 @@ import '../theme/app_typography.dart';
 import '../theme/app_shadows.dart';
 import '../widgets/subtle_background.dart';
 import '../widgets/uiu_bottom_sheet.dart';
-import '../widgets/uiu_header.dart';
+import 'profile_screen.dart';
 
 class _TrimesterCourse {
   String name;
@@ -126,14 +126,48 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
           bottom: false,
           child: Column(
             children: [
-              // Pinned Top Header / Navbar
-              UIUHeader(
-                title: 'UIU CGPA Calculator',
-                subtitle: 'Current Trimester GPA',
-                trailing: IconButton(
-                  onPressed: () => UIUBottomSheet.showGradingScale(context),
-                  icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 22),
-                  tooltip: 'UIU Grading Scale & Policy',
+              // App bar style header
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: AppRadius.borderMd,
+                      ),
+                      child: const Icon(Icons.school_rounded, color: AppColors.primary, size: 20),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('UIU CGPA Calculator',
+                              style: AppTypography.titleLarge.copyWith(
+                                  color: textPri, fontWeight: FontWeight.w900, fontSize: 16)),
+                          Text('Current Trimester GPA',
+                              style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 10)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => UIUBottomSheet.showGradingScale(context),
+                      icon: Icon(Icons.help_outline_rounded, color: textSec, size: 22),
+                      tooltip: 'UIU Grading Scale & Policy',
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                        );
+                      },
+                      icon: Icon(Icons.person_rounded, color: textSec, size: 22),
+                      tooltip: 'Student Profile',
+                    ),
+                  ],
                 ),
               ),
 
