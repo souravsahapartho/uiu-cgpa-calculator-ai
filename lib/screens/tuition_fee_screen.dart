@@ -229,64 +229,48 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     final lateFine = _missedInstallments * 500.0;
     final totalWithFine = totalPayable + lateFine;
 
-    if (totalRegCredits > 0 && creditFee > 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _autoSaveCalculation(
-          totalPayable: totalWithFine,
-          totalDiscount: totalDiscount,
-          creditFee: creditFee,
-          sessionFee: sessionFee,
-          totalRegCredits: totalRegCredits,
-          firstRetakeCr: firstRetakeCr,
-          subRetakeCr: subRetakeCr,
-          discountPct: discountPct,
-        );
-      });
-    }
-
     return Scaffold(
       backgroundColor: bg,
       body: SubtleBackground(
         child: SafeArea(
           bottom: false,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: UIUHeader(
-                  title: 'Tuition Fee',
-                  subtitle: 'Official UIU Fee Structure & Policies',
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.restart_alt_rounded, color: AppColors.danger, size: 21),
-                        tooltip: 'Reset All Fields',
-                        onPressed: _resetAllFields,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.history_rounded, color: AppColors.accent, size: 21),
-                        tooltip: 'Calculation History',
-                        onPressed: () => _showTuitionHistoryModal(context),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 21),
-                        tooltip: 'Summary of UIU Rules',
-                        onPressed: () => _showTuitionFeeRulesModal(context),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    ],
-                  ),
+          child: Column(
+            children: [
+              // Pinned Top Header / Navbar
+              UIUHeader(
+                title: 'Tuition Fee',
+                subtitle: 'Official UIU Fee Structure & Policies',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.restart_alt_rounded, color: AppColors.danger, size: 21),
+                      tooltip: 'Reset All Fields',
+                      onPressed: _resetAllFields,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.history_rounded, color: AppColors.accent, size: 21),
+                      tooltip: 'Calculation History',
+                      onPressed: () => _showTuitionHistoryModal(context),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 21),
+                      tooltip: 'Summary of UIU Rules',
+                      onPressed: () => _showTuitionFeeRulesModal(context),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
                 ),
               ),
-
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
-                sliver: SliverList(
+              Expanded(
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+                      sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     // Guided Step Tracker
                     if (!_tutorialCompleted)
@@ -1150,6 +1134,18 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                         height: 52,
                         child: ElevatedButton.icon(
                           onPressed: () {
+                            if (totalRegCredits > 0 && creditFee > 0) {
+                              _saveCurrentCalculationToHistory(
+                                totalPayable: totalWithFine,
+                                totalDiscount: totalDiscount,
+                                creditFee: creditFee,
+                                sessionFee: sessionFee,
+                                totalRegCredits: totalRegCredits,
+                                firstRetakeCr: firstRetakeCr,
+                                subRetakeCr: subRetakeCr,
+                                discountPct: discountPct,
+                              );
+                            }
                             final provider = ProfileProviderScope.of(context);
                             TuitionPdfGenerator.printOrDownloadPdf(
                               context: context,
@@ -1192,15 +1188,17 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                       ),
                       const SizedBox(height: 14),
                     ],
-
                   ]),
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+),
+);
   }
 
   Widget _cardWrapper({required Widget child, required Color surface, required Color borderColor}) {
@@ -1868,33 +1866,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     );
   }
 
-  String _lastSavedCalcSignature = '';
 
-  void _autoSaveCalculation({
-    required double totalPayable,
-    required double totalDiscount,
-    required double creditFee,
-    required double sessionFee,
-    required double totalRegCredits,
-    required double firstRetakeCr,
-    required double subRetakeCr,
-    required double discountPct,
-  }) {
-    if (totalPayable <= 0 || totalRegCredits <= 0) return;
-    final sig = '${totalPayable.toStringAsFixed(0)}_${totalDiscount.toStringAsFixed(0)}_${totalRegCredits.toStringAsFixed(1)}_${discountPct.toStringAsFixed(1)}_$_missedInstallments';
-    if (_lastSavedCalcSignature == sig) return;
-    _lastSavedCalcSignature = sig;
-    _saveCurrentCalculationToHistory(
-      totalPayable: totalPayable,
-      totalDiscount: totalDiscount,
-      creditFee: creditFee,
-      sessionFee: sessionFee,
-      totalRegCredits: totalRegCredits,
-      firstRetakeCr: firstRetakeCr,
-      subRetakeCr: subRetakeCr,
-      discountPct: discountPct,
-    );
-  }
 
   Future<void> _saveCurrentCalculationToHistory({
     required double totalPayable,

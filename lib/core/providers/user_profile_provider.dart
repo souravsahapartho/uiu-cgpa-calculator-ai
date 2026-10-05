@@ -91,7 +91,7 @@ class UserProfile {
       batch: json['batch'] as String? ?? '',
       currentCGPA: (json['currentCGPA'] as num?)?.toDouble() ?? 0.0,
       completedCredits: (json['completedCredits'] as num?)?.toDouble() ?? 0.0,
-      totalDegreeCredits: (json['totalDegreeCredits'] as num?)?.toDouble() ?? 138.0,
+      totalDegreeCredits: (json['totalDegreeCredits'] as num?)?.toDouble() ?? 0.0,
       targetCGPA: (json['targetCGPA'] as num?)?.toDouble() ?? 3.75,
     );
   }
