@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../core/providers/user_profile_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';
@@ -294,6 +295,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 // ── QUICK GPA PREDICTOR ──
                 SliverToBoxAdapter(
                   child: _buildPredictorCard(
+                    student: student,
                     requiredSGPA: requiredSGPA,
                     isDark: isDark,
                     surface: surface,
@@ -805,6 +807,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // ── GPA PREDICTOR CARD ─────────────────────────
   Widget _buildPredictorCard({
+    required UserProfile student,
     required double requiredSGPA,
     required bool isDark,
     required Color surface,
@@ -813,20 +816,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required Color textSec,
     required Color sectionClr,
   }) {
-    final labelColor = requiredSGPA <= 3.30
-        ? AppColors.success
-        : requiredSGPA <= 3.75
-            ? AppColors.accent
-            : requiredSGPA <= 4.0
-                ? AppColors.danger
-                : AppColors.danger;
-    final label = requiredSGPA <= 3.30
-        ? '✅ Easily Attainable'
-        : requiredSGPA <= 3.75
-            ? '⚠️ Challenging'
-            : requiredSGPA <= 4.0
-                ? '🔥 Extremely Demanding'
-                : '❌ Impossible (>4.00)';
+    final bool degreeDone = student.remainingCredits <= 0;
+    final (labelColor, label, statusIcon) = degreeDone
+        ? (AppColors.success, '🎉 Degree Completed', Icons.celebration_rounded)
+        : requiredSGPA <= 3.30
+            ? (AppColors.success, '✅ Easily Attainable', Icons.verified_rounded)
+            : requiredSGPA <= 3.75
+                ? (AppColors.accent, '⚠️ Challenging', Icons.trending_up_rounded)
+                : requiredSGPA <= 4.0
+                    ? (const Color(0xFFEA580C), '🔥 Extremely Demanding', Icons.local_fire_department_rounded)
+                    : (AppColors.danger, '❌ Unreachable (>4.00)', Icons.cancel_outlined);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -841,75 +840,168 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header Row
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('QUICK GPA TARGET PREDICTOR',
-                    style: AppTypography.labelSmall.copyWith(
-                        color: textSec,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                        fontSize: 11)),
-                Icon(Icons.auto_graph_rounded, color: AppColors.accent, size: 18),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.auto_graph_rounded, color: AppColors.accent, size: 16),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'QUICK GPA TARGET PREDICTOR',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: textSec,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        'Goal: ${student.targetCGPA.toStringAsFixed(2)} CGPA',
+                        style: TextStyle(
+                          color: textPri,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+                  decoration: BoxDecoration(
+                    color: labelColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: labelColor.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(statusIcon, color: labelColor, size: 12.5),
+                      const SizedBox(width: 4),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          color: labelColor,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 10.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
+
+            // Main Score & Detail Container
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: sectionClr,
                 borderRadius: AppRadius.borderLg,
                 border: Border.all(color: borderColor),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  // Required GPA
                   Expanded(
+                    flex: 5,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Required GPA / Trimester',
-                            style: AppTypography.bodySmall.copyWith(
-                                color: textSec, fontSize: 11),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 2),
                         Text(
-                          requiredSGPA.toStringAsFixed(2),
-                          style: AppTypography.displayLarge.copyWith(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w900,
-                            color: labelColor,
-                            letterSpacing: -1,
+                          'Required GPA / Term',
+                          style: TextStyle(
+                            color: textSec,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11.5,
                           ),
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              degreeDone ? 'Done' : requiredSGPA.toStringAsFixed(2),
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                color: labelColor,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            if (!degreeDone) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                '/ 4.00',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: textSec,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: labelColor.withValues(alpha: 0.12),
-                          borderRadius: AppRadius.borderBase,
+
+                  Container(width: 1, height: 38, color: borderColor),
+                  const SizedBox(width: 12),
+
+                  // Quick Metrics Column
+                  Expanded(
+                    flex: 6,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Current CGPA:', style: TextStyle(color: textSec, fontSize: 11)),
+                            Text(
+                              student.currentCGPA.toStringAsFixed(2),
+                              style: TextStyle(color: textPri, fontWeight: FontWeight.w700, fontSize: 11.5),
+                            ),
+                          ],
                         ),
-                        child: Text(
-                          label,
-                          style: AppTypography.labelSmall.copyWith(
-                              color: labelColor,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 11),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Remaining Cr:', style: TextStyle(color: textSec, fontSize: 11)),
+                            Text(
+                              '${student.remainingCredits.toStringAsFixed(1)} Cr',
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 10),
+
+            // Open Full Calculator Button
             Material(
               color: Colors.transparent,
               child: InkWell(
@@ -921,18 +1013,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: AppRadius.borderBase,
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Open Full Trimester GPA Calculator',
-                          style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11)),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.arrow_forward_rounded,
-                          size: 14, color: AppColors.primary),
+                      Text(
+                        'Open Full Trimester GPA Calculator',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      const Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.primary),
                     ],
                   ),
                 ),

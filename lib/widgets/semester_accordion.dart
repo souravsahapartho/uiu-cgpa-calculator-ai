@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/course.dart';
 import '../models/semester_transcript.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -9,12 +10,14 @@ class SemesterAccordion extends StatefulWidget {
   final SemesterTranscript semester;
   final bool isInitiallyExpanded;
   final VoidCallback? onDelete;
+  final void Function(Course course)? onDeleteCourse;
 
   const SemesterAccordion({
     super.key,
     required this.semester,
     this.isInitiallyExpanded = false,
     this.onDelete,
+    this.onDeleteCourse,
   });
 
   @override
@@ -284,10 +287,72 @@ class _SemesterAccordionState extends State<SemesterAccordion> with SingleTicker
                     child: Column(
                       children: [
                         ...widget.semester.courses.map(
-                          (course) => CourseCard(
-                            course: course,
-                            compact: true,
-                          ),
+                          (course) => widget.onDeleteCourse != null
+                              ? Dismissible(
+                                  key: ValueKey(
+                                      'course_${widget.semester.semesterName}_${course.code}_${course.title}'),
+                                  direction: DismissDirection.endToStart,
+                                  background: Container(
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    alignment: Alignment.centerRight,
+                                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFFDC2626), Color(0xFFEF4444)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          'Delete Course',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 12.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  confirmDismiss: (direction) async {
+                                    return await showDialog<bool>(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        backgroundColor: surface,
+                                        title: Text('Delete Course?',
+                                            style: TextStyle(color: textPri, fontWeight: FontWeight.bold)),
+                                        content: Text(
+                                            'Remove "${course.code} - ${course.title}" from ${widget.semester.semesterName}?',
+                                            style: TextStyle(color: textSec)),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(ctx, false),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(ctx, true),
+                                            child: const Text('Delete', style: TextStyle(color: AppColors.danger)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  onDismissed: (_) {
+                                    widget.onDeleteCourse?.call(course);
+                                  },
+                                  child: CourseCard(
+                                    course: course,
+                                    compact: true,
+                                  ),
+                                )
+                              : CourseCard(
+                                  course: course,
+                                  compact: true,
+                                ),
                         ),
                         if (widget.onDelete != null) ...[
                           const SizedBox(height: 8),

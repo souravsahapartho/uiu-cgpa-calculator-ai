@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
@@ -56,6 +57,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     with TickerProviderStateMixin {
   final _pageController = PageController();
   int _currentPage = 0;
+
+  // Academic System
+  String _academicSystem = 'trimester'; // 'trimester' or 'semester'
 
   // Page 1 – personal info
   final _nameController = TextEditingController();
@@ -133,6 +137,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       targetCGPA: double.tryParse(_targetController.text) ?? 3.75,
     );
     await provider.saveProfile(profile);
+
+    // Save academic system preference locally for tuition fees & app
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('uiu_tuition_system', _academicSystem);
+    } catch (_) {}
+
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
@@ -141,32 +152,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         transitionsBuilder: (c, a1, a2, child) =>
             FadeTransition(opacity: a1, child: child),
         transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
-  }
-
-  Future<void> _skip() async {
-    final provider = ProfileProviderScope.of(context);
-    final profile = UserProfile(
-      name: 'UIUian',
-      studentId: '',
-      department: 'Computer Science & Engineering',
-      program: 'B.Sc. in CSE',
-      batch: '—',
-      currentCGPA: 0.0,
-      completedCredits: 0.0,
-      totalDegreeCredits: 138.0,
-      targetCGPA: 3.75,
-    );
-    await provider.saveProfile(profile);
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (c, a1, a2) => const MainNavigationScreen(),
-        transitionsBuilder: (c, a1, a2, child) =>
-            FadeTransition(opacity: a1, child: child),
-        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -254,24 +239,23 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         ],
                       ),
                       const Spacer(),
-                      TextButton(
-                        onPressed: _skip,
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('Skip',
+                            const Icon(Icons.shield_outlined, size: 14, color: AppColors.primary),
+                            const SizedBox(width: 4),
+                            Text('Setup',
                                 style: TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 13,
-                                    color: textSec)),
-                            const SizedBox(width: 4),
-                            Icon(Icons.arrow_forward_ios_rounded,
-                                size: 12, color: textSec),
+                                    fontSize: 12,
+                                    color: textPri)),
                           ],
                         ),
                       ),
@@ -496,14 +480,117 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     .map((d) => DropdownMenuItem(value: d, child: Text(d, style: AppTypography.bodyMedium.copyWith(color: textPri))))
                     .toList(),
                 onChanged: (v) {
-                  if (v != null) setState(() => _selectedDept = v);
+                  if (v != null) {
+                    setState(() {
+                      _selectedDept = v;
+                      final credits = _totalCreditsByProgram[v] ?? 138.0;
+                      _totalRequiredCreditsController.text = credits.toInt().toString();
+                    });
+                  }
                 },
                 dropdownColor: surface,
                 icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
+
+          // Academic System (Trimester vs Semester)
+          _fieldLabel('Academic System (Trimester / Semester) *', textSec),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _academicSystem = 'trimester'),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: _academicSystem == 'trimester'
+                          ? AppColors.primary.withValues(alpha: 0.12)
+                          : surface,
+                      borderRadius: AppRadius.borderBase,
+                      border: Border.all(
+                        color: _academicSystem == 'trimester' ? AppColors.primary : border,
+                        width: _academicSystem == 'trimester' ? 2 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.calendar_view_month_rounded,
+                          color: _academicSystem == 'trimester' ? AppColors.primary : textSec,
+                          size: 22,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Trimester',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                            color: _academicSystem == 'trimester' ? AppColors.primary : textPri,
+                          ),
+                        ),
+                        Text(
+                          '3 Terms / Year',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: textSec,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _academicSystem = 'semester'),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: _academicSystem == 'semester'
+                          ? AppColors.primary.withValues(alpha: 0.12)
+                          : surface,
+                      borderRadius: AppRadius.borderBase,
+                      border: Border.all(
+                        color: _academicSystem == 'semester' ? AppColors.primary : border,
+                        width: _academicSystem == 'semester' ? 2 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.date_range_rounded,
+                          color: _academicSystem == 'semester' ? AppColors.primary : textSec,
+                          size: 22,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Semester',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                            color: _academicSystem == 'semester' ? AppColors.primary : textPri,
+                          ),
+                        ),
+                        Text(
+                          '2 Terms / Year',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: textSec,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -520,13 +607,56 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               style: AppTypography.displayMedium.copyWith(
                   fontSize: 24, fontWeight: FontWeight.w900, color: textPri)),
           const SizedBox(height: 4),
-          Text('Enter your current progress (you can update later in Profile).',
+          Text('All fields below are mandatory to compute your targets.',
               style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 12)),
-          const SizedBox(height: 24),
-          _fieldLabel('Current CGPA (0.00 – 4.00)', textSec),
+          const SizedBox(height: 16),
+
+          // Offline & Privacy Notice Card
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              borderRadius: AppRadius.borderBase,
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.verified_user_rounded, color: Color(0xFF10B981), size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '100% Offline & Stored Locally',
+                        style: TextStyle(
+                          color: Color(0xFF10B981),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'No personal or academic data is stored on remote servers. All your CGPA, credits, and records stay safely on this device only.',
+                        style: TextStyle(
+                          color: textSec,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          _fieldLabel('Current CGPA (0.00 – 4.00) *', textSec),
           _buildTextField(
             controller: _cgpaController,
-            hint: '3.50',
+            hint: '0.00',
             icon: Icons.school_outlined,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             surface: surface,
@@ -534,10 +664,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             textPri: textPri,
           ),
           const SizedBox(height: 16),
-          _fieldLabel('Credits Completed', textSec),
+          _fieldLabel('Completed Credits (e.g. 0 if 1st trimester) *', textSec),
           _buildTextField(
             controller: _creditsController,
-            hint: '60',
+            hint: '0',
             icon: Icons.playlist_add_check_rounded,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -546,7 +676,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             textPri: textPri,
           ),
           const SizedBox(height: 16),
-          _fieldLabel('Target CGPA', textSec),
+          _fieldLabel('Target CGPA (e.g. 3.75) *', textSec),
           _buildTextField(
             controller: _targetController,
             hint: '3.75',
@@ -557,7 +687,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             textPri: textPri,
           ),
           const SizedBox(height: 16),
-          _fieldLabel('Total Required Credits (Mandatory) *', textSec),
+          _fieldLabel('Total Required Credits (Degree Total) *', textSec),
           _buildTextField(
             controller: _totalRequiredCreditsController,
             hint: '138',
@@ -582,7 +712,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'If you\'re a new student, leave CGPA as 0.00 and credits as 0. You can update anytime from Profile.',
+                    'If you are in your 1st trimester, keep CGPA as 0.00 and Completed Credits as 0. You can update anytime from Profile or Transcript.',
                     style: AppTypography.bodySmall.copyWith(
                         color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.w600),
                   ),
@@ -590,7 +720,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
         ],
       ),
     );

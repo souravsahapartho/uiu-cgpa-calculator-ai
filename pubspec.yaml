@@ -15,6 +15,7 @@ dependencies:
   file_picker: ^13.1.0
   pdf: ^3.13.1
   printing: ^5.15.1
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

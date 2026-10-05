@@ -463,6 +463,27 @@ class UserProfileProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteCourse(String semesterName, Course course) async {
+    final sIdx = _semesters.indexWhere(
+      (s) => s.semesterName.trim().toLowerCase() == semesterName.trim().toLowerCase(),
+    );
+    if (sIdx >= 0) {
+      final updatedCourses = List<Course>.from(_semesters[sIdx].courses);
+      updatedCourses.removeWhere(
+        (c) =>
+            c.code.trim().toUpperCase() == course.code.trim().toUpperCase() &&
+            c.title.trim().toLowerCase() == course.title.trim().toLowerCase(),
+      );
+      if (updatedCourses.isEmpty) {
+        _semesters.removeAt(sIdx);
+      } else {
+        _semesters[sIdx] = _semesters[sIdx].copyWith(courses: updatedCourses);
+      }
+      _sortAndRecomputeSemesters();
+      await _saveSemestersToPrefs();
+    }
+  }
+
   String exportBackupJson() {
     final data = {
       'version': 1,

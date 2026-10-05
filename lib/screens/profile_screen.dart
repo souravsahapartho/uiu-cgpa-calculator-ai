@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import '../core/providers/user_profile_provider.dart';
 import '../theme/app_colors.dart';
@@ -474,28 +475,6 @@ class ProfileScreen extends StatelessWidget {
                       onTap: () => _showEditDialog(context, provider, isDark, surface, borderColor, textPri, textSec),
                     ),
                     _settingItem(
-                      icon: Icons.file_download_outlined,
-                      title: 'Download JSON Backup',
-                      subtitle: 'Directly download/save complete profile & grades before uninstalling',
-                      surface: surface,
-                      borderColor: borderColor,
-                      textPri: textPri,
-                      textSec: textSec,
-                      trailing: const Icon(Icons.download_rounded, color: AppColors.primary, size: 20),
-                      onTap: () => _handleDirectExportJson(context, provider),
-                    ),
-                    _settingItem(
-                      icon: Icons.restore_page_outlined,
-                      title: 'Import JSON Backup',
-                      subtitle: 'Directly select .json file to restore previous records',
-                      surface: surface,
-                      borderColor: borderColor,
-                      textPri: textPri,
-                      textSec: textSec,
-                      trailing: const Icon(Icons.upload_rounded, color: AppColors.primary, size: 20),
-                      onTap: () => _handleDirectImportJson(context, provider),
-                    ),
-                    _settingItem(
                       icon: Icons.policy_rounded,
                       title: 'UIU Official Grading Scale',
                       subtitle: 'View letter grades, marks, and grade points',
@@ -847,15 +826,24 @@ class ProfileScreen extends StatelessWidget {
                     Divider(height: 1, color: borderColor),
                     const SizedBox(height: 8),
                     InkWell(
-                      onTap: () {
-                        Clipboard.setData(const ClipboardData(text: 'https://sourav.com.bd'));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Website link copied: https://sourav.com.bd'),
-                            backgroundColor: AppColors.primary,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
+                      onTap: () async {
+                        final uri = Uri.parse('https://sourav.com.bd');
+                        try {
+                          final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          if (!launched) {
+                            await launchUrl(uri, mode: LaunchMode.platformDefault);
+                          }
+                        } catch (_) {
+                          Clipboard.setData(const ClipboardData(text: 'https://sourav.com.bd'));
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Copied https://sourav.com.bd to clipboard'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
                       },
                       borderRadius: AppRadius.borderMd,
                       child: Padding(

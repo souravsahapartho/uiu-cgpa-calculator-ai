@@ -402,6 +402,17 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                           child: SemesterAccordion(
                             semester: semester,
                             isInitiallyExpanded: index == 0,
+                            onDeleteCourse: (course) async {
+                              await provider.deleteCourse(semester.semesterName, course);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Removed ${course.code} instantly.'),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            },
                             onDelete: () async {
                               final confirm = await showDialog<bool>(
                                 context: context,
