@@ -68,6 +68,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   final _cgpaController = TextEditingController(text: '0.00');
   final _creditsController = TextEditingController(text: '0');
   final _targetController = TextEditingController(text: '3.75');
+  final _totalRequiredCreditsController = TextEditingController(text: '138');
 
   late AnimationController _logoAnim;
   late Animation<double> _logoScale;
@@ -100,6 +101,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _cgpaController.dispose();
     _creditsController.dispose();
     _targetController.dispose();
+    _totalRequiredCreditsController.dispose();
     _logoAnim.dispose();
     super.dispose();
   }
@@ -111,13 +113,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     final cgpa = double.tryParse(_cgpaController.text) ?? -1;
     final credits = double.tryParse(_creditsController.text) ?? -1;
     final target = double.tryParse(_targetController.text) ?? -1;
-    return cgpa >= 0 && cgpa <= 4.0 && credits >= 0 && target >= 0 && target <= 4.0;
+    final totalReq = double.tryParse(_totalRequiredCreditsController.text) ?? -1;
+    return cgpa >= 0 && cgpa <= 4.0 && credits >= 0 && target >= 0 && target <= 4.0 && totalReq > 0;
   }
 
   Future<void> _finish() async {
     final provider = ProfileProviderScope.of(context);
     final dept = _selectedDept;
-    final totalCredits = _totalCreditsByProgram[dept] ?? 138.0;
+    final totalCredits = double.tryParse(_totalRequiredCreditsController.text) ?? (_totalCreditsByProgram[dept] ?? 138.0);
     final profile = UserProfile(
       name: _nameController.text.trim(),
       studentId: _idController.text.trim(),
@@ -549,6 +552,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             hint: '3.75',
             icon: Icons.track_changes_rounded,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            surface: surface,
+            border: border,
+            textPri: textPri,
+          ),
+          const SizedBox(height: 16),
+          _fieldLabel('Total Required Credits (Mandatory) *', textSec),
+          _buildTextField(
+            controller: _totalRequiredCreditsController,
+            hint: '138',
+            icon: Icons.grade_rounded,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             surface: surface,
             border: border,
             textPri: textPri,

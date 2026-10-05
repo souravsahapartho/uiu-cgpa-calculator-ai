@@ -211,11 +211,11 @@ class ProfileScreen extends StatelessWidget {
                           children: [
                             _profileStat('CGPA', student.currentCGPA.toStringAsFixed(2)),
                             _divider(),
-                            _profileStat('Credits', '${student.completedCredits.toInt()}'),
+                            _profileStat('Done Cr', '${student.completedCredits.toInt()}'),
+                            _divider(),
+                            _profileStat('Req Cr', '${student.totalDegreeCredits.toInt()}'),
                             _divider(),
                             _profileStat('Target', student.targetCGPA.toStringAsFixed(2)),
-                            _divider(),
-                            _profileStat('Batch', student.batch.isNotEmpty ? student.batch : '—'),
                           ],
                         ),
                       ],
@@ -370,10 +370,10 @@ class ProfileScreen extends StatelessWidget {
                       _honorCard(
                         context: context,
                         icon: Icons.military_tech_rounded,
-                        title: 'Gold Medal',
-                        subtitle: 'সর্বোচ্চ সম্মান',
+                        title: 'Chancellor\'s Gold Medal',
+                        subtitle: 'Top Academic Distinction',
                         cgpaRange: 'Batch Topper • Top CGPA',
-                        badge: isGoldEligible ? 'Top Runner' : 'Batch Top',
+                        badge: isGoldEligible ? '🔓 Unlocked' : '🔒 Locked (Min 3.98)',
                         badgeColor: const Color(0xFFD97706),
                         isQualified: isGoldEligible,
                         surface: surface,
@@ -386,11 +386,11 @@ class ProfileScreen extends StatelessWidget {
                         context: context,
                         icon: Icons.stars_rounded,
                         title: 'Summa Cum Laude',
-                        subtitle: 'Highest Honor',
+                        subtitle: 'Highest Academic Honor',
                         cgpaRange: 'CGPA 3.95 – 4.00',
                         badge: isSummaEligible
-                            ? 'On Track'
-                            : (hasRetakes ? 'Retake Restricted' : 'No Retakes'),
+                            ? '🔓 Unlocked'
+                            : (hasRetakes ? '🔒 Retake Restricted' : '🔒 Locked (Min 3.95)'),
                         badgeColor: const Color(0xFF8B5CF6),
                         isQualified: isSummaEligible,
                         surface: surface,
@@ -403,9 +403,9 @@ class ProfileScreen extends StatelessWidget {
                         context: context,
                         icon: Icons.verified_rounded,
                         title: 'Magna Cum Laude',
-                        subtitle: 'Great Honor',
+                        subtitle: 'Great Academic Honor',
                         cgpaRange: 'CGPA 3.85 – 3.94',
-                        badge: isMagnaEligible ? 'On Track' : 'Retake OK',
+                        badge: isMagnaEligible ? '🔓 Unlocked' : '🔒 Locked (3.85-3.94)',
                         badgeColor: const Color(0xFF2563EB),
                         isQualified: isMagnaEligible,
                         surface: surface,
@@ -418,9 +418,9 @@ class ProfileScreen extends StatelessWidget {
                         context: context,
                         icon: Icons.emoji_events_rounded,
                         title: 'Cum Laude',
-                        subtitle: 'Honor',
+                        subtitle: 'Academic Distinction',
                         cgpaRange: 'CGPA 3.75 – 3.84',
-                        badge: isCumLaudeEligible ? 'On Track' : 'Retake OK',
+                        badge: isCumLaudeEligible ? '🔓 Unlocked' : '🔒 Locked (3.75-3.84)',
                         badgeColor: const Color(0xFF059669),
                         isQualified: isCumLaudeEligible,
                         surface: surface,
@@ -578,22 +578,32 @@ class ProfileScreen extends StatelessWidget {
     required Color textPri,
     required Color textSec,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => UIUBottomSheet.showConvocationHonors(context),
         borderRadius: AppRadius.borderLg,
-        child: Container(
-          width: 172,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: 178,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: surface,
             borderRadius: AppRadius.borderLg,
             border: Border.all(
-              color: isQualified ? badgeColor.withValues(alpha: 0.6) : borderColor,
-              width: isQualified ? 1.5 : 1,
+              color: isQualified ? badgeColor.withValues(alpha: 0.75) : borderColor,
+              width: isQualified ? 1.8 : 1.0,
             ),
-            boxShadow: AppShadows.soft,
+            boxShadow: isQualified
+                ? [
+                    BoxShadow(
+                      color: badgeColor.withValues(alpha: 0.22),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : AppShadows.soft,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,33 +615,31 @@ class ProfileScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(7),
                     decoration: BoxDecoration(
-                      color: badgeColor.withValues(alpha: 0.12),
+                      color: (isQualified ? badgeColor : (isDark ? Colors.white12 : Colors.black12)).withValues(alpha: 0.12),
                       borderRadius: AppRadius.borderMd,
                     ),
-                    child: Icon(icon, color: badgeColor, size: 20),
+                    child: Icon(
+                      icon,
+                      color: isQualified ? badgeColor : textSec,
+                      size: 20,
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                     decoration: BoxDecoration(
-                      color: (isQualified ? AppColors.success : badgeColor).withValues(alpha: 0.12),
+                      color: (isQualified ? AppColors.success : (isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05))),
                       borderRadius: AppRadius.borderFull,
+                      border: Border.all(
+                        color: (isQualified ? AppColors.success : borderColor).withValues(alpha: 0.4),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (isQualified) ...[
-                          const Icon(Icons.check_circle_rounded, size: 10, color: AppColors.success),
-                          const SizedBox(width: 3),
-                        ],
-                        Text(
-                          badge,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            color: isQualified ? AppColors.success : badgeColor,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      badge,
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        color: isQualified ? Colors.white : textSec,
+                      ),
                     ),
                   ),
                 ],
@@ -667,7 +675,7 @@ class ProfileScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: badgeColor.withValues(alpha: 0.08),
+                  color: isQualified ? badgeColor.withValues(alpha: 0.08) : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03)),
                   borderRadius: AppRadius.borderSm,
                 ),
                 child: Text(
@@ -675,7 +683,7 @@ class ProfileScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: badgeColor,
+                    color: isQualified ? badgeColor : textSec,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -700,74 +708,220 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.12),
-                borderRadius: AppRadius.borderMd,
+        contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+        content: SizedBox(
+          width: 340,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Card
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFEA580C), Color(0xFFC2410C)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: AppRadius.borderLg,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEA580C).withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: AppRadius.borderMd,
+                      ),
+                      child: const Icon(Icons.school_rounded, color: Colors.white, size: 28),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'UIU CGPA Calculator AI',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              borderRadius: AppRadius.borderFull,
+                            ),
+                            child: const Text(
+                              'v1.0.0 • Official Release',
+                              style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: const Icon(Icons.school_rounded, color: AppColors.primary, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'UIU CGPA Calculator AI',
-                style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.w900, color: textPri),
+
+              const SizedBox(height: 14),
+
+              Text(
+                'A dedicated academic companion designed specifically for United International University (UIU) students to accurately track CGPA, plan trimesters, predict target grades, and generate official tuition fee breakdowns.',
+                style: AppTypography.bodySmall.copyWith(color: textSec, height: 1.45, fontSize: 11.5),
               ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'A dedicated academic companion for students of United International University (UIU). Calculate CGPA, plan trimesters, predict target grades, and track academic honors.',
-              style: AppTypography.bodySmall.copyWith(color: textSec, height: 1.4),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.primarySubtle,
-                borderRadius: AppRadius.borderMd,
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+
+              const SizedBox(height: 14),
+
+              // Developer Card
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                  borderRadius: AppRadius.borderLg,
+                  border: Border.all(color: borderColor),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'SS',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Sourav Saha',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13,
+                                  color: textPri,
+                                ),
+                              ),
+                              Text(
+                                'Computer Science & Engineering • UIU',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: textSec,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Divider(height: 1, color: borderColor),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () {
+                        Clipboard.setData(const ClipboardData(text: 'https://sourav.com.bd'));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Website link copied: https://sourav.com.bd'),
+                            backgroundColor: AppColors.primary,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      borderRadius: AppRadius.borderMd,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.language_rounded, size: 14, color: AppColors.primary),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'www.sourav.com.bd',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: AppRadius.borderSm,
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.copy_rounded, size: 10, color: AppColors.primary),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    'Copy',
+                                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _aboutRow('Developer', 'Sourav Saha', AppColors.primaryDark),
-                  const SizedBox(height: 6),
-                  _aboutRow('Website', 'www.sourav.com.bd', AppColors.primary),
-                  const SizedBox(height: 6),
-                  _aboutRow('Version', '1.0.0 (Release)', AppColors.primaryDark),
-                  const SizedBox(height: 6),
-                  _aboutRow('Institution', 'United International University', AppColors.primaryDark),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+          SizedBox(
+            width: double.infinity,
+            height: 42,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                elevation: 0,
+              ),
+              child: const Text('Close', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _aboutRow(String label, String value, Color valColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
-        Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: valColor)),
-      ],
     );
   }
 
@@ -819,6 +973,9 @@ class ProfileScreen extends StatelessWidget {
     final batchCtrl = TextEditingController(text: student.batch);
     final cgpaCtrl = TextEditingController(text: student.currentCGPA.toStringAsFixed(2));
     final creditsCtrl = TextEditingController(text: student.completedCredits.toStringAsFixed(0));
+    final totalCreditsCtrl = TextEditingController(
+      text: student.totalDegreeCredits > 0 ? student.totalDegreeCredits.toStringAsFixed(0) : '138',
+    );
     final targetCtrl = TextEditingController(text: student.targetCGPA.toStringAsFixed(2));
 
     idCtrl.addListener(() {
@@ -871,25 +1028,43 @@ class ProfileScreen extends StatelessWidget {
                   Expanded(child: _editField('Current CGPA', cgpaCtrl, textPri, borderColor, surface,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true))),
                   const SizedBox(width: 10),
-                  Expanded(child: _editField('Credits Done', creditsCtrl, textPri, borderColor, surface,
+                  Expanded(child: _editField('Credits Completed', creditsCtrl, textPri, borderColor, surface,
                       keyboardType: TextInputType.number)),
-                  const SizedBox(width: 10),
-                  Expanded(child: _editField('Target CGPA', targetCtrl, textPri, borderColor, surface,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true))),
                 ],
               ),
-              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(child: _editField('Target CGPA', targetCtrl, textPri, borderColor, surface,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true))),
+                  const SizedBox(width: 10),
+                  Expanded(child: _editField('Total Required Cr *', totalCreditsCtrl, textPri, borderColor, surface,
+                      keyboardType: TextInputType.number)),
+                ],
+              ),
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
+                    final reqCredits = double.tryParse(totalCreditsCtrl.text.trim()) ?? 0.0;
+                    if (reqCredits <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Total Required Credits is mandatory and must be > 0 (e.g. 138)!'),
+                          backgroundColor: AppColors.danger,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      return;
+                    }
                     await provider.saveProfile(student.copyWith(
                       name: nameCtrl.text.trim(),
                       studentId: idCtrl.text.trim(),
                       batch: batchCtrl.text.trim().isNotEmpty ? batchCtrl.text.trim() : student.batch,
                       currentCGPA: double.tryParse(cgpaCtrl.text) ?? student.currentCGPA,
                       completedCredits: double.tryParse(creditsCtrl.text) ?? student.completedCredits,
+                      totalDegreeCredits: reqCredits,
                       targetCGPA: double.tryParse(targetCtrl.text) ?? student.targetCGPA,
                     ));
                     if (ctx.mounted) Navigator.pop(ctx);

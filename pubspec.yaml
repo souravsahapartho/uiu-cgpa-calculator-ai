@@ -13,6 +13,8 @@ dependencies:
   google_fonts: ^6.2.1
   shared_preferences: ^2.3.3
   file_picker: ^13.1.0
+  pdf: ^3.13.1
+  printing: ^5.15.1
 
 dev_dependencies:
   flutter_test:

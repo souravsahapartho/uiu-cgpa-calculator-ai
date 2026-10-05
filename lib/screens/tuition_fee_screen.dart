@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../main.dart';
+import '../core/utils/tuition_pdf_generator.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
@@ -1015,6 +1017,55 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                       ),
                     ),
 
+                    const SizedBox(height: 16),
+
+                    // Download Breakdown PDF Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          final provider = ProfileProviderScope.of(context);
+                          TuitionPdfGenerator.printOrDownloadPdf(
+                            context: context,
+                            profile: provider.profile,
+                            system: _system ?? 'trimester',
+                            creditFee: creditFee,
+                            sessionFee: sessionFee,
+                            regularCredits: regularCredits,
+                            firstRetakeCr: firstRetakeCr,
+                            subRetakeCr: subRetakeCr,
+                            regularTuition: regularTuition,
+                            firstRetakeTuition: firstRetakeTuition,
+                            subRetakeTuition: subRetakeTuition,
+                            firstRetakeDiscount: firstRetakeDiscount,
+                            discountType: _discountType,
+                            discountPct: discountPct,
+                            waiverDiscount: waiverDiscount,
+                            totalDiscount: totalDiscount,
+                            lateFine: lateFine,
+                            missedInstallments: _missedInstallments,
+                            totalPayable: totalWithFine,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEA580C),
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: AppRadius.borderLg),
+                        ),
+                        icon: const Icon(Icons.picture_as_pdf_rounded, size: 22),
+                        label: const Text(
+                          'Download Fee Breakdown (PDF)',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
 
                   ]),
                 ),

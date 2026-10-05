@@ -38,7 +38,8 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-    final totalCompletedCredits = semesters.fold(0.0, (sum, s) => sum + s.creditsEarned);
+    final cumulativeMetrics = provider.getTranscriptCumulativeMetrics();
+    final totalCompletedCredits = cumulativeMetrics['credits'] ?? 0.0;
 
     // Dynamic dropdown filter options from user's actual trimesters
     final filterOptions = ['All Trimesters', ...semesters.map((s) => s.semesterName)];
@@ -65,20 +66,10 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                   subtitle: semesters.isEmpty
                       ? 'No recorded trimesters yet'
                       : '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed',
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        tooltip: 'Academic Guidelines & Policy',
-                        onPressed: () => _showAcademicGuidelinesModal(context, isDark, surface, borderClr, textPri, textSec),
-                        icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
-                      ),
-                      IconButton(
-                        tooltip: 'Student Profile',
-                        onPressed: () => Navigator.pushNamed(context, '/profile'),
-                        icon: const Icon(Icons.person_rounded, color: AppColors.primary),
-                      ),
-                    ],
+                  trailing: IconButton(
+                    tooltip: 'Academic Guidelines & Policy',
+                    onPressed: () => _showAcademicGuidelinesModal(context, isDark, surface, borderClr, textPri, textSec),
+                    icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
                   ),
                 ),
               ),

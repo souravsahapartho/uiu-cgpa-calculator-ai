@@ -6,7 +6,6 @@ import 'home_screen.dart';
 import 'trimester_gpa_screen.dart';
 import 'transcript_import_screen.dart';
 import 'ai_advisor_screen.dart';
-import 'profile_screen.dart';
 import 'tuition_fee_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {

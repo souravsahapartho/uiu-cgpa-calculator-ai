@@ -56,7 +56,7 @@ class UIUGradingScale {
       gradePoint: 2.67,
       markRange: '74 - 77',
       remarks: 'Minus',
-      color: AppColors.secondary,
+      color: Color(0xFF6366F1),
     ),
     UIUGradingItem(
       grade: 'C+',

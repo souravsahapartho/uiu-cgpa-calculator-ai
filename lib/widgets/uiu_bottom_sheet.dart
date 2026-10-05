@@ -312,10 +312,10 @@ class UIUBottomSheet {
                       children: [
                         _buildHonorTile(
                           icon: Icons.military_tech_rounded,
-                          title: 'Gold Medal',
-                          bengaliTitle: 'সর্বোচ্চ সম্মান',
-                          cgpa: 'Highest CGPA in Batch',
-                          rule: 'Undergraduate-এ সর্বোচ্চ CGPA অর্জনকারী (এবং Graduate-এ আলাদাভাবে একজন)। শুধু 4.00 পেলেই Gold Medal নিশ্চিত নয়—নিজের ব্যাচে সর্বোচ্চ হতে হবে।',
+                          title: 'Chancellor\'s Gold Medal',
+                          subtitle: 'Top Academic Distinction',
+                          cgpa: 'Batch Topper • Highest CGPA',
+                          rule: 'Awarded to the student with the highest graduating CGPA in Undergraduate program (and separate for Graduate). Having a 4.00 does not guarantee it unless you are batch topper.',
                           badge: 'Batch Topper',
                           badgeColor: const Color(0xFFD97706),
                           surface: surface,
@@ -327,9 +327,9 @@ class UIUBottomSheet {
                         _buildHonorTile(
                           icon: Icons.stars_rounded,
                           title: 'Summa Cum Laude',
-                          bengaliTitle: 'Highest Honor',
+                          subtitle: 'Highest Academic Honor',
                           cgpa: 'CGPA 3.95 – 4.00',
-                          rule: 'অতিরিক্ত শর্ত: কোনো Retake করা যাবে না। Retake থাকলে Summa-এর জন্য অযোগ্য।',
+                          rule: 'Mandatory Condition: Strictly NO course retake allowed. Any course retake automatically disqualifies from Summa Cum Laude.',
                           badge: 'Strictly No Retake',
                           badgeColor: const Color(0xFF8B5CF6),
                           surface: surface,
@@ -342,9 +342,9 @@ class UIUBottomSheet {
                         _buildHonorTile(
                           icon: Icons.verified_rounded,
                           title: 'Magna Cum Laude',
-                          bengaliTitle: 'Great Honor',
+                          subtitle: 'Great Academic Honor',
                           cgpa: 'CGPA 3.85 – 3.94',
-                          rule: 'Retake থাকলেও এই সম্মান পাওয়া যেতে পারে, যদি CGPA রেঞ্জ পূরণ করে।',
+                          rule: 'Eligible even with course retakes as long as the CGPA criterion is satisfied.',
                           badge: 'Retake Allowed',
                           badgeColor: const Color(0xFF2563EB),
                           surface: surface,
@@ -356,9 +356,9 @@ class UIUBottomSheet {
                         _buildHonorTile(
                           icon: Icons.emoji_events_rounded,
                           title: 'Cum Laude',
-                          bengaliTitle: 'Honor',
+                          subtitle: 'Academic Distinction',
                           cgpa: 'CGPA 3.75 – 3.84',
-                          rule: 'Retake থাকলেও এই সম্মান পাওয়া যেতে পারে।',
+                          rule: 'Eligible even with course retakes as long as the CGPA criterion is satisfied.',
                           badge: 'Retake Allowed',
                           badgeColor: const Color(0xFF059669),
                           surface: surface,
@@ -382,7 +382,7 @@ class UIUBottomSheet {
                                   const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 18),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'গুরুত্বপূর্ণ নিয়মাবলী (Important Notes)',
+                                    'Important UIU Honor Guidelines',
                                     style: AppTypography.labelMedium.copyWith(
                                       color: isDark ? Colors.white : AppColors.primaryDark,
                                       fontWeight: FontWeight.w800,
@@ -391,9 +391,9 @@ class UIUBottomSheet {
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              _noteBullet('Honors গণনা করা হয় Final CGPA দিয়ে।', isDark),
-                              _noteBullet('Gold Medal > Summa > Magna > Cum Laude — এটাই মর্যাদার ক্রম।', isDark),
-                              _noteBullet('UIU-এর নিয়ম অনুযায়ী Retake করলে Summa Cum Laude পাওয়া যায় না, তবে Magna/Cum Laude পাওয়া সম্ভব।', isDark),
+                              _noteBullet('Convocation Honors are determined exclusively by official Final Graduating CGPA.', isDark),
+                              _noteBullet('Precedence hierarchy: Gold Medal > Summa Cum Laude > Magna Cum Laude > Cum Laude.', isDark),
+                              _noteBullet('Under UIU regulations, retaking any course disqualifies from Summa Cum Laude, but Magna and Cum Laude remain achievable.', isDark),
                             ],
                           ),
                         ),
@@ -435,7 +435,7 @@ class UIUBottomSheet {
   static Widget _buildHonorTile({
     required IconData icon,
     required String title,
-    required String bengaliTitle,
+    required String subtitle,
     required String cgpa,
     required String rule,
     required String badge,
@@ -480,7 +480,7 @@ class UIUBottomSheet {
                       ),
                     ),
                     Text(
-                      bengaliTitle,
+                      subtitle,
                       style: AppTypography.bodySmall.copyWith(
                         color: textSec,
                         fontWeight: FontWeight.w600,

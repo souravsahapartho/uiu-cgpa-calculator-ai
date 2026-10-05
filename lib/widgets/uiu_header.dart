@@ -25,6 +25,10 @@ class UIUHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final subtitleColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s12),
       child: Row(
@@ -36,7 +40,7 @@ class UIUHeader extends StatelessWidget {
                 if (showBack) ...[
                   IconButton(
                     onPressed: onBack ?? () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                    icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: titleColor),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -52,7 +56,7 @@ class UIUHeader extends StatelessWidget {
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -0.5,
-                          color: AppColors.textPrimary,
+                          color: titleColor,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -62,7 +66,7 @@ class UIUHeader extends StatelessWidget {
                         Text(
                           subtitle!,
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
+                            color: subtitleColor,
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
                           ),

@@ -296,6 +296,7 @@ class UserProfileProvider extends ChangeNotifier {
     for (final sem in _semesters) {
       double termPoints = 0.0;
       double termCredits = 0.0;
+      double termEarned = 0.0;
 
       for (final course in sem.courses) {
         final grade = course.grade?.trim().toUpperCase() ?? '';
@@ -306,6 +307,9 @@ class UserProfileProvider extends ChangeNotifier {
         if (course.credit > 0) {
           termPoints += (gp * course.credit);
           termCredits += course.credit;
+          if (gp > 0.0) {
+            termEarned += course.credit;
+          }
 
           // Track best attempt for overall cumulative CGPA & credits
           final key = getCourseKey(course);
@@ -327,7 +331,7 @@ class UserProfileProvider extends ChangeNotifier {
       final progressiveCGPA = progCredits > 0 ? (progPoints / progCredits) : 0.0;
 
       updatedSemesters.add(sem.copyWith(
-        creditsEarned: termCredits,
+        creditsEarned: termEarned,
         sgpa: double.parse(termGPA.toStringAsFixed(2)),
         cgpa: double.parse(progressiveCGPA.toStringAsFixed(2)),
       ));
@@ -371,16 +375,23 @@ class UserProfileProvider extends ChangeNotifier {
     }
 
     double totalPoints = 0.0;
-    double totalCredits = 0.0;
+    double totalGpaCredits = 0.0;
+    double completedEarnedCredits = 0.0;
+
     for (final item in bestAttempts.values) {
-      totalPoints += item['gp']! * item['credit']!;
-      totalCredits += item['credit']!;
+      final gp = item['gp']!;
+      final cr = item['credit']!;
+      totalPoints += gp * cr;
+      totalGpaCredits += cr;
+      if (gp > 0.0) {
+        completedEarnedCredits += cr;
+      }
     }
 
-    final cumulativeCGPA = totalCredits > 0 ? (totalPoints / totalCredits) : 0.0;
+    final cumulativeCGPA = totalGpaCredits > 0 ? (totalPoints / totalGpaCredits) : 0.0;
     return {
       'cgpa': double.parse(cumulativeCGPA.toStringAsFixed(2)),
-      'credits': totalCredits,
+      'credits': completedEarnedCredits,
     };
   }
 
