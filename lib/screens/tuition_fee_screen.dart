@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import '../core/utils/tuition_pdf_generator.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
+import '../theme/app_shadows.dart';
 import '../theme/app_typography.dart';
 import '../widgets/subtle_background.dart';
 import '../widgets/uiu_header.dart';
@@ -240,10 +242,28 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                 child: UIUHeader(
                   title: 'Tuition Fee',
                   subtitle: 'Official UIU Fee Structure & Policies',
-                  trailing: IconButton(
-                    icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 22),
-                    tooltip: 'Summary of UIU Rules',
-                    onPressed: () => _showTuitionFeeRulesModal(context),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.restart_alt_rounded, color: AppColors.danger, size: 21),
+                        tooltip: 'Reset All Fields',
+                        onPressed: _resetAllFields,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.history_rounded, color: AppColors.accent, size: 21),
+                        tooltip: 'Calculation History',
+                        onPressed: () => _showTuitionHistoryModal(context),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 21),
+                        tooltip: 'Summary of UIU Rules',
+                        onPressed: () => _showTuitionFeeRulesModal(context),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -868,204 +888,294 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
 
                     const SizedBox(height: 14),
 
-                    // HERO TOTAL PAYABLE BANNER
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFEA580C), Color(0xFFC2410C)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                    if (totalRegCredits <= 0) ...[
+                      // Clean prompt when no credits are entered yet (no demo calculations shown!)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 26),
+                        decoration: BoxDecoration(
+                          color: surface,
+                          borderRadius: AppRadius.borderLg,
+                          border: Border.all(color: borderColor),
+                          boxShadow: AppShadows.soft,
                         ),
-                        borderRadius: AppRadius.borderXl,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFEA580C).withValues(alpha: 0.35),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('TOTAL PAYABLE TUITION FEE',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.5)),
-                          const SizedBox(height: 6),
-                          Text(
-                            '৳ ${totalWithFine.round().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} BDT',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _missedInstallments > 0
-                                ? 'Includes +৳${lateFine.round()} BDT late fine ($_missedInstallments missed)'
-                                : 'Includes course tuition and academic session fee',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // DETAILED BREAKDOWN CARD
-                    _cardWrapper(
-                      surface: surface,
-                      borderColor: borderColor,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Detailed Calculation Breakdown',
-                              style: AppTypography.titleSmall.copyWith(
-                                  fontWeight: FontWeight.w900, color: textPri)),
-                          const SizedBox(height: 10),
-                          _feeRow('Academic System', _system == 'trimester' ? 'Trimester (3 Terms)' : (_system == 'semester' ? 'Semester (2 Terms)' : 'Not Selected Yet'), textSec, textPri, isBold: true),
-                          _feeRow('Credit Fee', '${creditFee.round()} BDT', textSec, textPri),
-                          _feeRow('Trimester/Semester Fee', '${sessionFee.round()} BDT', textSec, textPri),
-                          _feeRow('Registered Credits', '${totalRegCredits.toStringAsFixed(1)} Cr', textSec, textPri, isBold: true),
-                          _feeRow('  • Regular Credits', '${regularCredits.toStringAsFixed(1)} Cr', textSec, textPri),
-                          _feeRow('  • 1st-Time Retake Credits', '${firstRetakeCr.toStringAsFixed(1)} Cr', textSec, AppColors.success),
-                          _feeRow('  • Subsequent Retake Credits', '${subRetakeCr.toStringAsFixed(1)} Cr', textSec, AppColors.accent),
-                          const Divider(height: 16),
-                          _feeRow('Regular Tuition', '${regularTuition.round()} BDT', textSec, textPri),
-                          _feeRow('1st-Time Retake Tuition (50% off)', '${firstRetakeTuition.round()} BDT', textSec, AppColors.success),
-                          _feeRow('Subsequent Retake Tuition', '${subRetakeTuition.round()} BDT', textSec, textPri),
-                          const Divider(height: 16),
-                          _feeRow('1st Retake Discount (50%)', '−${firstRetakeDiscount.round()} BDT', AppColors.success, AppColors.success, isBold: true),
-                          _feeRow('${_discountType == 'scholarship' ? 'Scholarship (Max 13 Cr)' : 'Waiver (No Limit)'} (${discountPct.toStringAsFixed(0)}%)', '−${waiverDiscount.round()} BDT', const Color(0xFF0284C7), const Color(0xFF0284C7), isBold: true),
-                          _feeRow('Total Savings / Discount', '−${totalDiscount.round()} BDT', AppColors.success, AppColors.success, isBold: true),
-                          const Divider(height: 16),
-                          _feeRow('FINAL PAYABLE', '${totalPayable.round()} BDT', textPri, AppColors.primary, isBold: true, isLarge: true),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // INSTALLMENT PLAN CARD
-                    _cardWrapper(
-                      surface: surface,
-                      borderColor: borderColor,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.pie_chart_rounded, color: AppColors.primary, size: 18),
-                                  const SizedBox(width: 6),
-                                  Text('Installment Plan',
-                                      style: AppTypography.titleSmall.copyWith(
-                                          fontWeight: FontWeight.w900, color: textPri)),
-                                ],
-                              ),
-                              Text(
-                                _system == 'trimester' ? '40% / 30% / 30%' : '25% each (x4)',
-                                style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 10, fontWeight: FontWeight.w700),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          if (_system == null) ...[
+                        child: Column(
+                          children: [
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.08),
-                                borderRadius: AppRadius.borderMd,
-                                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
                               ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 18),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'Please select your Academic System (Trimester or Semester) in Step 1 to generate your exact installment schedule.',
-                                      style: TextStyle(color: textPri, fontSize: 11, fontWeight: FontWeight.w600),
+                              child: const Icon(Icons.calculate_outlined, color: AppColors.primary, size: 34),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Ready to Calculate Tuition Fee',
+                              style: TextStyle(
+                                color: textPri,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Enter your registered credits in Step 3 above to calculate your exact tuition fee, retake savings, waiver deductions, and installment schedule.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: textSec,
+                                fontSize: 12,
+                                height: 1.45,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                    ] else ...[
+                      // HERO TOTAL PAYABLE BANNER
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFEA580C), Color(0xFFC2410C)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: AppRadius.borderXl,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFEA580C).withValues(alpha: 0.35),
+                              blurRadius: 18,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('TOTAL PAYABLE TUITION FEE',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5)),
+                                InkWell(
+                                  onTap: () async {
+                                    await _saveCurrentCalculationToHistory(
+                                      totalPayable: totalWithFine,
+                                      totalDiscount: totalDiscount,
+                                      creditFee: creditFee,
+                                      sessionFee: sessionFee,
+                                      totalRegCredits: totalRegCredits,
+                                      firstRetakeCr: firstRetakeCr,
+                                      subRetakeCr: subRetakeCr,
+                                      discountPct: discountPct,
+                                    );
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Calculation saved to local history!'),
+                                          backgroundColor: AppColors.success,
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.bookmark_add_outlined, size: 13, color: Colors.white),
+                                        SizedBox(width: 4),
+                                        Text('Save', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w800)),
+                                      ],
                                     ),
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '৳ ${totalWithFine.round().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} BDT',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 30,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
                               ),
                             ),
-                          ] else if (_system == 'trimester') ...[
-                            _installmentRow('1st Installment (40%)', totalPayable * 0.40, 'Registration & term start', surface, sectionColor, borderColor, textPri, textSec),
-                            _installmentRow('2nd Installment (30%)', totalPayable * 0.30, 'Before Midterm examinations', surface, sectionColor, borderColor, textPri, textSec),
-                            _installmentRow('3rd Installment (30%)', totalPayable * 0.30, 'Before Final examinations', surface, sectionColor, borderColor, textPri, textSec),
-                          ] else ...[
-                            _installmentRow('1st Installment (25%)', totalPayable * 0.25, 'Registration installment', surface, sectionColor, borderColor, textPri, textSec),
-                            _installmentRow('2nd Installment (25%)', totalPayable * 0.25, 'Before 1st term assessment', surface, sectionColor, borderColor, textPri, textSec),
-                            _installmentRow('3rd Installment (25%)', totalPayable * 0.25, 'Before Midterm examination', surface, sectionColor, borderColor, textPri, textSec),
-                            _installmentRow('4th Installment (25%)', totalPayable * 0.25, 'Before Final examination', surface, sectionColor, borderColor, textPri, textSec),
+                            const SizedBox(height: 4),
+                            Text(
+                              _missedInstallments > 0
+                                  ? 'Includes +৳${lateFine.round()} BDT late fine ($_missedInstallments missed)'
+                                  : 'Includes course tuition and academic session fee',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Download Breakdown PDF Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          final provider = ProfileProviderScope.of(context);
-                          TuitionPdfGenerator.printOrDownloadPdf(
-                            context: context,
-                            profile: provider.profile,
-                            system: _system ?? 'trimester',
-                            creditFee: creditFee,
-                            sessionFee: sessionFee,
-                            regularCredits: regularCredits,
-                            firstRetakeCr: firstRetakeCr,
-                            subRetakeCr: subRetakeCr,
-                            regularTuition: regularTuition,
-                            firstRetakeTuition: firstRetakeTuition,
-                            subRetakeTuition: subRetakeTuition,
-                            firstRetakeDiscount: firstRetakeDiscount,
-                            discountType: _discountType,
-                            discountPct: discountPct,
-                            waiverDiscount: waiverDiscount,
-                            totalDiscount: totalDiscount,
-                            lateFine: lateFine,
-                            missedInstallments: _missedInstallments,
-                            totalPayable: totalWithFine,
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEA580C),
-                          foregroundColor: Colors.white,
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(borderRadius: AppRadius.borderLg),
                         ),
-                        icon: const Icon(Icons.picture_as_pdf_rounded, size: 22),
-                        label: const Text(
-                          'Download Fee Breakdown (PDF)',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.2,
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // DETAILED BREAKDOWN CARD
+                      _cardWrapper(
+                        surface: surface,
+                        borderColor: borderColor,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Detailed Calculation Breakdown',
+                                style: AppTypography.titleSmall.copyWith(
+                                    fontWeight: FontWeight.w900, color: textPri)),
+                            const SizedBox(height: 10),
+                            _feeRow('Academic System', _system == 'trimester' ? 'Trimester (3 Terms)' : (_system == 'semester' ? 'Semester (2 Terms)' : 'Not Selected Yet'), textSec, textPri, isBold: true),
+                            _feeRow('Credit Fee', '${creditFee.round()} BDT', textSec, textPri),
+                            _feeRow('Trimester/Semester Fee', '${sessionFee.round()} BDT', textSec, textPri),
+                            _feeRow('Registered Credits', '${totalRegCredits.toStringAsFixed(1)} Cr', textSec, textPri, isBold: true),
+                            _feeRow('  • Regular Credits', '${regularCredits.toStringAsFixed(1)} Cr', textSec, textPri),
+                            _feeRow('  • 1st-Time Retake Credits', '${firstRetakeCr.toStringAsFixed(1)} Cr', textSec, AppColors.success),
+                            _feeRow('  • Subsequent Retake Credits', '${subRetakeCr.toStringAsFixed(1)} Cr', textSec, AppColors.accent),
+                            const Divider(height: 16),
+                            _feeRow('Regular Tuition', '${regularTuition.round()} BDT', textSec, textPri),
+                            _feeRow('1st-Time Retake Tuition (50% off)', '${firstRetakeTuition.round()} BDT', textSec, AppColors.success),
+                            _feeRow('Subsequent Retake Tuition', '${subRetakeTuition.round()} BDT', textSec, textPri),
+                            const Divider(height: 16),
+                            _feeRow('1st Retake Discount (50%)', '−${firstRetakeDiscount.round()} BDT', AppColors.success, AppColors.success, isBold: true),
+                            _feeRow('${_discountType == 'scholarship' ? 'Scholarship (Max 13 Cr)' : 'Waiver (No Limit)'} (${discountPct.toStringAsFixed(0)}%)', '−${waiverDiscount.round()} BDT', const Color(0xFF0284C7), const Color(0xFF0284C7), isBold: true),
+                            _feeRow('Total Savings / Discount', '−${totalDiscount.round()} BDT', AppColors.success, AppColors.success, isBold: true),
+                            const Divider(height: 16),
+                            _feeRow('FINAL PAYABLE', '${totalPayable.round()} BDT', textPri, AppColors.primary, isBold: true, isLarge: true),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // INSTALLMENT PLAN CARD
+                      _cardWrapper(
+                        surface: surface,
+                        borderColor: borderColor,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.pie_chart_rounded, color: AppColors.primary, size: 18),
+                                    const SizedBox(width: 6),
+                                    Text('Installment Plan',
+                                        style: AppTypography.titleSmall.copyWith(
+                                            fontWeight: FontWeight.w900, color: textPri)),
+                                  ],
+                                ),
+                                Text(
+                                  _system == 'trimester' ? '40% / 30% / 30%' : '25% each (x4)',
+                                  style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 10, fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            if (_system == null) ...[
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.08),
+                                  borderRadius: AppRadius.borderMd,
+                                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 18),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Please select your Academic System (Trimester or Semester) in Step 1 to generate your exact installment schedule.',
+                                        style: TextStyle(color: textPri, fontSize: 11, fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ] else if (_system == 'trimester') ...[
+                              _installmentRow('1st Installment (40%)', totalPayable * 0.40, 'Registration & term start', surface, sectionColor, borderColor, textPri, textSec),
+                              _installmentRow('2nd Installment (30%)', totalPayable * 0.30, 'Before Midterm examinations', surface, sectionColor, borderColor, textPri, textSec),
+                              _installmentRow('3rd Installment (30%)', totalPayable * 0.30, 'Before Final examinations', surface, sectionColor, borderColor, textPri, textSec),
+                            ] else ...[
+                              _installmentRow('1st Installment (25%)', totalPayable * 0.25, 'Registration installment', surface, sectionColor, borderColor, textPri, textSec),
+                              _installmentRow('2nd Installment (25%)', totalPayable * 0.25, 'Before 1st term assessment', surface, sectionColor, borderColor, textPri, textSec),
+                              _installmentRow('3rd Installment (25%)', totalPayable * 0.25, 'Before Midterm examination', surface, sectionColor, borderColor, textPri, textSec),
+                              _installmentRow('4th Installment (25%)', totalPayable * 0.25, 'Before Final examination', surface, sectionColor, borderColor, textPri, textSec),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Download Breakdown PDF Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            final provider = ProfileProviderScope.of(context);
+                            TuitionPdfGenerator.printOrDownloadPdf(
+                              context: context,
+                              profile: provider.profile,
+                              system: _system ?? 'trimester',
+                              creditFee: creditFee,
+                              sessionFee: sessionFee,
+                              regularCredits: regularCredits,
+                              firstRetakeCr: firstRetakeCr,
+                              subRetakeCr: subRetakeCr,
+                              regularTuition: regularTuition,
+                              firstRetakeTuition: firstRetakeTuition,
+                              subRetakeTuition: subRetakeTuition,
+                              firstRetakeDiscount: firstRetakeDiscount,
+                              discountType: _discountType,
+                              discountPct: discountPct,
+                              waiverDiscount: waiverDiscount,
+                              totalDiscount: totalDiscount,
+                              lateFine: lateFine,
+                              missedInstallments: _missedInstallments,
+                              totalPayable: totalWithFine,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEA580C),
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: AppRadius.borderLg),
+                          ),
+                          icon: const Icon(Icons.picture_as_pdf_rounded, size: 22),
+                          label: const Text(
+                            'Download Fee Breakdown (PDF)',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.2,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 14),
+                      const SizedBox(height: 14),
+                    ],
 
                   ]),
                 ),
@@ -1183,6 +1293,11 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
       decoration: InputDecoration(
         isDense: true,
         hintText: hintText,
+        hintStyle: TextStyle(
+          color: textPri.withValues(alpha: 0.30),
+          fontWeight: FontWeight.w400,
+          fontSize: 13,
+        ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
         filled: true,
         fillColor: surface,
@@ -1682,4 +1797,362 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     );
   }
 
+  static const _keyTuitionHistory = 'uiu_tuition_calc_history_v1';
+
+  void _resetAllFields() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.borderLg),
+        title: const Row(
+          children: [
+            Icon(Icons.restart_alt_rounded, color: AppColors.danger),
+            SizedBox(width: 8),
+            Text('Reset Calculator?'),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to clear all entered credit values, retakes, and waiver selections?',
+          style: TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _registeredCreditsCtrl.clear();
+                _firstRetakeCreditsCtrl.clear();
+                _subsequentRetakeCreditsCtrl.clear();
+                _customWaiverCtrl.clear();
+                _firstRetakes.clear();
+                _subsequentRetakes.clear();
+                _waiverPercent = 0.0;
+                _isCustomWaiver = false;
+                _missedInstallments = 0;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('All calculation fields have been reset.'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveCurrentCalculationToHistory({
+    required double totalPayable,
+    required double totalDiscount,
+    required double creditFee,
+    required double sessionFee,
+    required double totalRegCredits,
+    required double firstRetakeCr,
+    required double subRetakeCr,
+    required double discountPct,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final historyList = prefs.getStringList(_keyTuitionHistory) ?? [];
+      final now = DateTime.now();
+      final dateStr = '${_monthName(now.month)} ${now.day}, ${now.year} • ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+      final entry = {
+        'id': now.millisecondsSinceEpoch.toString(),
+        'date': dateStr,
+        'system': _system ?? 'trimester',
+        'creditFee': creditFee,
+        'sessionFee': sessionFee,
+        'registeredCredits': totalRegCredits,
+        'firstRetakeCredits': firstRetakeCr,
+        'subsequentRetakeCredits': subRetakeCr,
+        'discountType': _discountType,
+        'discountPct': discountPct,
+        'missedInstallments': _missedInstallments,
+        'totalPayable': totalPayable,
+        'totalDiscount': totalDiscount,
+      };
+
+      historyList.insert(0, jsonEncode(entry));
+      if (historyList.length > 25) {
+        historyList.removeRange(25, historyList.length);
+      }
+      await prefs.setStringList(_keyTuitionHistory, historyList);
+    } catch (_) {}
+  }
+
+  String _monthName(int m) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return (m >= 1 && m <= 12) ? months[m - 1] : '';
+  }
+
+  Future<void> _showTuitionHistoryModal(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawHistory = prefs.getStringList(_keyTuitionHistory) ?? [];
+    List<Map<String, dynamic>> history = [];
+    for (final s in rawHistory) {
+      try {
+        final decoded = jsonDecode(s);
+        if (decoded is Map<String, dynamic>) {
+          history.add(decoded);
+        }
+      } catch (_) {}
+    }
+
+    if (!context.mounted) return;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
+    final sectionClr = isDark ? AppColors.darkSection : AppColors.section;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (ctx, setModalState) => DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          minChildSize: 0.45,
+          maxChildSize: 0.92,
+          expand: false,
+          builder: (_, scrollController) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: borderClr,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.borderMd,
+                      ),
+                      child: const Icon(Icons.history_rounded, color: AppColors.accent, size: 22),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Calculation History',
+                            style: AppTypography.titleLarge.copyWith(
+                              color: textPri,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                            ),
+                          ),
+                          Text(
+                            '${history.length} saved records • Stored locally',
+                            style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (history.isNotEmpty)
+                      TextButton.icon(
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: ctx,
+                            builder: (c) => AlertDialog(
+                              title: const Text('Clear All History?'),
+                              content: const Text('This will delete all saved tuition calculations from your device.'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(c, true),
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
+                                  child: const Text('Clear All'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            await prefs.remove(_keyTuitionHistory);
+                            setModalState(() => history.clear());
+                          }
+                        },
+                        icon: const Icon(Icons.delete_sweep_rounded, size: 16, color: AppColors.danger),
+                        label: const Text('Clear All', style: TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: history.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.history_toggle_off_rounded, size: 48, color: textSec.withValues(alpha: 0.4)),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No Saved Calculations Yet',
+                                style: TextStyle(color: textPri, fontSize: 14, fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Calculate your tuition fee above and tap "Save" to keep track of previous estimates here.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: textSec, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.separated(
+                          controller: scrollController,
+                          itemCount: history.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (ctx, i) {
+                            final item = history[i];
+                            final id = item['id']?.toString() ?? '';
+                            final date = item['date']?.toString() ?? 'Recent';
+                            final sys = item['system']?.toString() ?? 'trimester';
+                            final total = (item['totalPayable'] as num?)?.toDouble() ?? 0.0;
+                            final regCr = (item['registeredCredits'] as num?)?.toDouble() ?? 0.0;
+                            final retakeCr = (item['firstRetakeCredits'] as num?)?.toDouble() ?? 0.0;
+                            final waiverPct = (item['discountPct'] as num?)?.toDouble() ?? 0.0;
+
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: sectionClr,
+                                borderRadius: AppRadius.borderMd,
+                                border: Border.all(color: borderClr),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary.withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          sys.toUpperCase(),
+                                          style: const TextStyle(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 9.5,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(date, style: TextStyle(color: textSec, fontSize: 10.5)),
+                                      IconButton(
+                                        icon: const Icon(Icons.close_rounded, size: 16, color: AppColors.danger),
+                                        visualDensity: VisualDensity.compact,
+                                        onPressed: () async {
+                                          rawHistory.removeWhere((raw) {
+                                            try {
+                                              return jsonDecode(raw)['id']?.toString() == id;
+                                            } catch (_) {
+                                              return false;
+                                            }
+                                          });
+                                          await prefs.setStringList(_keyTuitionHistory, rawHistory);
+                                          setModalState(() => history.removeAt(i));
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '৳ ${total.round().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} BDT',
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w900,
+                                              color: Color(0xFFEA580C),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Credits: ${regCr.toStringAsFixed(1)} Cr  •  Retake: ${retakeCr.toStringAsFixed(1)} Cr  •  Waiver: ${waiverPct.toStringAsFixed(0)}%',
+                                            style: TextStyle(color: textSec, fontSize: 11),
+                                          ),
+                                        ],
+                                      ),
+                                      ElevatedButton.icon(
+                                        onPressed: () {
+                                          Navigator.pop(sheetContext);
+                                          setState(() {
+                                            if (sys == 'trimester' || sys == 'semester') {
+                                              _system = sys;
+                                            }
+                                            _registeredCreditsCtrl.text = regCr > 0 ? regCr.toString() : '';
+                                            _firstRetakeCreditsCtrl.text = retakeCr > 0 ? retakeCr.toString() : '0';
+                                            _waiverPercent = waiverPct;
+                                          });
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Calculation restored into calculator!'),
+                                              backgroundColor: AppColors.success,
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.restore_rounded, size: 14),
+                                        label: const Text('Restore', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primary,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          visualDensity: VisualDensity.compact,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

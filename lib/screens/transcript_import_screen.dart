@@ -124,54 +124,54 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                           ],
                         ),
                         const SizedBox(height: AppSpacing.s16),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                        // Add Trimester Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showAddTrimesterDialog(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            ),
+                            icon: const Icon(Icons.add_rounded, size: 18),
+                            label: const Text('Add Trimester', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Single responsive line for 3 import options
+                        Row(
                           children: [
-                            ElevatedButton.icon(
-                              onPressed: () => _showAddTrimesterDialog(context),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            Expanded(
+                              child: _buildImportActionBtn(
+                                label: 'Import CSV',
+                                icon: Icons.table_chart_outlined,
+                                color: AppColors.accent,
+                                textPri: textPri,
+                                onTap: () => _showImportCsvModal(context),
                               ),
-                              icon: const Icon(Icons.add_rounded, size: 18),
-                              label: const Text('Add Trimester', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                             ),
-                            OutlinedButton.icon(
-                              onPressed: () => _showImportCsvModal(context),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: textPri,
-                                side: BorderSide(color: borderClr),
-                                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: _buildImportActionBtn(
+                                label: 'Import PDF',
+                                icon: Icons.picture_as_pdf_outlined,
+                                color: AppColors.danger,
+                                textPri: textPri,
+                                onTap: () => _showImportPdfModal(context),
                               ),
-                              icon: const Icon(Icons.table_chart_outlined, size: 18, color: AppColors.accent),
-                              label: const Text('Import CSV', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
                             ),
-                            OutlinedButton.icon(
-                              onPressed: () => _showImportPdfModal(context),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: textPri,
-                                side: BorderSide(color: borderClr),
-                                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: _buildImportActionBtn(
+                                label: 'Import Image',
+                                icon: Icons.image_outlined,
+                                color: const Color(0xFF0284C7),
+                                textPri: textPri,
+                                onTap: () => _showImportImageModal(context),
                               ),
-                              icon: const Icon(Icons.picture_as_pdf_outlined, size: 18, color: AppColors.danger),
-                              label: const Text('Import PDF', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                            ),
-                            OutlinedButton.icon(
-                              onPressed: () => _showImportImageModal(context),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: textPri,
-                                side: BorderSide(color: borderClr),
-                                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              ),
-                              icon: const Icon(Icons.image_outlined, size: 18, color: Color(0xFF0284C7)),
-                              label: const Text('Import Image', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
                             ),
                           ],
                         ),
@@ -1313,6 +1313,48 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     });
   }
 
+  Widget _buildImportActionBtn({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required Color textPri,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.borderMd,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 9),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: AppRadius.borderMd,
+            border: Border.all(color: color.withValues(alpha: 0.35), width: 1.0),
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 16, color: color),
+                const SizedBox(width: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: textPri,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _NewCourseItem {

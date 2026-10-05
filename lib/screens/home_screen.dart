@@ -351,6 +351,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       child: Row(
         children: [
+          const _AnimatedAppEmblem(),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -818,14 +820,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }) {
     final bool degreeDone = student.remainingCredits <= 0;
     final (labelColor, label, statusIcon) = degreeDone
-        ? (AppColors.success, '🎉 Degree Completed', Icons.celebration_rounded)
+        ? (AppColors.success, 'Degree Completed', Icons.celebration_rounded)
         : requiredSGPA <= 3.30
-            ? (AppColors.success, '✅ Easily Attainable', Icons.verified_rounded)
+            ? (AppColors.success, 'Easily Attainable', Icons.verified_rounded)
             : requiredSGPA <= 3.75
-                ? (AppColors.accent, '⚠️ Challenging', Icons.trending_up_rounded)
+                ? (AppColors.accent, 'Challenging', Icons.trending_up_rounded)
                 : requiredSGPA <= 4.0
-                    ? (const Color(0xFFEA580C), '🔥 Extremely Demanding', Icons.local_fire_department_rounded)
-                    : (AppColors.danger, '❌ Unreachable (>4.00)', Icons.cancel_outlined);
+                    ? (const Color(0xFFEA580C), 'Extremely Demanding', Icons.local_fire_department_rounded)
+                    : (AppColors.danger, 'Unreachable (>4.00)', Icons.cancel_outlined);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -840,7 +842,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Row
+            // Row 1: Title and Animated Status Badge
             Row(
               children: [
                 Container(
@@ -853,56 +855,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'QUICK GPA TARGET PREDICTOR',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: textSec,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.6,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        'Goal: ${student.targetCGPA.toStringAsFixed(2)} CGPA',
-                        style: TextStyle(
-                          color: textPri,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12.5,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'QUICK GPA TARGET PREDICTOR',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.labelSmall.copyWith(
+                      color: textSec,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
-                  decoration: BoxDecoration(
-                    color: labelColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: labelColor.withValues(alpha: 0.3)),
+                const SizedBox(width: 6),
+                _AnimatedPredictorBadge(
+                  label: label,
+                  icon: statusIcon,
+                  color: labelColor,
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            // Row 2: Unbroken Goal CGPA display
+            Row(
+              children: [
+                const Icon(Icons.flag_outlined, size: 13, color: AppColors.primary),
+                const SizedBox(width: 4),
+                Text(
+                  'Goal Target: ${student.targetCGPA.toStringAsFixed(2)} CGPA',
+                  style: TextStyle(
+                    color: textPri,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12.5,
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(statusIcon, color: labelColor, size: 12.5),
-                      const SizedBox(width: 4),
-                      Text(
-                        label,
-                        style: TextStyle(
-                          color: labelColor,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 10.5,
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    '• ${student.remainingCredits.toStringAsFixed(1)} credits left',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: textSec,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
 
             // Main Score & Detail Container
             Container(
@@ -1168,6 +1170,147 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 color.withValues(alpha: 0),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedPredictorBadge extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _AnimatedPredictorBadge({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  State<_AnimatedPredictorBadge> createState() => _AnimatedPredictorBadgeState();
+}
+
+class _AnimatedPredictorBadgeState extends State<_AnimatedPredictorBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _scaleAnim = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnim,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+        decoration: BoxDecoration(
+          color: widget.color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: widget.color.withValues(alpha: 0.35), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withValues(alpha: 0.15),
+              blurRadius: 6,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(widget.icon, color: widget.color, size: 13),
+            const SizedBox(width: 4),
+            Text(
+              widget.label,
+              style: TextStyle(
+                color: widget.color,
+                fontWeight: FontWeight.w800,
+                fontSize: 10.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedAppEmblem extends StatefulWidget {
+  const _AnimatedAppEmblem();
+
+  @override
+  State<_AnimatedAppEmblem> createState() => _AnimatedAppEmblemState();
+}
+
+class _AnimatedAppEmblemState extends State<_AnimatedAppEmblem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _pulseAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+    _pulseAnim = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _pulseAnim,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF8A4C), Color(0xFFEA580C)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.45), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFEA580C).withValues(alpha: 0.4),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.school_rounded,
+            color: Colors.white,
+            size: 24,
           ),
         ),
       ),
