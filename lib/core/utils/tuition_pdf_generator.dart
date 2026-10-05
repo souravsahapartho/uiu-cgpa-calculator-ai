@@ -14,14 +14,6 @@ class TuitionPdfGenerator {
     );
   }
 
-  static String _formatDate(DateTime dt) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  }
-
   static Future<Uint8List> generatePdfBytes({
     required UserProfile profile,
     required String system,
@@ -561,9 +553,10 @@ class TuitionPdfGenerator {
         totalPayable: totalPayable,
       );
 
-      await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => pdfBytes,
-        name: 'UIU_Tuition_Fee_Breakdown_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      final filename = 'UIU_Tuition_Fee_${profile.studentId.isNotEmpty ? profile.studentId : "Student"}.pdf';
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: filename,
       );
     } catch (e) {
       if (context.mounted) {

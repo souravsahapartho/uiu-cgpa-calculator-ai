@@ -65,6 +65,11 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
+        hintStyle: GoogleFonts.inter(
+          color: AppColors.textSecondary.withValues(alpha: 0.38),
+          fontSize: 13.5,
+          fontWeight: FontWeight.w400,
+        ),
         border: OutlineInputBorder(
           borderRadius: AppRadius.borderBase,
           borderSide: const BorderSide(color: AppColors.border),
@@ -143,6 +148,11 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.darkSurface,
+        hintStyle: GoogleFonts.inter(
+          color: AppColors.darkTextSecondary.withValues(alpha: 0.38),
+          fontSize: 13.5,
+          fontWeight: FontWeight.w400,
+        ),
         border: OutlineInputBorder(
           borderRadius: AppRadius.borderBase,
           borderSide: const BorderSide(color: AppColors.darkBorder),

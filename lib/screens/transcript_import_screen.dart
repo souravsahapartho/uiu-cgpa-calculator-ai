@@ -943,295 +943,429 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     );
   }
 
-  // ── IMPORT CSV MODAL ──
-  void _showImportCsvModal(BuildContext context) {
-    final termController = TextEditingController(text: 'Spring 2024');
-    final csvController = TextEditingController();
+  // ── MODERN RESPONSIVE TRANSCRIPT IMPORT BOTTOM SHEET ──
+  void _showModernImportSheet({
+    required BuildContext context,
+    required String mode, // 'csv', 'pdf', 'image'
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final sectionBg = isDark ? AppColors.darkSection : AppColors.section;
+    final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-    showDialog(
+    final Color accentColor = mode == 'csv'
+        ? AppColors.accent
+        : (mode == 'pdf' ? AppColors.danger : const Color(0xFF0284C7));
+
+    final IconData modeIcon = mode == 'csv'
+        ? Icons.table_chart_rounded
+        : (mode == 'pdf' ? Icons.picture_as_pdf_rounded : Icons.image_search_rounded);
+
+    final String modeTitle = mode == 'csv'
+        ? 'Import CSV / Spreadsheet'
+        : (mode == 'pdf' ? 'Import PDF Transcript' : 'Import Grade Sheet Image');
+
+    final String modeSubtitle = mode == 'csv'
+        ? 'Upload .csv or paste comma/tab-separated course records'
+        : (mode == 'pdf'
+            ? 'Select your UCAM PDF transcript or paste extracted text'
+            : 'Select grade sheet photo or paste OCR recognized text');
+
+    final String placeholderExample = mode == 'csv'
+        ? 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Laboratory, 1.0, A\nMATH 1151, Fundamental Calculus, 3.0, A-'
+        : (mode == 'pdf'
+            ? 'CSE 2213 Object Oriented Programming 3.00 A\nCSE 2214 OOP Lab 1.00 A\nMATH 2183 Calculus and Linear Algebra 3.00 B+'
+            : 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Lab, 1.0, A');
+
+    final termController = TextEditingController(
+      text: mode == 'image' ? 'Summer 2023' : 'Spring 2024',
+    );
+    final contentController = TextEditingController(
+      text: mode == 'image' ? 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Lab, 1.0, A' : '',
+    );
+
+    String? pickedFileName;
+    String? pickedFileSize;
+
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
-        title: const Text('Import CSV / Grade Sheet', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: SingleChildScrollView(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (modalCtx, setModalState) => Container(
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            12,
+            20,
+            MediaQuery.of(modalCtx).viewInsets.bottom + 20,
+          ),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(modalCtx).size.height * 0.88,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Format: Code, Title, Credit, Grade\nExample: CSE 1111, Structured Programming, 3.0, A',
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: termController,
-                decoration: InputDecoration(
-                  labelText: 'Trimester Name',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              // Drag Handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: borderClr,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
-                ),
-                icon: const Icon(Icons.file_open_outlined, size: 16),
-                label: const Text('Pick .CSV File', style: TextStyle(fontSize: 12)),
-                onPressed: () async {
-                  try {
-                    final file = await FilePicker.pickFile(
-                      type: FileType.custom,
-                      allowedExtensions: ['csv', 'txt'],
-                    );
-                    if (file != null) {
-                      final bytes = await file.readAsBytes();
-                      final str = utf8.decode(bytes);
-                      csvController.text = str;
-                    }
-                  } catch (e) {
-                    debugPrint('File picker error: $e');
-                  }
-                },
+              const SizedBox(height: 14),
+
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderMd,
+                    ),
+                    child: Icon(modeIcon, color: accentColor, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          modeTitle,
+                          style: AppTypography.titleLarge.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: textPri,
+                            fontSize: 17,
+                          ),
+                        ),
+                        Text(
+                          modeSubtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: textSec,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close_rounded, color: textSec, size: 20),
+                    onPressed: () => Navigator.pop(modalCtx),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: csvController,
-                maxLines: 5,
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-                decoration: InputDecoration(
-                  hintText: 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Lab, 1.0, A',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              const SizedBox(height: 14),
+
+              Flexible(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // File Upload Dropzone
+                      GestureDetector(
+                        onTap: () async {
+                          try {
+                            if (mode == 'csv') {
+                              final file = await FilePicker.pickFile(
+                                type: FileType.custom,
+                                allowedExtensions: ['csv', 'txt'],
+                              );
+                              if (file != null) {
+                                final bytes = await file.readAsBytes();
+                                final str = utf8.decode(bytes, allowMalformed: true);
+                                setModalState(() {
+                                  pickedFileName = file.name;
+                                  pickedFileSize = '${(bytes.length / 1024).toStringAsFixed(1)} KB';
+                                  contentController.text = str;
+                                });
+                              }
+                            } else if (mode == 'pdf') {
+                              final file = await FilePicker.pickFile(
+                                type: FileType.custom,
+                                allowedExtensions: ['pdf', 'txt'],
+                              );
+                              if (file != null) {
+                                final bytes = await file.readAsBytes();
+                                final str = utf8.decode(bytes, allowMalformed: true);
+                                setModalState(() {
+                                  pickedFileName = file.name;
+                                  pickedFileSize = '${(bytes.length / 1024).toStringAsFixed(1)} KB';
+                                  contentController.text = str;
+                                });
+                              }
+                            } else {
+                              final file = await FilePicker.pickFile(
+                                type: FileType.image,
+                              );
+                              if (file != null) {
+                                final bytes = await file.readAsBytes();
+                                setModalState(() {
+                                  pickedFileName = file.name;
+                                  pickedFileSize = '${(bytes.length / 1024).toStringAsFixed(1)} KB';
+                                });
+                              }
+                            }
+                          } catch (e) {
+                            debugPrint('File pick error: $e');
+                          }
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.04),
+                            borderRadius: AppRadius.borderLg,
+                            border: Border.all(
+                              color: accentColor.withValues(alpha: 0.35),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: accentColor.withValues(alpha: 0.12),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.cloud_upload_outlined, color: accentColor, size: 24),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                pickedFileName != null
+                                    ? 'Selected: $pickedFileName ($pickedFileSize)'
+                                    : (mode == 'csv'
+                                        ? 'Tap to select .CSV or .TXT file'
+                                        : (mode == 'pdf' ? 'Tap to select UIU Transcript PDF' : 'Tap to select Grade Sheet Image')),
+                                textAlign: TextAlign.center,
+                                style: AppTypography.titleSmall.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: accentColor,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Supports official UIU formats & grade matrices',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: textSec,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Trimester Name input
+                      Text(
+                        'Target Trimester Name *',
+                        style: AppTypography.labelSmall.copyWith(color: textSec, fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 5),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: sectionBg,
+                          borderRadius: AppRadius.borderBase,
+                          border: Border.all(color: borderClr),
+                        ),
+                        child: TextField(
+                          controller: termController,
+                          style: AppTypography.bodyMedium.copyWith(color: textPri, fontWeight: FontWeight.w700),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'e.g. Spring 2024',
+                            hintStyle: AppTypography.bodyMedium.copyWith(
+                              color: textPri.withValues(alpha: 0.35),
+                              fontWeight: FontWeight.w400,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            prefixIcon: Icon(Icons.event_note_rounded, color: accentColor, size: 20),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Direct Text Editor / Preview
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Parsed / Extracted Content',
+                            style: AppTypography.labelSmall.copyWith(color: textSec, fontWeight: FontWeight.w700),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: accentColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Auto Multi-Term Detection',
+                              style: TextStyle(color: accentColor, fontWeight: FontWeight.w800, fontSize: 9.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: sectionBg,
+                          borderRadius: AppRadius.borderBase,
+                          border: Border.all(color: borderClr),
+                        ),
+                        child: TextField(
+                          controller: contentController,
+                          maxLines: 5,
+                          style: const TextStyle(fontFamily: 'monospace', fontSize: 11.5),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: placeholderExample,
+                            hintStyle: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 11,
+                              color: textPri.withValues(alpha: 0.35),
+                            ),
+                            contentPadding: const EdgeInsets.all(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Format Hint
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: 0.07),
+                          borderRadius: AppRadius.borderSm,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.info_outline_rounded, size: 14, color: accentColor),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'Course format: [Code] [Title] [Credit] [Grade] (e.g. CSE 1111 SPL 3.0 A)',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: textSec,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: textPri,
+                        side: BorderSide(color: borderClr),
+                        shape: RoundedRectangleBorder(borderRadius: AppRadius.borderBase),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () => Navigator.pop(modalCtx),
+                      child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: AppRadius.borderBase),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.check_circle_rounded, size: 18),
+                      label: const Text(
+                        'Import & Parse Data',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+                      ),
+                      onPressed: () async {
+                        final term = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
+                        final raw = contentController.text.trim();
+                        if (raw.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please select a file or paste course records to import.'),
+                              backgroundColor: AppColors.danger,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          return;
+                        }
+
+                        final provider = ProfileProviderScope.of(context);
+                        final res = await provider.importMultiTrimesterContent(term, raw);
+                        final count = res['courses'] ?? 0;
+                        final terms = res['trimesters'] ?? 0;
+
+                        if (modalCtx.mounted) Navigator.pop(modalCtx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                count > 0
+                                    ? 'Successfully imported $count courses across $terms trimester(s)!'
+                                    : 'Could not parse course records. Please check the format.',
+                              ),
+                              backgroundColor: count > 0 ? AppColors.success : AppColors.danger,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          if (count > 0) {
+                            _checkAndUpdateProfileCgpa(context, provider);
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              final term = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
-              final csv = csvController.text.trim();
-              if (csv.isEmpty) return;
-              final provider = ProfileProviderScope.of(context);
-              final res = await provider.importMultiTrimesterContent(term, csv);
-              final count = res['courses'] ?? 0;
-              final terms = res['trimesters'] ?? 0;
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(count > 0 ? 'Successfully imported ' + count.toString() + ' courses across ' + terms.toString() + ' trimester(s)!' : 'Could not parse CSV format.'),
-                    backgroundColor: count > 0 ? AppColors.success : AppColors.danger,
-                  ),
-                );
-              }
-            },
-            child: const Text('Import Courses'),
-          ),
-        ],
       ),
     );
   }
 
-  // ── IMPORT PDF MODAL ──
-  void _showImportPdfModal(BuildContext context) {
-    final termController = TextEditingController(text: 'Spring 2024');
-    final pdfTextController = TextEditingController();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  // ── FORWARDERS FOR IMPORT MODALS ──
+  void _showImportCsvModal(BuildContext context) =>
+      _showModernImportSheet(context: context, mode: 'csv');
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
-        title: const Text('Import UIU Transcript PDF', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Upload a transcript file or paste extracted text:',
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: termController,
-                decoration: InputDecoration(
-                  labelText: 'Trimester Name',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.danger,
-                  foregroundColor: Colors.white,
-                ),
-                icon: const Icon(Icons.picture_as_pdf_outlined, size: 16),
-                label: const Text('Select PDF / TXT File', style: TextStyle(fontSize: 12)),
-                onPressed: () async {
-                  try {
-                    final file = await FilePicker.pickFile(
-                      type: FileType.custom,
-                      allowedExtensions: ['pdf', 'txt'],
-                    );
-                    if (file != null) {
-                      final bytes = await file.readAsBytes();
-                      final str = utf8.decode(bytes, allowMalformed: true);
-                      pdfTextController.text = str;
-                    }
-                  } catch (e) {
-                    debugPrint('PDF pick error: $e');
-                  }
-                },
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: pdfTextController,
-                maxLines: 5,
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-                decoration: InputDecoration(
-                  hintText: 'CSE 2213 Object Oriented Programming 3.00 A\nCSE 2214 OOP Lab 1.00 A',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              final term = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
-              final rawText = pdfTextController.text.trim();
-              if (rawText.isEmpty) return;
-              final provider = ProfileProviderScope.of(context);
-              final res = await provider.importMultiTrimesterContent(term, rawText);
-              final count = res['courses'] ?? 0;
-              final terms = res['trimesters'] ?? 0;
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(count > 0 ? 'Successfully imported ' + count.toString() + ' courses across ' + terms.toString() + ' trimester(s) from PDF!' : 'Could not detect courses in PDF text.'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-                _checkAndUpdateProfileCgpa(context, provider);
-              }
-            },
-            child: const Text('Import PDF Data'),
-          ),
-        ],
-      ),
-    );
-  }
+  void _showImportPdfModal(BuildContext context) =>
+      _showModernImportSheet(context: context, mode: 'pdf');
 
-  // ── IMPORT IMAGE MODAL ──
-  void _showImportImageModal(BuildContext context) {
-    final termController = TextEditingController(text: 'Summer 2023');
-    final imgTextController = TextEditingController(
-      text: 'CSE 2213, Object Oriented Programming, 3.0, A\nCSE 2214, OOP Lab, 1.0, A\nMATH 2183, Calculus, 3.0, A-',
-    );
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
-        title: const Text('Import Grade Sheet Image', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Upload screenshot or photo of UIU grade sheet:',
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: termController,
-                decoration: InputDecoration(
-                  labelText: 'Trimester Name',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0284C7),
-                  foregroundColor: Colors.white,
-                ),
-                icon: const Icon(Icons.image_search_outlined, size: 16),
-                label: const Text('Select Image (PNG/JPG)', style: TextStyle(fontSize: 12)),
-                onPressed: () async {
-                  try {
-                    await FilePicker.pickFile(
-                      type: FileType.image,
-                    );
-                  } catch (e) {
-                    debugPrint('Image picker error: $e');
-                  }
-                },
-              ),
-              const SizedBox(height: 10),
-              const Text('Recognized Courses Preview:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              TextField(
-                controller: imgTextController,
-                maxLines: 4,
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              final term = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
-              final raw = imgTextController.text.trim();
-              if (raw.isEmpty) return;
-              final provider = ProfileProviderScope.of(context);
-              final res = await provider.importMultiTrimesterContent(term, raw);
-              final count = res['courses'] ?? 0;
-              final terms = res['trimesters'] ?? 0;
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(count > 0 ? 'Successfully imported ' + count.toString() + ' courses across ' + terms.toString() + ' trimester(s)!' : 'Could not parse image courses.'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-                _checkAndUpdateProfileCgpa(context, provider);
-              }
-            },
-            child: const Text('Import Courses'),
-          ),
-        ],
-      ),
-    );
-  }
+  void _showImportImageModal(BuildContext context) =>
+      _showModernImportSheet(context: context, mode: 'image');
 
 
 

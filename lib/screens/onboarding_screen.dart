@@ -64,15 +64,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   // Page 1 – personal info
   final _nameController = TextEditingController();
   final _idController = TextEditingController();
-  String _selectedDept = 'Computer Science & Engineering';
+  String? _selectedDept;
   String _batchController = '';
   bool _batchEdited = false;
 
   // Page 2 – academic standing
-  final _cgpaController = TextEditingController(text: '0.00');
-  final _creditsController = TextEditingController(text: '0');
-  final _targetController = TextEditingController(text: '3.75');
-  final _totalRequiredCreditsController = TextEditingController(text: '138');
+  final _cgpaController = TextEditingController();
+  final _creditsController = TextEditingController();
+  final _targetController = TextEditingController();
+  final _totalRequiredCreditsController = TextEditingController();
 
   late AnimationController _logoAnim;
   late Animation<double> _logoScale;
@@ -111,7 +111,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   bool get _page1Valid =>
-      _nameController.text.trim().isNotEmpty && _idController.text.trim().isNotEmpty;
+      _nameController.text.trim().isNotEmpty &&
+      _idController.text.trim().isNotEmpty &&
+      _selectedDept != null;
 
   bool get _page2Valid {
     final cgpa = double.tryParse(_cgpaController.text) ?? -1;
@@ -123,7 +125,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Future<void> _finish() async {
     final provider = ProfileProviderScope.of(context);
-    final dept = _selectedDept;
+    final dept = _selectedDept ?? 'Computer Science & Engineering';
     final totalCredits = double.tryParse(_totalRequiredCreditsController.text) ?? (_totalCreditsByProgram[dept] ?? 138.0);
     final profile = UserProfile(
       name: _nameController.text.trim(),
@@ -216,12 +218,50 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
-                            borderRadius: AppRadius.borderMd,
-                            boxShadow: AppShadows.primary,
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFFFF7A00),
+                                Color(0xFFEA580C),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(13),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.35),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 1.2,
+                            ),
                           ),
-                          child: const Icon(Icons.school_rounded,
-                              color: Colors.white, size: 24),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              const Icon(Icons.school_rounded,
+                                  color: Colors.white, size: 24),
+                              Positioned(
+                                top: 3,
+                                right: 3,
+                                child: Container(
+                                  padding: const EdgeInsets.all(1.5),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFFEF3C7),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.auto_awesome_rounded,
+                                    size: 7.5,
+                                    color: Color(0xFFD97706),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -445,6 +485,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'e.g. 233',
+                hintStyle: AppTypography.bodyMedium.copyWith(
+                  color: textPri.withValues(alpha: 0.35),
+                  fontWeight: FontWeight.w400,
+                ),
                 border: InputBorder.none,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -463,18 +507,27 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
           const SizedBox(height: 16),
-          _fieldLabel('Department', textSec),
+          _fieldLabel('Department *', textSec),
           Container(
             decoration: BoxDecoration(
               color: surface,
               borderRadius: AppRadius.borderBase,
-              border: Border.all(color: border),
+              border: Border.all(
+                color: _selectedDept == null ? border : AppColors.primary.withValues(alpha: 0.5),
+              ),
               boxShadow: AppShadows.soft,
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedDept,
+                hint: Text(
+                  'Select your department',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: textPri.withValues(alpha: 0.35),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
                 isExpanded: true,
                 items: _departments
                     .map((d) => DropdownMenuItem(value: d, child: Text(d, style: AppTypography.bodyMedium.copyWith(color: textPri))))
@@ -757,6 +810,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         style: AppTypography.bodyMedium.copyWith(color: textPri, fontWeight: FontWeight.w700),
         decoration: InputDecoration(
           hintText: hint,
+          hintStyle: AppTypography.bodyMedium.copyWith(
+            color: textPri.withValues(alpha: 0.35),
+            fontWeight: FontWeight.w400,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           prefixIcon: Icon(icon, color: AppColors.primary, size: 20),

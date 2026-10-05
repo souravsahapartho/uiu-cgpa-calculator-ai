@@ -1,4 +1,4 @@
-﻿enum CourseCategory {
+enum CourseCategory {
   core,
   lab,
   ged,
@@ -60,6 +60,15 @@ class Course {
       semesterTaken: semesterTaken ?? this.semesterTaken,
     );
   }
+
+  bool get isLab =>
+      category == CourseCategory.lab ||
+      credit <= 1.5 ||
+      title.toLowerCase().contains('lab') ||
+      code.trim().endsWith('2') ||
+      code.trim().endsWith('4') ||
+      code.trim().endsWith('6') ||
+      code.trim().endsWith('8');
 
   Map<String, dynamic> toJson() {
     return {

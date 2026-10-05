@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
-import '../data/uiu_mock_data.dart';
+import '../core/services/academic_advisor_engine.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';
@@ -22,7 +22,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
 
   void _triggerAIAnalysis() async {
     setState(() => _isRefreshing = true);
-    await Future.delayed(const Duration(milliseconds: 700));
+    await Future.delayed(const Duration(milliseconds: 600));
     if (mounted) {
       setState(() => _isRefreshing = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -32,7 +32,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
               Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 18),
               SizedBox(width: 8),
               Expanded(
-                child: Text('AI Advisor Analysis updated with latest UIU academic dataset & metrics.'),
+                child: Text('AI Advisor updated with your official UIU curriculum & transcript metrics.'),
               ),
             ],
           ),
@@ -46,9 +46,12 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final report = UIUMockData.aiReport;
     final provider = ProfileProviderScope.of(context);
     final profile = provider.profile;
+    final report = AcademicAdvisorEngine.generateReport(
+      profile: profile,
+      semesters: provider.semesters,
+    );
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? AppColors.darkSurface : AppColors.surface;
@@ -57,16 +60,19 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
     final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-    // Dynamically adjust metrics based on student profile if available
-    final displayCGPA = profile.currentCGPA > 0 ? profile.currentCGPA : report.currentPaceCGPA;
-    final targetCGPA = profile.targetCGPA > 0 ? profile.targetCGPA : 3.85;
-    final completedCredits = profile.completedCredits > 0 ? profile.completedCredits : 76.0;
-    final remainingCredits = (profile.totalDegreeCredits - completedCredits).clamp(0.0, 150.0);
+    final transcriptMetrics = provider.getTranscriptCumulativeMetrics();
+    final hasTranscript = provider.semesters.isNotEmpty && transcriptMetrics['credits']! > 0;
+
+    final displayCGPA = hasTranscript ? transcriptMetrics['cgpa']! : profile.currentCGPA;
+    final completedCredits = hasTranscript ? transcriptMetrics['credits']! : profile.completedCredits;
+    final targetCGPA = profile.targetCGPA > 0 ? profile.targetCGPA : 3.75;
+    final totalCredits = profile.totalDegreeCredits > 0 ? profile.totalDegreeCredits : 138.0;
+    final remainingCredits = (totalCredits - completedCredits).clamp(0.0, totalCredits);
 
     // Calculate required GPA for remaining credits to reach target
-    double requiredPace = 3.90;
-    if (remainingCredits > 0 && profile.totalDegreeCredits > 0) {
-      final totalTargetPoints = targetCGPA * profile.totalDegreeCredits;
+    double requiredPace = 3.75;
+    if (remainingCredits > 0 && totalCredits > 0) {
+      final totalTargetPoints = targetCGPA * totalCredits;
       final currentPoints = displayCGPA * completedCredits;
       requiredPace = ((totalTargetPoints - currentPoints) / remainingCredits).clamp(2.0, 4.0);
     }
@@ -78,6 +84,16 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
             : displayCGPA >= 3.00
                 ? 'Strong Academic Standing'
                 : 'Target Improvement Track';
+
+    double theoryCredits = 0.0;
+    double labCredits = 0.0;
+    for (final rec in report.recommendedCourses) {
+      if (rec.course.isLab) {
+        labCredits += rec.course.credit;
+      } else {
+        theoryCredits += rec.course.credit;
+      }
+    }
 
     return Scaffold(
       backgroundColor: AppColors.scaffold,
@@ -568,13 +584,13 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
               ),
 
               // Workload Balancer
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s4, AppSpacing.s16, 40),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s4, AppSpacing.s16, 40),
                   child: WorkloadIndicator(
-                    theoryCredits: 8.0,
-                    labCredits: 3.0,
-                    workloadIndex: 'Optimal Balanced Workload',
+                    theoryCredits: theoryCredits > 0 ? theoryCredits : 8.0,
+                    labCredits: labCredits > 0 ? labCredits : 2.0,
+                    totalCredits: report.suggestedCreditLoad > 0 ? report.suggestedCreditLoad : (theoryCredits + labCredits),
                   ),
                 ),
               ),

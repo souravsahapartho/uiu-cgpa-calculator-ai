@@ -28,7 +28,7 @@ class WorkloadIndicator extends StatelessWidget {
   String get workloadLevel {
     if (workloadIndex != null) return workloadIndex!;
     if (effectiveTotalCredits <= 9) return 'Light Workload';
-    if (effectiveTotalCredits <= 12) return 'Balanced Load (Recommended)';
+    if (effectiveTotalCredits <= 12) return 'Balanced Load';
     if (effectiveTotalCredits <= 14) return 'Heavy Workload';
     return 'Overloaded (Requires Approval)';
   }
@@ -44,61 +44,89 @@ class WorkloadIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final border = isDark ? AppColors.darkBorder : AppColors.border;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final trackColor = isDark ? AppColors.darkSection : AppColors.section;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: surface,
         borderRadius: AppRadius.borderLg,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: border),
         boxShadow: AppShadows.soft,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: workloadColor.withValues(alpha: 0.1),
-                      borderRadius: AppRadius.borderSm,
-                    ),
-                    child: Icon(
-                      Icons.speed_rounded,
-                      size: 18,
-                      color: workloadColor,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    workloadLevel,
-                    style: AppTypography.titleMedium.copyWith(
-                      color: workloadColor,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: workloadColor.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Icon(
+                  Icons.speed_rounded,
+                  size: 18,
+                  color: workloadColor,
+                ),
               ),
-              Text(
-                '${effectiveTotalCredits.toStringAsFixed(1)} Credits',
-                style: AppTypography.titleMedium.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      workloadLevel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.titleMedium.copyWith(
+                        color: workloadColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                    Text(
+                      'AI Recommended Distribution',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: textSec,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: workloadColor.withValues(alpha: 0.1),
+                  borderRadius: AppRadius.borderFull,
+                  border: Border.all(color: workloadColor.withValues(alpha: 0.25)),
+                ),
+                child: Text(
+                  '${effectiveTotalCredits.toStringAsFixed(1)} Cr',
+                  style: AppTypography.titleMedium.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: workloadColor,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           ClipRRect(
             borderRadius: AppRadius.borderFull,
             child: LinearProgressIndicator(
               value: progressRatio,
               minHeight: 8,
-              backgroundColor: AppColors.section,
+              backgroundColor: trackColor,
               valueColor: AlwaysStoppedAnimation<Color>(workloadColor),
             ),
           ),
@@ -106,20 +134,27 @@ class WorkloadIndicator extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                theoryCredits != null && labCredits != null
-                    ? '${theoryCredits!.toInt()} Theory Cr + ${labCredits!.toInt()} Lab Cr'
-                    : '${courseCount ?? 4} Courses (${labCount ?? 1} Labs)',
-                style: AppTypography.bodySmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+              Flexible(
+                child: Text(
+                  theoryCredits != null && labCredits != null
+                      ? '${theoryCredits!.toInt()} Theory Cr + ${labCredits!.toInt()} Lab Cr'
+                      : '${courseCount ?? 4} Courses (${labCount ?? 1} Labs)',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: textSec,
+                    fontSize: 11,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
-                'UIU Limit: 15.0 Cr',
+                'UIU Cap: 15.0 Cr',
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textTertiary,
+                  color: textSec.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w600,
+                  fontSize: 11,
                 ),
               ),
             ],
