@@ -50,10 +50,6 @@ class ProfileScreen extends StatelessWidget {
     final isSummaEligible = cgpa >= 3.80 && !hasRetakes;
     final isMagnaEligible = cgpa >= 3.65;
 
-    // Avatar initials
-    final initials = student.name.isNotEmpty
-        ? student.name.trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase()
-        : '?';
 
     return Scaffold(
       backgroundColor: bg,
@@ -135,12 +131,12 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
 
-              // ── Avatar & Info Card ──
+              // ── Student Info & Metric Hero Card ──
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [AppColors.primary, AppColors.secondary],
@@ -152,72 +148,84 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        // Avatar with initials
-                        Container(
-                          width: 84,
-                          height: 84,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.25),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2.5),
-                          ),
-                          child: Center(
-                            child: Text(
-                              initials,
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
+                        // Name with academic cap icon
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.school_rounded, color: Colors.white, size: 21),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                student.name.isNotEmpty ? student.name : 'Student Name',
+                                style: AppTypography.headlineMedium.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  letterSpacing: 0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
                               ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'ID: ${student.studentId.isNotEmpty ? student.studentId : '—'} • Batch ${student.batch.isNotEmpty ? student.batch : '—'}',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: Colors.white.withValues(alpha: 0.88),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 7),
+                        // Dynamic Responsive Department Badge (handles long department names safely)
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 320),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.20),
+                              borderRadius: AppRadius.borderFull,
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                            ),
+                            child: Text(
+                              student.department,
+                              style: AppTypography.labelSmall.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                                height: 1.25,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Text(
-                          student.name.isNotEmpty ? student.name : 'Student Name',
-                          style: AppTypography.headlineMedium.copyWith(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 20,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'ID: ${student.studentId.isNotEmpty ? student.studentId : '—'} • Batch ${student.batch.isNotEmpty ? student.batch : '—'}',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
+                        // Stats row in modern dark-tint glass card
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
-                            borderRadius: AppRadius.borderFull,
+                            color: Colors.black.withValues(alpha: 0.12),
+                            borderRadius: AppRadius.borderLg,
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                           ),
-                          child: Text(
-                            student.department,
-                            style: AppTypography.labelSmall.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11,
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _profileStat('CGPA', student.currentCGPA.toStringAsFixed(2)),
+                              _divider(),
+                              _profileStat('Done Cr', '${student.completedCredits.toInt()}'),
+                              _divider(),
+                              _profileStat('Req Cr', '${student.totalDegreeCredits.toInt()}'),
+                              _divider(),
+                              _profileStat('Target', student.targetCGPA.toStringAsFixed(2)),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 18),
-                        // Stats row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _profileStat('CGPA', student.currentCGPA.toStringAsFixed(2)),
-                            _divider(),
-                            _profileStat('Done Cr', '${student.completedCredits.toInt()}'),
-                            _divider(),
-                            _profileStat('Req Cr', '${student.totalDegreeCredits.toInt()}'),
-                            _divider(),
-                            _profileStat('Target', student.targetCGPA.toStringAsFixed(2)),
-                          ],
                         ),
                       ],
                     ),

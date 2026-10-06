@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/constants/uiu_grading_scale.dart';
+import '../main.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
@@ -38,6 +40,9 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
   // -- CALCULATE tab state --
   double _completedCredits = 0.0;
   double _currentCGPA = 0.0;
+  late final TextEditingController _completedCreditsCtrl;
+  late final TextEditingController _currentCGPACtrl;
+  bool _initializedFromProfile = false;
 
   final List<_TrimesterCourse> _courses = [
     _TrimesterCourse(name: 'Course 1', credit: 3.0, grade: 'A', gradePoint: 4.00),
@@ -74,10 +79,34 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _completedCreditsCtrl = TextEditingController();
+    _currentCGPACtrl = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initializedFromProfile) {
+      _initializedFromProfile = true;
+      try {
+        final provider = ProfileProviderScope.of(context);
+        final p = provider.profile;
+        if (p.completedCredits > 0 && _completedCredits == 0) {
+          _completedCredits = p.completedCredits;
+          _completedCreditsCtrl.text = _completedCredits.toInt().toString();
+        }
+        if (p.currentCGPA > 0 && _currentCGPA == 0) {
+          _currentCGPA = p.currentCGPA;
+          _currentCGPACtrl.text = _currentCGPA.toStringAsFixed(2);
+        }
+      } catch (_) {}
+    }
   }
 
   @override
   void dispose() {
+    _completedCreditsCtrl.dispose();
+    _currentCGPACtrl.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -105,6 +134,8 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
       _courses.add(_TrimesterCourse(name: 'Course 2', credit: 3.0, grade: 'A', gradePoint: 4.00));
       _completedCredits = 0;
       _currentCGPA = 0;
+      _completedCreditsCtrl.clear();
+      _currentCGPACtrl.clear();
     });
   }
 
@@ -225,29 +256,54 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
           child: Row(
             children: [
               Expanded(
-                child: _buildCompactInput(
-                  label: 'Completed Credits',
-                  value: _completedCredits == 0 ? '' : _completedCredits.toStringAsFixed(0),
-                  hint: 'Completed Cre...',
+                child: _buildModernStatInputField(
+                  label: 'Completed Cr',
+                  icon: Icons.check_circle_outline_rounded,
+                  controller: _completedCreditsCtrl,
+                  hint: 'e.g. 84',
+                  suffix: 'Cr',
                   surface: surface,
                   borderColor: borderColor,
                   textPri: textPri,
                   textSec: textSec,
-                  onChanged: (v) => setState(() => _completedCredits = double.tryParse(v) ?? 0),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(3),
+                  ],
+                  onChanged: (v) {
+                    final parsed = int.tryParse(v) ?? 0;
+                    setState(() => _completedCredits = parsed.toDouble());
+                  },
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: _buildCompactInput(
+                child: _buildModernStatInputField(
                   label: 'Current CGPA',
-                  value: _currentCGPA == 0 ? '' : _currentCGPA.toStringAsFixed(2),
-                  hint: 'Current CGPA',
+                  icon: Icons.trending_up_rounded,
+                  controller: _currentCGPACtrl,
+                  hint: 'e.g. 3.75',
+                  suffix: '/ 4.00',
                   surface: surface,
                   borderColor: borderColor,
                   textPri: textPri,
                   textSec: textSec,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  onChanged: (v) => setState(() => _currentCGPA = double.tryParse(v) ?? 0),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                  ],
+                  onChanged: (v) {
+                    final parsed = double.tryParse(v) ?? 0.0;
+                    if (parsed > 4.0) {
+                      _currentCGPACtrl.text = '4.00';
+                      _currentCGPACtrl.selection =
+                          const TextSelection.collapsed(offset: 4);
+                      setState(() => _currentCGPA = 4.0);
+                    } else {
+                      setState(() => _currentCGPA = parsed);
+                    }
+                  },
                 ),
               ),
             ],
@@ -665,40 +721,83 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
                 color: AppColors.primary, fontSize: 11)),
       );
 
-  Widget _buildCompactInput({
+  Widget _buildModernStatInputField({
     required String label,
-    required String value,
+    required IconData icon,
+    required TextEditingController controller,
     required String hint,
+    required String suffix,
     required Color surface,
     required Color borderColor,
     required Color textPri,
     required Color textSec,
+    required TextInputType keyboardType,
+    required List<TextInputFormatter> inputFormatters,
     required ValueChanged<String> onChanged,
-    TextInputType keyboardType = TextInputType.number,
   }) {
-    return TextField(
-      keyboardType: keyboardType,
-      onChanged: onChanged,
-      controller: TextEditingController(text: value),
-      style: AppTypography.bodyMedium.copyWith(color: textPri, fontWeight: FontWeight.w700, fontSize: 13),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: textSec, fontSize: 12),
-        filled: true,
-        fillColor: surface,
-        border: OutlineInputBorder(
-          borderRadius: AppRadius.borderBase,
-          borderSide: BorderSide(color: borderColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: AppRadius.borderBase,
-          borderSide: BorderSide(color: borderColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: AppRadius.borderBase,
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: AppRadius.borderBase,
+        border: Border.all(color: borderColor),
+        boxShadow: AppShadows.soft,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 13, color: AppColors.primary),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: textSec,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    letterSpacing: 0.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
+            style: AppTypography.bodyMedium.copyWith(
+              color: textPri,
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: hint,
+              hintStyle: TextStyle(
+                color: textSec.withValues(alpha: 0.45),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              suffixText: suffix,
+              suffixStyle: TextStyle(
+                color: textSec,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
+            ),
+            onChanged: onChanged,
+          ),
+        ],
       ),
     );
   }

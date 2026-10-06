@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import '../main.dart';
 import '../core/providers/user_profile_provider.dart';
@@ -541,6 +542,16 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                   children: [
+                    // ── AI Prompt Helper: Convert UCAM Result to CSV ──
+                    _buildAIPromptHelperCard(
+                      context: context,
+                      isDark: isDark,
+                      borderClr: borderClr,
+                      surface: surface,
+                      textPri: textPri,
+                      textSec: textSec,
+                    ),
+                    const SizedBox(height: 12),
                     _policyCard(
                       icon: Icons.replay_rounded,
                       iconColor: AppColors.success,
@@ -610,6 +621,164 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAIPromptHelperCard({
+    required BuildContext context,
+    required bool isDark,
+    required Color borderClr,
+    required Color surface,
+    required Color textPri,
+    required Color textSec,
+  }) {
+    const aiPromptText =
+        'Convert my UIU UCAM result history into CSV format for UIU Grade Calculator app.\n\n'
+        'Output columns: Trimester,Course Code,Course Title,Credit,Grade\n\n'
+        'Instructions:\n'
+        '1. Extract every trimester (e.g., Fall 2023, Spring 2024, etc.).\n'
+        '2. For each course, extract Course Code (e.g., CSE 1111), Title, Credit (e.g., 3.0), and Grade (e.g., A, B+, etc.).\n'
+        '3. Provide ONLY pure CSV text without markdown or conversational commentary so I can save as .csv directly.\n\n'
+        'Here is my UCAM result:';
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: isDark ? 0.12 : 0.06),
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 1.2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AI Helper: Convert UCAM Result to CSV',
+                      style: AppTypography.titleSmall.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: textPri,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      'Turn UCAM screenshot / copied text into CSV via ChatGPT / Claude',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: textSec,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'How to easily make your CSV with AI:',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: textPri,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '1. Take a screenshot or copy text of your Grade History from UIU UCAM portal.\n'
+            '2. Copy the prompt below and paste into ChatGPT or Claude with your screenshot/text.\n'
+            '3. Save the response as a .csv file (or copy text) and import here directly!',
+            style: TextStyle(
+              fontSize: 11,
+              color: textSec,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Prompt snippet box
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black.withValues(alpha: 0.35) : Colors.white,
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(color: borderClr),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    aiPromptText,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 10,
+                      height: 1.35,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Copy Prompt Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Clipboard.setData(const ClipboardData(text: aiPromptText));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Row(
+                      children: [
+                        Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'AI Prompt copied! Paste into ChatGPT / Claude with your UCAM result.',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: AppColors.success,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 14),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+              ),
+              icon: const Icon(Icons.copy_rounded, size: 16),
+              label: const Text(
+                'Copy AI Prompt to Clipboard',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
