@@ -496,6 +496,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                           child: SemesterAccordion(
                             semester: semester,
                             isInitiallyExpanded: index == 0,
+                            onAddCourse: (sem) => _showAddCourseToSemesterDialog(context, sem),
                             onDeleteCourse: (course) async {
                               await provider.deleteCourse(semester.semesterName, course);
                               if (context.mounted) {
@@ -1118,6 +1119,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => StatefulBuilder(
         builder: (ctx, setModalState) {
@@ -1137,13 +1139,44 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
           }
           final semGPA = semCredits > 0 ? (semPoints / semCredits) : 0.0;
 
+          Future<void> saveTrimester() async {
+            if (courses.isEmpty) return;
+            final termName = termController.text.trim().isEmpty ? defaultDynamicTerm : termController.text.trim();
+            final convertedCourses = courses
+                .map((c) => Course(
+                      code: c.code.trim().isEmpty ? 'COURSE' : c.code.trim().toUpperCase(),
+                      title: c.title.trim().isEmpty
+                          ? (c.code.trim().isEmpty ? 'Course Title' : c.code.trim().toUpperCase())
+                          : c.title.trim(),
+                      credit: c.credit,
+                      grade: c.grade,
+                      gradePoint: UIUGradingScale.getGradePoint(c.grade),
+                    ))
+                .toList();
+
+            final newSem = SemesterTranscript(
+              semesterName: termName,
+              courses: convertedCourses,
+              creditsEarned: semCredits,
+              sgpa: double.parse(semGPA.toStringAsFixed(2)),
+              cgpa: double.parse(semGPA.toStringAsFixed(2)),
+            );
+
+            await provider.addSemester(newSem);
+            if (sheetContext.mounted) Navigator.pop(sheetContext);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Added $termName to records successfully!')),
+              );
+            }
+          }
+
           return Container(
-            height: MediaQuery.of(context).size.height * 0.88,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(sheetContext).size.height * 0.90,
+            ),
             padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 16,
-              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
             ),
             decoration: BoxDecoration(
               color: surface,
@@ -1151,264 +1184,571 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
               border: Border.all(color: borderClr),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Center(
-                  child: Container(
-                    width: 44,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: borderClr,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Add Trimester',
-                      style: AppTypography.headlineSmall.copyWith(
-                        color: textPri,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
-                        borderRadius: AppRadius.borderMd,
-                      ),
-                      child: Text(
-                        'GPA: ${semGPA.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
+                // Pinned Compact Header Bar
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 16, 10),
+                  child: Column(
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 44,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: borderClr,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: termController,
-                  style: TextStyle(color: textPri, fontWeight: FontWeight.w600),
-                  decoration: InputDecoration(
-                    labelText: 'Target Trimester Name *',
-                    hintText: 'e.g. $defaultDynamicTerm',
-                    helperText: 'Enter target trimester (e.g. $defaultDynamicTerm)',
-                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: _getRecentTrimesterSuggestions(provider.semesters).map((suggested) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: ActionChip(
-                          label: Text(suggested, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: textPri)),
-                          backgroundColor: surface,
-                          side: BorderSide(color: borderClr, width: 0.8),
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                          visualDensity: VisualDensity.compact,
-                          onPressed: () {
-                            setModalState(() {
-                              termController.text = suggested;
-                            });
-                          },
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Courses (${courses.length})', style: TextStyle(color: textSec, fontWeight: FontWeight.w700, fontSize: 13)),
-                    TextButton.icon(
-                      onPressed: () {
-                        setModalState(() {
-                          courses.add(_NewCourseItem(
-                            code: '',
-                            title: '',
-                            credit: 3.0,
-                            grade: 'A',
-                          ));
-                        });
-                      },
-                      icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('Add Course', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: courses.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
-                    itemBuilder: (cContext, i) {
-                      final item = courses[i];
-                      return Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: sectionClr,
-                          borderRadius: AppRadius.borderMd,
-                          border: Border.all(color: borderClr),
-                        ),
-                        child: Column(
-                          children: [
-                            // Row 1: Code and Title with clear responsive placeholders
-                            Row(
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: TextFormField(
-                                    initialValue: item.code,
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: textPri),
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      hintText: 'e.g. CSE 1111',
-                                      labelText: 'Code',
-                                      floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
-                                    ),
-                                    onChanged: (v) => item.code = v,
+                                Text(
+                                  'Add Trimester',
+                                  style: AppTypography.headlineSmall.copyWith(
+                                    color: textPri,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 17,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  flex: 3,
-                                  child: TextFormField(
-                                    initialValue: item.title,
-                                    style: TextStyle(fontSize: 13, color: textPri),
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      hintText: 'e.g. Structured Prog.',
-                                      labelText: 'Course Title',
-                                      floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
-                                    ),
-                                    onChanged: (v) => item.title = v,
+                                const SizedBox(height: 2),
+                                Text(
+                                  'GPA: ${semGPA.toStringAsFixed(2)} • ${courses.length} courses',
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11.5,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            // Row 2: Credit, Grade and Delete action
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: DropdownButtonFormField<double>(
-                                    value: item.credit,
-                                    style: TextStyle(fontSize: 12, color: textPri, fontWeight: FontWeight.w700),
-                                    dropdownColor: surface,
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      labelText: 'Credits',
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                          ),
+                          // Quick Save Button at Header
+                          FilledButton.icon(
+                            onPressed: saveTrimester,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                            ),
+                            icon: const Icon(Icons.check_rounded, size: 16),
+                            label: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                          ),
+                          const SizedBox(width: 4),
+                          IconButton(
+                            icon: Icon(Icons.close_rounded, color: textSec, size: 20),
+                            onPressed: () => Navigator.pop(sheetContext),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Divider(height: 1, color: borderClr),
+                // Scrollable Body - Never Crushed by Keyboard!
+                Expanded(
+                  child: ListView(
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    children: [
+                      // Target Trimester input
+                      TextField(
+                        controller: termController,
+                        style: TextStyle(color: textPri, fontWeight: FontWeight.w600),
+                        decoration: InputDecoration(
+                          labelText: 'Target Trimester Name *',
+                          hintText: 'e.g. $defaultDynamicTerm',
+                          helperText: 'Enter target trimester (e.g. $defaultDynamicTerm)',
+                          border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: _getRecentTrimesterSuggestions(provider.semesters).map((suggested) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ActionChip(
+                                label: Text(suggested, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: textPri)),
+                                backgroundColor: surface,
+                                side: BorderSide(color: borderClr, width: 0.8),
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () {
+                                  setModalState(() {
+                                    termController.text = suggested;
+                                  });
+                                },
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Courses (${courses.length})', style: TextStyle(color: textSec, fontWeight: FontWeight.w700, fontSize: 13)),
+                          TextButton.icon(
+                            onPressed: () {
+                              setModalState(() {
+                                courses.add(_NewCourseItem(
+                                  code: '',
+                                  title: '',
+                                  credit: 3.0,
+                                  grade: 'A',
+                                ));
+                              });
+                            },
+                            icon: const Icon(Icons.add_rounded, size: 18),
+                            label: const Text('Add Course', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ...courses.asMap().entries.map((entry) {
+                        final i = entry.key;
+                        final item = entry.value;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: sectionClr,
+                            borderRadius: AppRadius.borderMd,
+                            border: Border.all(color: borderClr),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: TextFormField(
+                                      initialValue: item.code,
+                                      textCapitalization: TextCapitalization.characters,
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: textPri),
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        hintText: 'e.g. CSE 1111',
+                                        labelText: 'Code',
+                                        floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                        border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                                      ),
+                                      onChanged: (v) => item.code = v,
                                     ),
-                                    items: [1.0, 1.5, 2.0, 3.0, 4.0, 6.0]
-                                        .map((c) => DropdownMenuItem(value: c, child: Text('$c Cr')))
-                                        .toList(),
-                                    onChanged: (v) {
-                                      if (v != null) setModalState(() => item.credit = v);
-                                    },
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: DropdownButtonFormField<String>(
-                                    value: item.grade,
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-                                    dropdownColor: surface,
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      labelText: 'Grade',
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                      border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    flex: 3,
+                                    child: TextFormField(
+                                      initialValue: item.title,
+                                      textCapitalization: TextCapitalization.words,
+                                      style: TextStyle(fontSize: 13, color: textPri),
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        hintText: 'e.g. Structured Prog.',
+                                        labelText: 'Course Title',
+                                        floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                        border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                                      ),
+                                      onChanged: (v) => item.title = v,
                                     ),
-                                    items: UIUGradingScale.scale
-                                        .map((g) => DropdownMenuItem(
-                                              value: g.letterGrade,
-                                              child: Text('${g.letterGrade} (${g.gradePoint.toStringAsFixed(2)})',
-                                                  style: TextStyle(color: g.color, fontWeight: FontWeight.bold)),
-                                            ))
-                                        .toList(),
-                                    onChanged: (v) {
-                                      if (v != null) setModalState(() => item.grade = v);
-                                    },
-                                  ),
-                                ),
-                                if (courses.length > 1) ...[
-                                  const SizedBox(width: 6),
-                                  IconButton(
-                                    tooltip: 'Remove Course',
-                                    icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 22),
-                                    onPressed: () {
-                                      setModalState(() => courses.removeAt(i));
-                                    },
                                   ),
                                 ],
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
-                    ),
-                    onPressed: () async {
-                      if (courses.isEmpty) return;
-                      final termName = termController.text.trim().isEmpty ? defaultDynamicTerm : termController.text.trim();
-                      final provider = ProfileProviderScope.of(context);
-                      final convertedCourses = courses
-                          .map((c) => Course(
-                                code: c.code.trim().isEmpty ? 'COURSE' : c.code.trim(),
-                                title: c.title.trim().isEmpty ? (c.code.trim().isEmpty ? 'Course Title' : c.code.trim()) : c.title.trim(),
-                                credit: c.credit,
-                                grade: c.grade,
-                                gradePoint: UIUGradingScale.getGradePoint(c.grade),
-                              ))
-                          .toList();
-
-                      final newSem = SemesterTranscript(
-                        semesterName: termName,
-                        courses: convertedCourses,
-                        creditsEarned: semCredits,
-                        sgpa: double.parse(semGPA.toStringAsFixed(2)),
-                        cgpa: double.parse(semGPA.toStringAsFixed(2)),
-                      );
-
-                      await provider.addSemester(newSem);
-                      if (sheetContext.mounted) Navigator.pop(sheetContext);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Added $termName to records successfully!')),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: DropdownButtonFormField<double>(
+                                      value: item.credit,
+                                      style: TextStyle(fontSize: 12, color: textPri, fontWeight: FontWeight.w700),
+                                      dropdownColor: surface,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        labelText: 'Credits',
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                                      ),
+                                      items: [1.0, 1.5, 2.0, 3.0, 4.0, 6.0]
+                                          .map((c) => DropdownMenuItem(value: c, child: Text('$c Cr')))
+                                          .toList(),
+                                      onChanged: (v) {
+                                        if (v != null) setModalState(() => item.credit = v);
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: DropdownButtonFormField<String>(
+                                      value: item.grade,
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                                      dropdownColor: surface,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        labelText: 'Grade',
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        border: OutlineInputBorder(borderRadius: AppRadius.borderSm),
+                                      ),
+                                      items: UIUGradingScale.scale
+                                          .map((g) => DropdownMenuItem(
+                                                value: g.letterGrade,
+                                                child: Text('${g.letterGrade} (${g.gradePoint.toStringAsFixed(2)})',
+                                                    style: TextStyle(color: g.color, fontWeight: FontWeight.bold)),
+                                              ))
+                                          .toList(),
+                                      onChanged: (v) {
+                                        if (v != null) setModalState(() => item.grade = v);
+                                      },
+                                    ),
+                                  ),
+                                  if (courses.length > 1) ...[
+                                    const SizedBox(width: 6),
+                                    IconButton(
+                                      tooltip: 'Remove Course',
+                                      icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 22),
+                                      onPressed: () {
+                                        setModalState(() => courses.removeAt(i));
+                                      },
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
                         );
-                      }
-                    },
-                    child: const Text('Save Trimester to Transcript', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      }),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                          ),
+                          icon: const Icon(Icons.check_circle_rounded, size: 20),
+                          onPressed: saveTrimester,
+                          label: const Text('Save Trimester to Transcript', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                   ),
                 ),
               ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ── ADD COURSE TO EXISTING TRIMESTER MODAL ──
+  void _showAddCourseToSemesterDialog(BuildContext context, SemesterTranscript semester) {
+    final codeController = TextEditingController();
+    final titleController = TextEditingController();
+    double selectedCredit = 3.0;
+    String selectedGrade = 'A';
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
+    final sectionClr = isDark ? AppColors.darkSection : AppColors.section;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final points = UIUGradingScale.getGradePoint(selectedGrade);
+          final currentSemCredits = semester.creditsEarned;
+          final currentSemPoints = semester.sgpa * currentSemCredits;
+          final newSemCredits = currentSemCredits + selectedCredit;
+          final newSemGPA = newSemCredits > 0 ? (currentSemPoints + points * selectedCredit) / newSemCredits : 0.0;
+
+          return Container(
+            decoration: BoxDecoration(
+              color: surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border.all(color: borderClr),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              MediaQuery.of(sheetCtx).viewInsets.bottom + 24,
+            ),
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 42,
+                      height: 4.5,
+                      decoration: BoxDecoration(
+                        color: borderClr,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(9),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.add_chart_rounded, color: AppColors.primary, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Add Course to ${semester.semesterName}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: textPri,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Current SGPA: ${semester.sgpa.toStringAsFixed(2)} • ${semester.courses.length} courses',
+                              style: TextStyle(fontSize: 11.5, color: textSec, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close_rounded, color: textSec, size: 20),
+                        onPressed: () => Navigator.pop(sheetCtx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Course Code Field
+                  TextFormField(
+                    controller: codeController,
+                    textCapitalization: TextCapitalization.characters,
+                    style: TextStyle(fontWeight: FontWeight.w700, color: textPri),
+                    decoration: InputDecoration(
+                      labelText: 'Course Code *',
+                      hintText: 'e.g. CSE 2215',
+                      prefixIcon: const Icon(Icons.code_rounded, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Course Title Field
+                  TextFormField(
+                    controller: titleController,
+                    textCapitalization: TextCapitalization.words,
+                    style: TextStyle(color: textPri),
+                    decoration: InputDecoration(
+                      labelText: 'Course Title (Optional)',
+                      hintText: 'e.g. Data Structures and Algorithms',
+                      prefixIcon: const Icon(Icons.title_rounded, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Credits & Grade Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<double>(
+                          value: selectedCredit,
+                          style: TextStyle(fontWeight: FontWeight.w700, color: textPri, fontSize: 13),
+                          dropdownColor: surface,
+                          decoration: InputDecoration(
+                            labelText: 'Credit Hours',
+                            prefixIcon: const Icon(Icons.star_rounded, size: 18),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 1.0, child: Text('1.0 Cr (Lab)')),
+                            DropdownMenuItem(value: 1.5, child: Text('1.5 Cr (Lab)')),
+                            DropdownMenuItem(value: 2.0, child: Text('2.0 Cr')),
+                            DropdownMenuItem(value: 3.0, child: Text('3.0 Cr (Theory)')),
+                            DropdownMenuItem(value: 4.0, child: Text('4.0 Cr (Project)')),
+                            DropdownMenuItem(value: 6.0, child: Text('6.0 Cr (Thesis)')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDialogState(() => selectedCredit = val);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedGrade,
+                          style: TextStyle(fontWeight: FontWeight.w800, color: textPri, fontSize: 13),
+                          dropdownColor: surface,
+                          decoration: InputDecoration(
+                            labelText: 'Grade',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          ),
+                          items: UIUGradingScale.scale.map((g) {
+                            return DropdownMenuItem(
+                              value: g.letterGrade,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(color: g.color, shape: BoxShape.circle),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text('${g.letterGrade} (${g.gradePoint.toStringAsFixed(2)})',
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: g.color)),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDialogState(() => selectedGrade = val);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // Live Estimated Impact Banner
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: sectionClr,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: borderClr),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Impact Preview',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: textSec),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'New SGPA: ${newSemGPA.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '+$selectedCredit Cr (${points.toStringAsFixed(2)} pts)',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.check_rounded, size: 20),
+                      label: Text(
+                        'Add to ${semester.semesterName}',
+                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                      ),
+                      onPressed: () async {
+                        final rawCode = codeController.text.trim();
+                        if (rawCode.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please enter a course code (e.g. CSE 2215).'),
+                              backgroundColor: AppColors.danger,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          return;
+                        }
+                        final code = rawCode.toUpperCase();
+                        final title = titleController.text.trim().isEmpty ? code : titleController.text.trim();
+                        final newCourse = Course(
+                          code: code,
+                          title: title,
+                          credit: selectedCredit,
+                          grade: selectedGrade,
+                          gradePoint: UIUGradingScale.getGradePoint(selectedGrade),
+                        );
+
+                        final provider = ProfileProviderScope.of(context);
+                        await provider.addCourseToSemester(semester.semesterName, newCourse);
+
+                        if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Added $code to ${semester.semesterName}!'),
+                              backgroundColor: AppColors.success,
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -1455,7 +1795,6 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     final provider = ProfileProviderScope.of(context);
     final defaultDynamicTerm = _getDynamicTrimester(provider.semesters);
 
-    final termController = TextEditingController();
     final contentController = TextEditingController();
 
     String? pickedFileName;
@@ -1642,73 +1981,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
-
-                      // Trimester Name input
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Target Trimester Name *',
-                            style: AppTypography.labelSmall.copyWith(color: textSec, fontWeight: FontWeight.w700),
-                          ),
-                          Text(
-                            'Default: $defaultDynamicTerm',
-                            style: TextStyle(color: accentColor, fontSize: 10.5, fontWeight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: sectionBg,
-                          borderRadius: AppRadius.borderBase,
-                          border: Border.all(color: borderClr),
-                        ),
-                        child: TextField(
-                          controller: termController,
-                          style: AppTypography.bodyMedium.copyWith(color: textPri, fontWeight: FontWeight.w700),
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'e.g. $defaultDynamicTerm',
-                            hintStyle: AppTypography.bodyMedium.copyWith(
-                              color: textPri.withValues(alpha: 0.35),
-                              fontWeight: FontWeight.w400,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            prefixIcon: Icon(Icons.event_note_rounded, color: accentColor, size: 20),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        '💡 Target Trimester: আপনি যে ট্রাইমেস্টারে এই কোর্সগুলো যুক্ত করতে চান (যেমন: $defaultDynamicTerm)। ফাইল থেকে অটো-ডিটেক্ট না হলে এটি ডিফল্ট হিসেবে ব্যবহৃত হবে।',
-                        style: TextStyle(color: textSec, fontSize: 10.5, height: 1.35),
-                      ),
-                      const SizedBox(height: 8),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: _getRecentTrimesterSuggestions(provider.semesters).map((suggested) {
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: ActionChip(
-                                label: Text(suggested, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: textPri)),
-                                backgroundColor: surface,
-                                side: BorderSide(color: borderClr, width: 0.8),
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                                visualDensity: VisualDensity.compact,
-                                onPressed: () {
-                                  setModalState(() {
-                                    termController.text = suggested;
-                                  });
-                                },
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 4),
 
                       // Direct Text Editor / Preview
                       Row(
@@ -1819,7 +2092,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                         style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
                       ),
                       onPressed: () async {
-                        final term = termController.text.trim().isEmpty ? defaultDynamicTerm : termController.text.trim();
+                        final term = defaultDynamicTerm;
                         final raw = contentController.text.trim();
                         if (raw.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(

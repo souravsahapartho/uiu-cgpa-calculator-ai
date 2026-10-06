@@ -34,17 +34,6 @@ const _programs = {
   'Other': 'B.Sc.',
 };
 
-const _totalCreditsByProgram = {
-  'Computer Science & Engineering': 138.0,
-  'Electrical & Electronic Engineering': 143.0,
-  'Civil Engineering': 148.0,
-  'Business Administration': 130.0,
-  'English': 120.0,
-  'Law': 120.0,
-  'Pharmacy': 160.0,
-  'Architecture': 170.0,
-  'Other': 130.0,
-};
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

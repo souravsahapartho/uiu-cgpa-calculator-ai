@@ -463,6 +463,34 @@ class UserProfileProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> addCourseToSemester(String semesterName, Course course) async {
+    final sIdx = _semesters.indexWhere(
+      (s) => s.semesterName.trim().toLowerCase() == semesterName.trim().toLowerCase(),
+    );
+    if (sIdx >= 0) {
+      final updatedCourses = List<Course>.from(_semesters[sIdx].courses);
+      final cIdx = updatedCourses.indexWhere(
+        (c) => c.code.trim().toUpperCase() == course.code.trim().toUpperCase(),
+      );
+      if (cIdx != -1) {
+        updatedCourses[cIdx] = course;
+      } else {
+        updatedCourses.add(course);
+      }
+      _semesters[sIdx] = _semesters[sIdx].copyWith(courses: updatedCourses);
+    } else {
+      _semesters.add(SemesterTranscript(
+        semesterName: semesterName,
+        courses: [course],
+        creditsEarned: course.credit,
+        sgpa: course.gradePoint ?? 0.0,
+        cgpa: course.gradePoint ?? 0.0,
+      ));
+    }
+    _sortAndRecomputeSemesters();
+    await _saveSemestersToPrefs();
+  }
+
   Future<void> deleteCourse(String semesterName, Course course) async {
     final sIdx = _semesters.indexWhere(
       (s) => s.semesterName.trim().toLowerCase() == semesterName.trim().toLowerCase(),

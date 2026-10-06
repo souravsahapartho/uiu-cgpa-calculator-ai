@@ -11,6 +11,7 @@ class SemesterAccordion extends StatefulWidget {
   final bool isInitiallyExpanded;
   final VoidCallback? onDelete;
   final void Function(Course course)? onDeleteCourse;
+  final void Function(SemesterTranscript semester)? onAddCourse;
 
   const SemesterAccordion({
     super.key,
@@ -18,6 +19,7 @@ class SemesterAccordion extends StatefulWidget {
     this.isInitiallyExpanded = false,
     this.onDelete,
     this.onDeleteCourse,
+    this.onAddCourse,
   });
 
   @override
@@ -354,6 +356,27 @@ class _SemesterAccordionState extends State<SemesterAccordion> with SingleTicker
                                   compact: true,
                                 ),
                         ),
+                        if (widget.onAddCourse != null) ...[
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () => widget.onAddCourse?.call(widget.semester),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: themeStart.withValues(alpha: 0.5), width: 1.2),
+                                foregroundColor: themeStart,
+                                backgroundColor: themeStart.withValues(alpha: isDark ? 0.12 : 0.05),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                              ),
+                              icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+                              label: Text(
+                                'Add Course to ${widget.semester.semesterName}',
+                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
+                              ),
+                            ),
+                          ),
+                        ],
                         if (widget.onDelete != null) ...[
                           const SizedBox(height: 8),
                           Row(
