@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import '../core/providers/user_profile_provider.dart';
 import '../models/course.dart';
@@ -26,6 +27,33 @@ class TranscriptImportScreen extends StatefulWidget {
 
 class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
   String _selectedTrimesterFilter = 'All Trimesters';
+  static const _keyDismissedAIPromptBanner = 'dismissed_ai_prompt_banner';
+  bool _bannerDismissed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerDismissedState();
+  }
+
+  Future<void> _loadBannerDismissedState() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _bannerDismissed = prefs.getBool(_keyDismissedAIPromptBanner) ?? false;
+      });
+    }
+  }
+
+  Future<void> _dismissBanner() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyDismissedAIPromptBanner, true);
+    if (mounted) {
+      setState(() {
+        _bannerDismissed = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +210,22 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                   ),
                 ),
               ),
+
+              // ── AI Prompt Suggestion Banner for New Users (shown until dismissed or courses added) ──
+              if (semesters.isEmpty && !_bannerDismissed)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.s16, 12, AppSpacing.s16, 4),
+                    child: _buildNewUserAIPromptBanner(
+                      context: context,
+                      isDark: isDark,
+                      surface: surface,
+                      borderClr: borderClr,
+                      textPri: textPri,
+                      textSec: textSec,
+                    ),
+                  ),
+                ),
 
               // Dynamic Trimester Filter Dropdown
               if (semesters.isNotEmpty)
@@ -621,6 +665,177 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildNewUserAIPromptBanner({
+    required BuildContext context,
+    required bool isDark,
+    required Color surface,
+    required Color borderClr,
+    required Color textPri,
+    required Color textSec,
+  }) {
+    const aiPromptText =
+        'Convert my UIU UCAM result history into CSV format for UIU Grade Calculator app.\n\n'
+        'Output columns: Trimester,Course Code,Course Title,Credit,Grade\n\n'
+        'Instructions:\n'
+        '1. Extract every trimester (e.g., Fall 2023, Spring 2024, etc.).\n'
+        '2. For each course, extract Course Code (e.g., CSE 1111), Title, Credit (e.g., 3.0), and Grade (e.g., A, B+, etc.).\n'
+        '3. Provide ONLY pure CSV text without markdown or conversational commentary so I can save as .csv directly.\n\n'
+        'Here is my UCAM result:';
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: isDark ? 0.12 : 0.06),
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 1.2),
+        boxShadow: AppShadows.soft,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 16),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AI Prompt: Convert UCAM Result to CSV',
+                      style: AppTypography.titleSmall.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: textPri,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'UIU UCAM does NOT have direct CSV download. Use AI to make CSV in seconds!',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFFFDBA74) : const Color(0xFFC2410C),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: _dismissBanner,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: textSec.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.close_rounded, size: 16, color: textSec),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'How to easily make your CSV with ChatGPT / Claude:',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: textPri,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '1. Take a screenshot or copy text of your Grade History from UIU UCAM.\n'
+            '2. Copy the prompt below and paste into ChatGPT or Claude with your screenshot/text.\n'
+            '3. Save the response as a .csv file and tap "Import CSV" above!',
+            style: TextStyle(
+              fontSize: 11,
+              color: textSec,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black.withValues(alpha: 0.35) : Colors.white,
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(color: borderClr),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    aiPromptText,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 10,
+                      height: 1.35,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Clipboard.setData(const ClipboardData(text: aiPromptText));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Row(
+                      children: [
+                        Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'AI Prompt copied! Paste into ChatGPT / Claude with your UCAM result.',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: AppColors.success,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 14),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+              ),
+              icon: const Icon(Icons.copy_rounded, size: 16),
+              label: const Text(
+                'Copy AI Prompt to Clipboard',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

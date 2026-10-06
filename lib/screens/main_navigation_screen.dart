@@ -81,23 +81,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
         child: SafeArea(
           top: false,
-          child: SizedBox(
-            height: 62,
-            child: Row(
-              children: [
-                Expanded(child: _buildNavItem(index: 0, icon: Icons.grid_view_rounded, label: 'Home')),
-                Expanded(child: _buildNavItem(index: 1, icon: Icons.calculate_rounded, label: 'GPA')),
-                Expanded(child: _buildNavItem(index: 2, icon: Icons.description_rounded, label: 'Transcript')),
-                Expanded(
-                  child: _buildNavItem(
-                    index: 3,
-                    icon: Icons.auto_awesome_rounded,
-                    label: 'AI Advisor',
-                    isHero: true,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: SizedBox(
+              height: 58,
+              child: Row(
+                children: [
+                  Expanded(child: _buildNavItem(index: 0, icon: Icons.grid_view_rounded, label: 'Home')),
+                  Expanded(child: _buildNavItem(index: 1, icon: Icons.calculate_rounded, label: 'GPA')),
+                  Expanded(child: _buildNavItem(index: 2, icon: Icons.description_rounded, label: 'Transcript')),
+                  Expanded(
+                    child: _buildNavItem(
+                      index: 3,
+                      icon: Icons.auto_awesome_rounded,
+                      label: 'AI',
+                      isHero: true,
+                    ),
                   ),
-                ),
-                Expanded(child: _buildNavItem(index: 4, icon: Icons.payments_rounded, label: 'Tuition Fee')),
-              ],
+                  Expanded(child: _buildNavItem(index: 4, icon: Icons.payments_rounded, label: 'Tuition')),
+                ],
+              ),
             ),
           ),
         ),
@@ -126,7 +129,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ? AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
                   decoration: BoxDecoration(
                     gradient: isSelected ? AppColors.primaryGradient : null,
                     color: isSelected
@@ -143,13 +146,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       Icon(
                         icon,
                         color: isSelected ? Colors.white : AppColors.primary,
-                        size: 19,
+                        size: 17,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 3),
                       Text(
                         'AI',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 10.5,
                           fontWeight: FontWeight.w800,
                           color: isSelected ? Colors.white : AppColors.primary,
                         ),
@@ -160,7 +163,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               : AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 3),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.08)
@@ -173,18 +176,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       Icon(
                         icon,
                         color: isSelected ? AppColors.primary : inactiveColor,
-                        size: 22,
+                        size: 20,
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          color: isSelected ? AppColors.primary : inactiveColor,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                            color: isSelected ? AppColors.primary : inactiveColor,
+                          ),
+                          maxLines: 1,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

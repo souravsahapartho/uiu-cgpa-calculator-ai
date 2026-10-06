@@ -504,7 +504,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         onTap: onTap,
         borderRadius: AppRadius.borderLg,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 10),
           decoration: BoxDecoration(
             color: surface,
             borderRadius: AppRadius.borderLg,
@@ -514,7 +514,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(7),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.12),
                   borderRadius: AppRadius.borderSm,
@@ -527,29 +527,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      label,
-                      style: AppTypography.titleMedium.copyWith(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: textPri,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        label,
+                        style: AppTypography.titleMedium.copyWith(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: textPri,
+                        ),
+                        maxLines: 1,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      sub,
-                      style: AppTypography.bodySmall.copyWith(
-                        fontSize: 9.5,
-                        color: textSec,
+                    const SizedBox(height: 1),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        sub,
+                        style: AppTypography.bodySmall.copyWith(
+                          fontSize: 9.5,
+                          color: textSec,
+                        ),
+                        maxLines: 1,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, size: 15, color: textSec.withValues(alpha: 0.5)),
             ],
           ),
         ),
