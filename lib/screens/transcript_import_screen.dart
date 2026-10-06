@@ -455,6 +455,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
       ],
     ),
   ),
+  ),
 );
   }
 

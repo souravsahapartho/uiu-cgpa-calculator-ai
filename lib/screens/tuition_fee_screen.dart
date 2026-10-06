@@ -1240,6 +1240,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
       ],
     ),
   ),
+  ),
 );
   }
 
@@ -1955,33 +1956,6 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     );
   }
 
-  String _lastSavedCalcSignature = '';
-
-  void _autoSaveCalculation({
-    required double totalPayable,
-    required double totalDiscount,
-    required double creditFee,
-    required double sessionFee,
-    required double totalRegCredits,
-    required double firstRetakeCr,
-    required double subRetakeCr,
-    required double discountPct,
-  }) {
-    if (totalPayable <= 0 || totalRegCredits <= 0) return;
-    final sig = '${totalPayable.toStringAsFixed(0)}_${totalDiscount.toStringAsFixed(0)}_${totalRegCredits.toStringAsFixed(1)}_${discountPct.toStringAsFixed(1)}_$_missedInstallments';
-    if (_lastSavedCalcSignature == sig) return;
-    _lastSavedCalcSignature = sig;
-    _saveCurrentCalculationToHistory(
-      totalPayable: totalPayable,
-      totalDiscount: totalDiscount,
-      creditFee: creditFee,
-      sessionFee: sessionFee,
-      totalRegCredits: totalRegCredits,
-      firstRetakeCr: firstRetakeCr,
-      subRetakeCr: subRetakeCr,
-      discountPct: discountPct,
-    );
-  }
 
   Future<void> _saveCurrentCalculationToHistory({
     required double totalPayable,
