@@ -35,7 +35,14 @@ class TuitionPdfGenerator {
     required int missedInstallments,
     required double totalPayable,
   }) async {
-    final pdf = pw.Document();
+    final pdf = pw.Document(
+      theme: pw.ThemeData.withFont(
+        base: pw.Font.helvetica(),
+        bold: pw.Font.helveticaBold(),
+        italic: pw.Font.helveticaOblique(),
+        boldItalic: pw.Font.helveticaBoldOblique(),
+      ),
+    );
 
     final totalRegCredits = regularCredits + firstRetakeCr + subRetakeCr;
     final totalWithFine = totalPayable;

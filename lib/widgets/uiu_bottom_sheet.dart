@@ -167,6 +167,49 @@ class UIUBottomSheet {
                       },
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Container(
+                    margin: const EdgeInsets.only(top: 4, bottom: 4),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF2D1616) : const Color(0xFFFEF2F2),
+                      borderRadius: AppRadius.borderMd,
+                      border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.4 : 0.3)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'ACADEMIC PROBATION POLICY (UIU REGULATION)',
+                                style: TextStyle(
+                                  color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 11,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'A student whose Term GPA is less than 2.00 for two consecutive trimesters/semesters or whose cumulative CGPA falls below 2.00 will be placed on Academic Probation. A maximum of 3 probations are permitted before dismissal under UIU Academic Regulations.',
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : const Color(0xFF7F1D1D),
+                                  fontSize: 11,
+                                  height: 1.35,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             );
@@ -366,6 +409,20 @@ class UIUBottomSheet {
                           textPri: textPri,
                           textSec: textSec,
                         ),
+                        const SizedBox(height: 12),
+                        _buildHonorTile(
+                          icon: Icons.campaign_rounded,
+                          title: 'Valedictorian (Convocation Speaker)',
+                          subtitle: 'Convocation Distinction',
+                          cgpa: 'Top Graduating Academic Rank',
+                          rule: 'Delivers the farewell address at official convocation. Selected among top graduates based on academic excellence, co-curricular profile, and committee recommendation. (Official criterion could not be verified: no isolated CGPA formula published).',
+                          badge: 'Official criterion could not be verified',
+                          badgeColor: const Color(0xFF64748B),
+                          surface: surface,
+                          borderColor: borderColor,
+                          textPri: textPri,
+                          textSec: textSec,
+                        ),
                         const SizedBox(height: 20),
                         Container(
                           padding: const EdgeInsets.all(14),
@@ -382,7 +439,7 @@ class UIUBottomSheet {
                                   const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 18),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Important UIU Honor Guidelines',
+                                    'Official UIU Academic Distinction Rules',
                                     style: AppTypography.labelMedium.copyWith(
                                       color: isDark ? Colors.white : AppColors.primaryDark,
                                       fontWeight: FontWeight.w800,
@@ -391,9 +448,10 @@ class UIUBottomSheet {
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              _noteBullet('Convocation Honors are determined exclusively by official Final Graduating CGPA.', isDark),
+                              _noteBullet('Verification Status: Gold Medal, Summa Cum Laude, Magna Cum Laude, and Cum Laude are officially verified UIU convocation criteria.', isDark),
                               _noteBullet('Precedence hierarchy: Gold Medal > Summa Cum Laude > Magna Cum Laude > Cum Laude.', isDark),
-                              _noteBullet('Under UIU regulations, retaking any course disqualifies from Summa Cum Laude, but Magna and Cum Laude remain achievable.', isDark),
+                              _noteBullet('Under UIU regulations, retaking any course strictly disqualifies a student from Summa Cum Laude, but Magna Cum Laude and Cum Laude remain achievable.', isDark),
+                              _noteBullet('Academic Probation Regulation: Two consecutive terms with GPA < 2.00 or cumulative CGPA < 2.00 places student on Academic Probation.', isDark),
                             ],
                           ),
                         ),

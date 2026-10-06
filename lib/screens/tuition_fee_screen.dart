@@ -229,60 +229,45 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     final lateFine = _missedInstallments * 500.0;
     final totalWithFine = totalPayable + lateFine;
 
-    if (totalRegCredits > 0 && creditFee > 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _autoSaveCalculation(
-          totalPayable: totalWithFine,
-          totalDiscount: totalDiscount,
-          creditFee: creditFee,
-          sessionFee: sessionFee,
-          totalRegCredits: totalRegCredits,
-          firstRetakeCr: firstRetakeCr,
-          subRetakeCr: subRetakeCr,
-          discountPct: discountPct,
-        );
-      });
-    }
-
     return Scaffold(
       backgroundColor: bg,
       body: SubtleBackground(
         child: SafeArea(
           bottom: false,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: UIUHeader(
-                  title: 'Tuition Fee',
-                  subtitle: 'Official UIU Fee Structure & Policies',
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.restart_alt_rounded, color: AppColors.danger, size: 21),
-                        tooltip: 'Reset All Fields',
-                        onPressed: _resetAllFields,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.history_rounded, color: AppColors.accent, size: 21),
-                        tooltip: 'Calculation History',
-                        onPressed: () => _showTuitionHistoryModal(context),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 21),
-                        tooltip: 'Summary of UIU Rules',
-                        onPressed: () => _showTuitionFeeRulesModal(context),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    ],
-                  ),
+          child: Column(
+            children: [
+              // Fixed Top Navigation Header
+              UIUHeader(
+                title: 'Tuition Fee',
+                subtitle: 'Official UIU Fee Structure & Policies',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.restart_alt_rounded, color: AppColors.danger, size: 21),
+                      tooltip: 'Reset All Fields',
+                      onPressed: _resetAllFields,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.history_rounded, color: AppColors.accent, size: 21),
+                      tooltip: 'Calculation History',
+                      onPressed: () => _showTuitionHistoryModal(context),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 21),
+                      tooltip: 'Summary of UIU Rules',
+                      onPressed: () => _showTuitionFeeRulesModal(context),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
                 ),
               ),
+              Expanded(
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
 
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
@@ -510,20 +495,32 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              _quickCreditChip('0 Cr', () {
-                                _firstRetakeCreditsCtrl.text = '0';
-                                setState(() {});
-                              }, sectionColor, borderColor, textPri),
+                              _quickCreditChip(
+                                label: '0 Cr',
+                                creditVal: 0,
+                                controller: _firstRetakeCreditsCtrl,
+                                surface: sectionColor,
+                                border: borderColor,
+                                textPri: textPri,
+                              ),
                               const SizedBox(width: 4),
-                              _quickCreditChip('3 Cr', () {
-                                _firstRetakeCreditsCtrl.text = '3';
-                                setState(() {});
-                              }, sectionColor, borderColor, textPri),
+                              _quickCreditChip(
+                                label: '3 Cr',
+                                creditVal: 3,
+                                controller: _firstRetakeCreditsCtrl,
+                                surface: sectionColor,
+                                border: borderColor,
+                                textPri: textPri,
+                              ),
                               const SizedBox(width: 4),
-                              _quickCreditChip('6 Cr', () {
-                                _firstRetakeCreditsCtrl.text = '6';
-                                setState(() {});
-                              }, sectionColor, borderColor, textPri),
+                              _quickCreditChip(
+                                label: '6 Cr',
+                                creditVal: 6,
+                                controller: _firstRetakeCreditsCtrl,
+                                surface: sectionColor,
+                                border: borderColor,
+                                textPri: textPri,
+                              ),
                             ],
                           ),
                           if (_firstRetakes.isNotEmpty) ...[
@@ -664,20 +661,32 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              _quickCreditChip('0 Cr', () {
-                                _subsequentRetakeCreditsCtrl.text = '0';
-                                setState(() {});
-                              }, sectionColor, borderColor, textPri),
+                              _quickCreditChip(
+                                label: '0 Cr',
+                                creditVal: 0,
+                                controller: _subsequentRetakeCreditsCtrl,
+                                surface: sectionColor,
+                                border: borderColor,
+                                textPri: textPri,
+                              ),
                               const SizedBox(width: 4),
-                              _quickCreditChip('3 Cr', () {
-                                _subsequentRetakeCreditsCtrl.text = '3';
-                                setState(() {});
-                              }, sectionColor, borderColor, textPri),
+                              _quickCreditChip(
+                                label: '3 Cr',
+                                creditVal: 3,
+                                controller: _subsequentRetakeCreditsCtrl,
+                                surface: sectionColor,
+                                border: borderColor,
+                                textPri: textPri,
+                              ),
                               const SizedBox(width: 4),
-                              _quickCreditChip('6 Cr', () {
-                                _subsequentRetakeCreditsCtrl.text = '6';
-                                setState(() {});
-                              }, sectionColor, borderColor, textPri),
+                              _quickCreditChip(
+                                label: '6 Cr',
+                                creditVal: 6,
+                                controller: _subsequentRetakeCreditsCtrl,
+                                surface: sectionColor,
+                                border: borderColor,
+                                textPri: textPri,
+                              ),
                             ],
                           ),
                           if (_subsequentRetakes.isNotEmpty) ...[
@@ -978,45 +987,74 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                                         fontSize: 11,
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 0.5)),
-                                InkWell(
-                                  onTap: () async {
-                                    await _saveCurrentCalculationToHistory(
-                                      totalPayable: totalWithFine,
-                                      totalDiscount: totalDiscount,
-                                      creditFee: creditFee,
-                                      sessionFee: sessionFee,
-                                      totalRegCredits: totalRegCredits,
-                                      firstRetakeCr: firstRetakeCr,
-                                      subRetakeCr: subRetakeCr,
-                                      discountPct: discountPct,
-                                    );
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Calculation saved to local history!'),
-                                          backgroundColor: AppColors.success,
-                                          duration: Duration(seconds: 2),
+                                Builder(
+                                  builder: (context) {
+                                    final currentSig = '${totalWithFine.round()}_${totalDiscount.round()}_${totalRegCredits.toStringAsFixed(1)}_${discountPct.toStringAsFixed(1)}_$_missedInstallments';
+                                    final isAlreadySaved = (_lastSavedCalcSignature == currentSig);
+
+                                    if (isAlreadySaved) {
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.28),
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(color: Colors.white.withValues(alpha: 0.45)),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.check_circle_rounded, size: 13, color: Colors.white),
+                                            SizedBox(width: 4),
+                                            Text('Saved', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w800)),
+                                          ],
                                         ),
                                       );
                                     }
-                                  },
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.2),
+
+                                    return InkWell(
+                                      onTap: () async {
+                                        setState(() {
+                                          _lastSavedCalcSignature = currentSig;
+                                        });
+                                        await _saveCurrentCalculationToHistory(
+                                          totalPayable: totalWithFine,
+                                          totalDiscount: totalDiscount,
+                                          creditFee: creditFee,
+                                          sessionFee: sessionFee,
+                                          totalRegCredits: totalRegCredits,
+                                          firstRetakeCr: firstRetakeCr,
+                                          subRetakeCr: subRetakeCr,
+                                          discountPct: discountPct,
+                                        );
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Calculation saved to local history!'),
+                                              backgroundColor: AppColors.success,
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
+                                      },
                                       borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.bookmark_add_outlined, size: 13, color: Colors.white),
-                                        SizedBox(width: 4),
-                                        Text('Save', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w800)),
-                                      ],
-                                    ),
-                                  ),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.bookmark_add_outlined, size: 13, color: Colors.white),
+                                            SizedBox(width: 4),
+                                            Text('Save', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w800)),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             ),
@@ -1199,8 +1237,10 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
             ],
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 
   Widget _cardWrapper({required Widget child, required Color surface, required Color borderColor}) {
@@ -1273,20 +1313,62 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
     );
   }
 
-  Widget _quickCreditChip(String label, VoidCallback onTap, Color surface, Color border, Color textPri) {
+  Widget _quickCreditChip({
+    required String label,
+    required double creditVal,
+    required TextEditingController controller,
+    required Color surface,
+    required Color border,
+    required Color textPri,
+  }) {
+    final currentText = controller.text.trim();
+    final currentVal = double.tryParse(currentText) ?? 0.0;
+    final isSelected = (currentVal == creditVal) || (creditVal == 0.0 && (currentText.isEmpty || currentVal == 0.0));
+
     return InkWell(
-      onTap: onTap,
+      onTap: isSelected
+          ? null
+          : () {
+              controller.text = creditVal.toInt().toString();
+              setState(() {});
+            },
       borderRadius: AppRadius.borderMd,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: surface,
+          color: isSelected ? AppColors.primary : surface,
           borderRadius: AppRadius.borderMd,
-          border: Border.all(color: border),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : border,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
-        child: Text(
-          label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: textPri),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isSelected) ...[
+              const Icon(Icons.check_rounded, size: 12, color: Colors.white),
+              const SizedBox(width: 3),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                color: isSelected ? Colors.white : textPri,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1630,58 +1712,63 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
         borderRadius: AppRadius.borderLg,
         border: Border.all(color: borderColor),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: steps.map((s) {
-          final sNum = s['num'] as int;
-          final sLabel = s['label'] as String;
-          final isDone = sNum < currentStep;
-          final isCurrent = sNum == currentStep;
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: steps.map((s) {
+            final sNum = s['num'] as int;
+            final sLabel = s['label'] as String;
+            final isDone = sNum < currentStep;
+            final isCurrent = sNum == currentStep;
 
-          Color badgeBg = isDone
-              ? AppColors.success
-              : (isCurrent ? AppColors.primary : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)));
-          Color textColor = (isDone || isCurrent) ? textPri : textSec;
+            Color badgeBg = isDone
+                ? AppColors.success
+                : (isCurrent ? AppColors.primary : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)));
+            Color textColor = (isDone || isCurrent) ? textPri : textSec;
 
-          return Row(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: badgeBg,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: isDone
-                      ? const Icon(Icons.check_rounded, size: 13, color: Colors.white)
-                      : Text(
-                          '$sNum',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            color: isCurrent ? Colors.white : textSec,
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: badgeBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: isDone
+                        ? const Icon(Icons.check_rounded, size: 13, color: Colors.white)
+                        : Text(
+                            '$sNum',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: isCurrent ? Colors.white : textSec,
+                            ),
                           ),
-                        ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                sLabel,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w600,
-                  color: textColor,
+                const SizedBox(width: 4),
+                Text(
+                  sLabel,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w600,
+                    color: textColor,
+                  ),
                 ),
-              ),
-              if (sNum < 5) ...[
-                const SizedBox(width: 6),
-                Icon(Icons.chevron_right_rounded, size: 14, color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
-                const SizedBox(width: 2),
+                if (sNum < 5) ...[
+                  const SizedBox(width: 6),
+                  Icon(Icons.chevron_right_rounded, size: 14, color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+                  const SizedBox(width: 6),
+                ],
               ],
-            ],
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

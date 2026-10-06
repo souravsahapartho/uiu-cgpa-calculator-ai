@@ -1,7 +1,7 @@
 name: uiu_cgpa_calculator_ai
 description: "UIU CGPA Calculator AI - AI-Supported Academic & CGPA Companion for United International University (UIU) Students"
 publish_to: "none"
-version: 1.0.0+1
+version: 1.0.3+4
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -16,6 +16,7 @@ dependencies:
   pdf: ^3.13.1
   printing: ^5.15.1
   url_launcher: ^6.3.1
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:
@@ -24,3 +25,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/
+    - assets/logo.png
+    - logo.png

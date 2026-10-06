@@ -53,3 +53,5 @@ upload_apk.js
 web_app/apk/
 apk/
 .env
+publish_release.js
+upload_apk.js

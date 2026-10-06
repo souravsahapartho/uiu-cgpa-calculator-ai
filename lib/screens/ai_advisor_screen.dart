@@ -100,27 +100,28 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
       body: SubtleBackground(
         child: SafeArea(
           bottom: false,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: UIUHeader(
-                  title: 'AI Academic Advisor',
-                  subtitle: 'Intelligent Course Pathways & Performance Insights',
-                  trailing: IconButton(
-                    onPressed: _triggerAIAnalysis,
-                    tooltip: 'Refresh AI Insights',
-                    icon: _isRefreshing
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                          )
-                        : const Icon(Icons.refresh_rounded, color: AppColors.primary),
-                  ),
+          child: Column(
+            children: [
+              // Fixed Top Navigation Header
+              UIUHeader(
+                title: 'AI Academic Advisor',
+                subtitle: 'Intelligent Course Pathways & Performance Insights',
+                trailing: IconButton(
+                  onPressed: _triggerAIAnalysis,
+                  tooltip: 'Refresh AI Insights',
+                  icon: _isRefreshing
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                        )
+                      : const Icon(Icons.refresh_rounded, color: AppColors.primary),
                 ),
               ),
+              Expanded(
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
 
               // Hero Overview Card (Responsive, dynamic gradients and metrics)
               SliverToBoxAdapter(
@@ -535,53 +536,54 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                 ),
               ),
 
-              // Course Conflict Warning Section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF2D1616) : AppColors.dangerLight,
-                      borderRadius: AppRadius.borderLg,
-                      border: Border.all(color: AppColors.danger.withValues(alpha: isDark ? 0.4 : 0.2)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Courses to Avoid Taking Together',
-                                style: AppTypography.titleMedium.copyWith(
-                                  color: isDark ? const Color(0xFFFCA5A5) : AppColors.dangerDark,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 13,
+              // Course Conflict Warning Section (Only shown if conflicts exist)
+              if (report.conflictWarnings.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF2D1616) : AppColors.dangerLight,
+                        borderRadius: AppRadius.borderLg,
+                        border: Border.all(color: AppColors.danger.withValues(alpha: isDark ? 0.4 : 0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Courses to Avoid Taking Together',
+                                  style: AppTypography.titleMedium.copyWith(
+                                    color: isDark ? const Color(0xFFFCA5A5) : AppColors.dangerDark,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ...report.conflictWarnings.map((warning) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Text(
-                            '• ${warning.conflictingCourses.join(" + ")}: ${warning.explanation}',
-                            style: AppTypography.bodySmall.copyWith(
-                              color: isDark ? const Color(0xFFFCA5A5).withValues(alpha: 0.9) : AppColors.dangerDark,
-                              fontSize: 11,
-                              height: 1.4,
-                            ),
+                            ],
                           ),
-                        )),
-                      ],
+                          const SizedBox(height: 8),
+                          ...report.conflictWarnings.map((warning) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              '• ${warning.conflictingCourses.join(" + ")}: ${warning.explanation}',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: isDark ? const Color(0xFFFCA5A5).withValues(alpha: 0.9) : AppColors.dangerDark,
+                                fontSize: 11,
+                                height: 1.4,
+                              ),
+                            ),
+                          )),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
 
               // Workload Balancer
               SliverToBoxAdapter(
@@ -597,8 +599,10 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
             ],
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 
   Widget _buildHeroMetricCard({

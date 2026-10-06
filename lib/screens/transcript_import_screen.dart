@@ -56,23 +56,24 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
       body: SubtleBackground(
         child: SafeArea(
           bottom: false,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: UIUHeader(
-                  title: 'Academic Records',
-                  subtitle: semesters.isEmpty
-                      ? 'No recorded trimesters yet'
-                      : '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed',
-                  trailing: IconButton(
-                    tooltip: 'Academic Guidelines & Policy',
-                    onPressed: () => _showAcademicGuidelinesModal(context, isDark, surface, borderClr, textPri, textSec),
-                    icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
-                  ),
+          child: Column(
+            children: [
+              // Fixed Top Navigation Header
+              UIUHeader(
+                title: 'Academic Records',
+                subtitle: semesters.isEmpty
+                    ? 'No recorded trimesters yet'
+                    : '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed',
+                trailing: IconButton(
+                  tooltip: 'Academic Guidelines & Policy',
+                  onPressed: () => _showAcademicGuidelinesModal(context, isDark, surface, borderClr, textPri, textSec),
+                  icon: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
                 ),
               ),
+              Expanded(
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
 
               // Action Buttons Bar (Add Trimester, Import CSV, Import PDF, Import Image)
               SliverToBoxAdapter(
@@ -451,8 +452,10 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ],
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 
   // ── ACADEMIC GUIDELINES & RETAKE POLICY MODAL ──
