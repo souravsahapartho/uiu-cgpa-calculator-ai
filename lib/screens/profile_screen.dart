@@ -1005,7 +1005,7 @@ class ProfileScreen extends StatelessWidget {
     final cgpaCtrl = TextEditingController(text: student.currentCGPA.toStringAsFixed(2));
     final creditsCtrl = TextEditingController(text: student.completedCredits.toStringAsFixed(0));
     final totalCreditsCtrl = TextEditingController(
-      text: student.totalDegreeCredits > 0 ? student.totalDegreeCredits.toStringAsFixed(0) : '138',
+      text: student.totalDegreeCredits > 0 ? student.totalDegreeCredits.toStringAsFixed(0) : '141',
     );
     final targetCtrl = TextEditingController(text: student.targetCGPA.toStringAsFixed(2));
 

@@ -119,14 +119,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     final cgpa = double.tryParse(_cgpaController.text) ?? -1;
     final credits = double.tryParse(_creditsController.text) ?? -1;
     final target = double.tryParse(_targetController.text) ?? -1;
-    final totalReq = double.tryParse(_totalRequiredCreditsController.text) ?? -1;
+    final totalReqText = _totalRequiredCreditsController.text.trim();
+    final totalReq = totalReqText.isEmpty ? 141.0 : (double.tryParse(totalReqText) ?? -1);
     return cgpa >= 0 && cgpa <= 4.0 && credits >= 0 && target >= 0 && target <= 4.0 && totalReq > 0;
   }
 
   Future<void> _finish() async {
     final provider = ProfileProviderScope.of(context);
     final dept = _selectedDept ?? 'Computer Science & Engineering';
-    final totalCredits = double.tryParse(_totalRequiredCreditsController.text) ?? (_totalCreditsByProgram[dept] ?? 138.0);
+    final totalReqText = _totalRequiredCreditsController.text.trim();
+    final totalCredits = totalReqText.isNotEmpty
+        ? (double.tryParse(totalReqText) ?? 141.0)
+        : 141.0;
     final profile = UserProfile(
       name: _nameController.text.trim(),
       studentId: _idController.text.trim(),
@@ -536,8 +540,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   if (v != null) {
                     setState(() {
                       _selectedDept = v;
-                      final credits = _totalCreditsByProgram[v] ?? 138.0;
-                      _totalRequiredCreditsController.text = credits.toInt().toString();
                     });
                   }
                 },
@@ -743,7 +745,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           _fieldLabel('Total Required Credits (Degree Total) *', textSec),
           _buildTextField(
             controller: _totalRequiredCreditsController,
-            hint: '138',
+            hint: '141',
             icon: Icons.grade_rounded,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
