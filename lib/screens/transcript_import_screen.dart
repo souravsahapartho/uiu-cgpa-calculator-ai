@@ -55,6 +55,54 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     }
   }
 
+  static String _getDynamicTrimester([List<SemesterTranscript>? semesters]) {
+    if (semesters != null && semesters.isNotEmpty) {
+      final last = semesters.last.semesterName.trim();
+      final parts = last.split(' ');
+      if (parts.length == 2) {
+        final season = parts[0].toLowerCase();
+        final year = int.tryParse(parts[1]);
+        if (year != null) {
+          if (season.startsWith('spr')) return 'Summer $year';
+          if (season.startsWith('sum')) return 'Fall $year';
+          if (season.startsWith('fal')) return 'Spring ${year + 1}';
+        }
+      }
+    }
+    final now = DateTime.now();
+    final month = now.month;
+    final year = now.year;
+    if (month >= 1 && month <= 4) {
+      return 'Spring $year';
+    } else if (month >= 5 && month <= 8) {
+      return 'Summer $year';
+    } else {
+      return 'Fall $year';
+    }
+  }
+
+  static List<String> _getRecentTrimesterSuggestions([List<SemesterTranscript>? semesters]) {
+    final now = DateTime.now();
+    final y = now.year;
+    final suggestions = <String>{
+      'Spring ${y - 1}',
+      'Summer ${y - 1}',
+      'Fall ${y - 1}',
+      'Spring $y',
+      'Summer $y',
+      'Fall $y',
+      'Spring ${y + 1}',
+    };
+    if (semesters != null) {
+      for (final s in semesters) {
+        if (s.semesterName.trim().isNotEmpty) {
+          suggestions.add(s.semesterName.trim());
+        }
+      }
+    }
+    return suggestions.toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = ProfileProviderScope.of(context);
@@ -1058,7 +1106,9 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
 
   // ── ADD TRIMESTER MODAL (CLEAN RESPONSIVE CARD LAYOUT) ──
   void _showAddTrimesterDialog(BuildContext context) {
-    final termController = TextEditingController(text: 'Spring 2024');
+    final provider = ProfileProviderScope.of(context);
+    final defaultDynamicTerm = _getDynamicTrimester(provider.semesters);
+    final termController = TextEditingController();
     final courses = <_NewCourseItem>[
       _NewCourseItem(code: '', title: '', credit: 3.0, grade: 'A'),
       _NewCourseItem(code: '', title: '', credit: 1.0, grade: 'A'),
@@ -1146,10 +1196,34 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                   controller: termController,
                   style: TextStyle(color: textPri, fontWeight: FontWeight.w600),
                   decoration: InputDecoration(
-                    labelText: 'Trimester Name',
-                    hintText: 'e.g. Fall 2023, Spring 2024',
+                    labelText: 'Target Trimester Name *',
+                    hintText: 'e.g. $defaultDynamicTerm',
+                    helperText: 'Enter target trimester (e.g. $defaultDynamicTerm)',
                     border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _getRecentTrimesterSuggestions(provider.semesters).map((suggested) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ActionChip(
+                          label: Text(suggested, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: textPri)),
+                          backgroundColor: surface,
+                          side: BorderSide(color: borderClr, width: 0.8),
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () {
+                            setModalState(() {
+                              termController.text = suggested;
+                            });
+                          },
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -1303,7 +1377,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     ),
                     onPressed: () async {
                       if (courses.isEmpty) return;
-                      final termName = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
+                      final termName = termController.text.trim().isEmpty ? defaultDynamicTerm : termController.text.trim();
                       final provider = ProfileProviderScope.of(context);
                       final convertedCourses = courses
                           .map((c) => Course(
@@ -1378,12 +1452,11 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ? 'CSE 2213 Object Oriented Programming 3.00 A\nCSE 2214 OOP Lab 1.00 A\nMATH 2183 Calculus and Linear Algebra 3.00 B+'
             : 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Lab, 1.0, A');
 
-    final termController = TextEditingController(
-      text: mode == 'image' ? 'Summer 2023' : 'Spring 2024',
-    );
-    final contentController = TextEditingController(
-      text: mode == 'image' ? 'CSE 1111, Structured Programming, 3.0, A\nCSE 1112, SPL Lab, 1.0, A' : '',
-    );
+    final provider = ProfileProviderScope.of(context);
+    final defaultDynamicTerm = _getDynamicTrimester(provider.semesters);
+
+    final termController = TextEditingController();
+    final contentController = TextEditingController();
 
     String? pickedFileName;
     String? pickedFileSize;
@@ -1572,9 +1645,18 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                       const SizedBox(height: 14),
 
                       // Trimester Name input
-                      Text(
-                        'Target Trimester Name *',
-                        style: AppTypography.labelSmall.copyWith(color: textSec, fontWeight: FontWeight.w700),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Target Trimester Name *',
+                            style: AppTypography.labelSmall.copyWith(color: textSec, fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            'Default: $defaultDynamicTerm',
+                            style: TextStyle(color: accentColor, fontSize: 10.5, fontWeight: FontWeight.w700),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 5),
                       Container(
@@ -1588,7 +1670,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                           style: AppTypography.bodyMedium.copyWith(color: textPri, fontWeight: FontWeight.w700),
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            hintText: 'e.g. Spring 2024',
+                            hintText: 'e.g. $defaultDynamicTerm',
                             hintStyle: AppTypography.bodyMedium.copyWith(
                               color: textPri.withValues(alpha: 0.35),
                               fontWeight: FontWeight.w400,
@@ -1596,6 +1678,34 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                             prefixIcon: Icon(Icons.event_note_rounded, color: accentColor, size: 20),
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        '💡 Target Trimester: আপনি যে ট্রাইমেস্টারে এই কোর্সগুলো যুক্ত করতে চান (যেমন: $defaultDynamicTerm)। ফাইল থেকে অটো-ডিটেক্ট না হলে এটি ডিফল্ট হিসেবে ব্যবহৃত হবে।',
+                        style: TextStyle(color: textSec, fontSize: 10.5, height: 1.35),
+                      ),
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: _getRecentTrimesterSuggestions(provider.semesters).map((suggested) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ActionChip(
+                                label: Text(suggested, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: textPri)),
+                                backgroundColor: surface,
+                                side: BorderSide(color: borderClr, width: 0.8),
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () {
+                                  setModalState(() {
+                                    termController.text = suggested;
+                                  });
+                                },
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -1709,7 +1819,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                         style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
                       ),
                       onPressed: () async {
-                        final term = termController.text.trim().isEmpty ? 'Trimester' : termController.text.trim();
+                        final term = termController.text.trim().isEmpty ? defaultDynamicTerm : termController.text.trim();
                         final raw = contentController.text.trim();
                         if (raw.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
