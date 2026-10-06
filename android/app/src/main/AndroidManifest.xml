@@ -4,6 +4,7 @@
         android:label="UIU CGPA Calculator AI"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:extractNativeLibs="false">
         <activity
             android:name=".MainActivity"
