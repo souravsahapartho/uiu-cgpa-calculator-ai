@@ -52,6 +52,7 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
   bool _isCustomWaiver = false;
   int _missedInstallments = 0;
   bool _tutorialCompleted = false;
+  String _lastSavedCalcSignature = '';
 
   @override
   void initState() {
