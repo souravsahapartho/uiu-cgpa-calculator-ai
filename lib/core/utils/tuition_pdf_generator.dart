@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/material.dart' show BuildContext, Color, ScaffoldMessenger, SnackBar, Text;
+import 'package:flutter/material.dart' show BuildContext, Color, ScaffoldMessenger, SnackBar, Text, Row, Icon, Icons, SizedBox, Expanded, TextStyle, FontWeight, SnackBarAction, Colors;
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import '../providers/user_profile_provider.dart';
 
 class TuitionPdfGenerator {
@@ -561,75 +563,72 @@ class TuitionPdfGenerator {
       final cleanId = profile.studentId.isNotEmpty ? profile.studentId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_') : 'Student';
       final filename = 'UIU_Tuition_Statement_$cleanId.pdf';
 
-      Directory? targetDir;
+      bool savedDirectly = false;
+
       if (Platform.isAndroid) {
-        final downloadDir = Directory('/storage/emulated/0/Download');
-        if (await downloadDir.exists()) {
-          targetDir = downloadDir;
-        } else {
-          targetDir = await getExternalStorageDirectory() ?? await getApplicationDocumentsDirectory();
+        try {
+          const channel = MethodChannel('edu.uiu.cgpacalculator.ai/save_file');
+          final result = await channel.invokeMethod<String>('saveToDownloads', {
+            'fileName': filename,
+            'bytes': pdfBytes,
+          });
+          if (result != null && result.isNotEmpty) {
+            savedDirectly = true;
+          }
+        } catch (_) {
+          savedDirectly = false;
         }
-      } else {
-        targetDir = await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory();
       }
 
-      final file = File('${targetDir.path}/$filename');
-      await file.writeAsBytes(pdfBytes);
+      if (!savedDirectly) {
+        Directory? targetDir;
+        if (Platform.isAndroid) {
+          targetDir = await getExternalStorageDirectory() ?? await getApplicationDocumentsDirectory();
+        } else {
+          targetDir = await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory();
+        }
+        final file = File('${targetDir.path}/$filename');
+        await file.writeAsBytes(pdfBytes);
+      }
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('PDF downloaded directly to ${targetDir.path.contains("Download") ? "Downloads folder" : "Device storage"}: $filename'),
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'PDF saved directly to device Downloads: $filename',
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
             backgroundColor: const Color(0xFF059669),
-            duration: const Duration(seconds: 4),
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'View PDF',
+              textColor: Colors.white,
+              onPressed: () {
+                Printing.layoutPdf(
+                  onLayout: (format) async => pdfBytes,
+                  name: filename,
+                );
+              },
+            ),
           ),
         );
       }
-    } catch (e) {
-      // Fallback to app documents
-      try {
-        final pdfBytes = await generatePdfBytes(
-          profile: profile,
-          system: system,
-          creditFee: creditFee,
-          sessionFee: sessionFee,
-          regularCredits: regularCredits,
-          firstRetakeCr: firstRetakeCr,
-          subRetakeCr: subRetakeCr,
-          regularTuition: regularTuition,
-          firstRetakeTuition: firstRetakeTuition,
-          subRetakeTuition: subRetakeTuition,
-          firstRetakeDiscount: firstRetakeDiscount,
-          discountType: discountType,
-          discountPct: discountPct,
-          waiverDiscount: waiverDiscount,
-          totalDiscount: totalDiscount,
-          lateFine: lateFine,
-          missedInstallments: missedInstallments,
-          totalPayable: totalPayable,
+    } catch (err) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save PDF: $err'),
+            backgroundColor: const Color(0xFFDC2626),
+          ),
         );
-        final docDir = await getApplicationDocumentsDirectory();
-        final file = File('${docDir.path}/UIU_Tuition_Statement.pdf');
-        await file.writeAsBytes(pdfBytes);
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('PDF saved locally to application documents.'),
-              backgroundColor: Color(0xFF059669),
-              duration: Duration(seconds: 4),
-            ),
-          );
-        }
-      } catch (err) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to save PDF: $err'),
-              backgroundColor: const Color(0xFFDC2626),
-            ),
-          );
-        }
       }
     }
   }

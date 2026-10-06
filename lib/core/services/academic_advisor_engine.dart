@@ -354,16 +354,11 @@ class AcademicAdvisorEngine {
     // 5. Build Domain Analyses
     final domainAnalyses = <SubjectDomainAnalysis>[];
     gradesByDomain.forEach((domain, grades) {
-      double avgGp = 3.80;
-      if (grades.isNotEmpty) {
-        avgGp = grades.reduce((a, b) => a + b) / grades.length;
-      } else if (realCGPA > 0) {
-        avgGp = realCGPA;
-      } else {
-        avgGp = 3.75;
-      }
+      // Exclude domains where student hasn't completed any courses yet (no demo data)
+      if (grades.isEmpty) return;
 
-      final scorePct = ((avgGp / 4.0) * 100).clamp(40.0, 100.0);
+      final avgGp = grades.reduce((a, b) => a + b) / grades.length;
+      final scorePct = ((avgGp / 4.0) * 100).clamp(0.0, 100.0);
       final isStrength = avgGp >= 3.65;
       final status = avgGp >= 3.75 ? 'Strong Proficiency' : avgGp >= 3.30 ? 'Good Standing' : 'Focus Needed';
 
@@ -371,26 +366,26 @@ class AcademicAdvisorEngine {
       switch (domain) {
         case 'Programming & CS':
           insight = avgGp >= 3.65
-              ? 'Demonstrating solid programming and algorithmic reasoning. Excellent candidate for competitive programming and advanced elective tracks.'
-              : 'Keep practicing LeetCode/Codeforces and structured problem solving to bolster your data structures foundation.';
+              ? 'Demonstrating solid programming and algorithmic reasoning (Avg GP: ${avgGp.toStringAsFixed(2)}). Excellent candidate for competitive programming and advanced elective tracks.'
+              : 'Keep practicing LeetCode/Codeforces and structured problem solving (Avg GP: ${avgGp.toStringAsFixed(2)}) to bolster your data structures foundation.';
           break;
         case 'Mathematics':
           insight = avgGp >= 3.65
-              ? 'Strong mathematical and analytical aptitude. Provides an advantage in Machine Learning, Cryptography, and Signal Processing.'
-              : 'Review calculus and linear algebra fundamentals to maintain high performance in Probability & Statistics.';
+              ? 'Strong mathematical and analytical aptitude (Avg GP: ${avgGp.toStringAsFixed(2)}). Provides an advantage in Machine Learning, Cryptography, and Signal Processing.'
+              : 'Review calculus and linear algebra fundamentals (Avg GP: ${avgGp.toStringAsFixed(2)}) to maintain high performance in Probability & Statistics.';
           break;
         case 'Hardware & Architecture':
           insight = avgGp >= 3.65
-              ? 'Well-rounded hardware logic understanding. Well positioned for Microprocessors and Embedded Systems.'
-              : 'Dedicate extra simulation hours in Logisim and circuit design labs.';
+              ? 'Well-rounded hardware logic understanding (Avg GP: ${avgGp.toStringAsFixed(2)}). Well positioned for Microprocessors and Embedded Systems.'
+              : 'Dedicate extra simulation hours in Logisim and circuit design labs (Avg GP: ${avgGp.toStringAsFixed(2)}).';
           break;
         case 'Software & Systems':
           insight = avgGp >= 3.65
-              ? 'High software architecture and system design capability. Ready for full-stack, enterprise DB, and OS labs.'
-              : 'Engage actively in lab term-projects to gain practical system implementation experience.';
+              ? 'High software architecture and system design capability (Avg GP: ${avgGp.toStringAsFixed(2)}). Ready for full-stack, enterprise DB, and OS labs.'
+              : 'Engage actively in lab term-projects (Avg GP: ${avgGp.toStringAsFixed(2)}) to gain practical system implementation experience.';
           break;
         default:
-          insight = 'Maintains balanced general academic readiness across interdisciplinary courses.';
+          insight = 'Maintains balanced academic performance (Avg GP: ${avgGp.toStringAsFixed(2)}) across enrolled coursework.';
       }
 
       domainAnalyses.add(SubjectDomainAnalysis(

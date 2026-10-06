@@ -77,13 +77,16 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
       requiredPace = ((totalTargetPoints - currentPoints) / remainingCredits).clamp(2.0, 4.0);
     }
 
-    final standingText = displayCGPA >= 3.80
-        ? 'Top 5% Standing'
-        : displayCGPA >= 3.50
-            ? 'Dean\'s Honor Pace'
-            : displayCGPA >= 3.00
-                ? 'Strong Academic Standing'
-                : 'Target Improvement Track';
+    final isNewStudent = completedCredits == 0;
+    final standingText = isNewStudent
+        ? 'New Student Track'
+        : displayCGPA >= 3.80
+            ? 'Top 5% Standing'
+            : displayCGPA >= 3.50
+                ? 'Dean\'s Honor Pace'
+                : displayCGPA >= 3.00
+                    ? 'Strong Academic Standing'
+                    : 'Target Improvement Track';
 
     double theoryCredits = 0.0;
     double labCredits = 0.0;
@@ -193,7 +196,9 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Student Summary: Showing strong consistency across Core Requirements & Systems. To reach your goal of ${targetCGPA.toStringAsFixed(2)} CGPA across your remaining ${remainingCredits.toInt()} credits, you need an average SGPA of ${requiredPace.toStringAsFixed(2)} per trimester with an optimal balance of theory and lab credits.',
+                          isNewStudent
+                              ? 'Welcome to UIU! As a 1st trimester student, focus on building a solid academic foundation. Attending all quizzes and securing 26+ out of 30 in Midterms will lock in an immediate Dean\'s Honor pace.'
+                              : 'Student Summary: Based on your completed ${completedCredits.toStringAsFixed(1)} credits and current CGPA of ${displayCGPA.toStringAsFixed(2)}, to reach your goal of ${targetCGPA.toStringAsFixed(2)} CGPA across your remaining ${remainingCredits.toInt()} credits, you need an average SGPA of ${requiredPace.toStringAsFixed(2)} per trimester.',
                           style: AppTypography.bodyMedium.copyWith(
                             color: Colors.white,
                             fontSize: 12.5,
@@ -208,7 +213,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                             Expanded(
                               child: _buildHeroMetricCard(
                                 label: 'Current Pace',
-                                value: '${displayCGPA.toStringAsFixed(2)} CGPA',
+                                value: isNewStudent ? 'New Student' : '${displayCGPA.toStringAsFixed(2)} CGPA',
                                 icon: Icons.trending_up_rounded,
                               ),
                             ),
@@ -319,110 +324,178 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, AppSpacing.s4),
-                  child: Text(
-                    'DOMAIN STRENGTH & APTITUDE',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: textSec,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'DOMAIN STRENGTH & APTITUDE',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: textSec,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      if (report.domainAnalyses.isNotEmpty)
+                        Text(
+                          '${report.domainAnalyses.length} Domains Evaluated',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
 
-              // Domain Cards
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final domain = report.domainAnalyses[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: surface,
-                          borderRadius: AppRadius.borderLg,
-                          border: Border.all(color: borderClr),
-                          boxShadow: AppShadows.soft,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              if (report.domainAnalyses.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 4),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: surface,
+                        borderRadius: AppRadius.borderLg,
+                        border: Border.all(color: borderClr),
+                        boxShadow: AppShadows.soft,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.12),
+                              borderRadius: AppRadius.borderMd,
+                            ),
+                            child: const Icon(Icons.analytics_outlined, color: AppColors.primary, size: 20),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        domain.isStrength ? Icons.check_circle_rounded : Icons.info_rounded,
-                                        size: 16,
-                                        color: domain.isStrength ? AppColors.success : AppColors.accent,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(
-                                          domain.domain,
-                                          style: AppTypography.titleMedium.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 12.5,
-                                            color: textPri,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
+                                Text(
+                                  'Awaiting Course Grade History',
+                                  style: AppTypography.titleSmall.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12.5,
+                                    color: textPri,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                                  decoration: BoxDecoration(
-                                    color: (domain.isStrength ? AppColors.success : AppColors.accent).withValues(alpha: 0.12),
-                                    borderRadius: AppRadius.borderFull,
-                                  ),
-                                  child: Text(
-                                    domain.status,
-                                    style: AppTypography.labelSmall.copyWith(
-                                      color: domain.isStrength ? AppColors.successDark : AppColors.accentDark,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 10,
-                                    ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  'No completed courses found in your transcript yet. Once you add or import your courses in the Transcript tab, your real domain strengths (Programming, Mathematics, Hardware & Systems) will dynamically generate here without any dummy data.',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    fontSize: 11,
+                                    color: textSec,
+                                    height: 1.4,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: AppRadius.borderFull,
-                              child: LinearProgressIndicator(
-                                value: domain.scorePercent / 100.0,
-                                minHeight: 6,
-                                backgroundColor: sectionBg,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  domain.isStrength ? AppColors.primary : AppColors.accent,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                // Domain Cards
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final domain = report.domainAnalyses[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: surface,
+                            borderRadius: AppRadius.borderLg,
+                            border: Border.all(color: borderClr),
+                            boxShadow: AppShadows.soft,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          domain.isStrength ? Icons.check_circle_rounded : Icons.info_rounded,
+                                          size: 16,
+                                          color: domain.isStrength ? AppColors.success : AppColors.accent,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            domain.domain,
+                                            style: AppTypography.titleMedium.copyWith(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 12.5,
+                                              color: textPri,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                    decoration: BoxDecoration(
+                                      color: (domain.isStrength ? AppColors.success : AppColors.accent).withValues(alpha: 0.12),
+                                      borderRadius: AppRadius.borderFull,
+                                    ),
+                                    child: Text(
+                                      domain.status,
+                                      style: AppTypography.labelSmall.copyWith(
+                                        color: domain.isStrength ? AppColors.successDark : AppColors.accentDark,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: AppRadius.borderFull,
+                                child: LinearProgressIndicator(
+                                  value: domain.scorePercent / 100.0,
+                                  minHeight: 6,
+                                  backgroundColor: sectionBg,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    domain.isStrength ? AppColors.primary : AppColors.accent,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              domain.insight,
-                              style: AppTypography.bodySmall.copyWith(
-                                fontSize: 11,
-                                color: textSec,
-                                height: 1.35,
+                              const SizedBox(height: 6),
+                              Text(
+                                domain.insight,
+                                style: AppTypography.bodySmall.copyWith(
+                                  fontSize: 11,
+                                  color: textSec,
+                                  height: 1.35,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    childCount: report.domainAnalyses.length,
+                            ],
+                          ),
+                        );
+                      },
+                      childCount: report.domainAnalyses.length,
+                    ),
                   ),
                 ),
-              ),
 
               // Recommended Next Courses
               SliverToBoxAdapter(
