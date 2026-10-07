@@ -629,8 +629,9 @@ class TuitionPdfGenerator {
               label: 'Open PDF',
               textColor: Colors.white,
               onPressed: () async {
-                if (localSavedFilePath != null && await File(localSavedFilePath).exists()) {
-                  final result = await OpenFilex.open(localSavedFilePath);
+                final targetPath = localSavedFilePath;
+                if (targetPath != null && await File(targetPath).exists()) {
+                  final result = await OpenFilex.open(targetPath);
                   if (result.type != ResultType.done) {
                     // Fallback to in-app PDF layout viewer
                     await Printing.layoutPdf(

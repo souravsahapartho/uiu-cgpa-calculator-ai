@@ -247,7 +247,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
               // UIU AI Strategic Advisor Consultations (Deep interactive scenarios & actionable Q&A)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s14, AppSpacing.s16, AppSpacing.s4),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
