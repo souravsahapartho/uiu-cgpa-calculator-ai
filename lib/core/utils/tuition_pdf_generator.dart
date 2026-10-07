@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart' show BuildContext, Color, ScaffoldMessenger, SnackBar, Text, Row, Icon, Icons, SizedBox, Expanded, TextStyle, FontWeight, SnackBarAction, Colors;
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -497,15 +496,15 @@ class TuitionPdfGenerator {
 
             // Footer
             pw.Container(
-              padding: const pw.EdgeInsets.only(top: 5),
+              padding: const pw.EdgeInsets.only(top: 6),
               decoration: pw.BoxDecoration(
                 border: pw.Border(top: pw.BorderSide(color: borderGray, width: 0.6)),
               ),
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('Generated via UIU CGPA Calculator AI | Official Academic Companion', style: pw.TextStyle(color: textMuted, fontSize: 6)),
-                  pw.Text('Developer: Sourav Saha (www.sourav.com.bd)', style: pw.TextStyle(color: primaryOrange, fontSize: 6, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('UIU CGPA Calculator AI | Official Student Academic & Fee Statement', style: pw.TextStyle(color: textMuted, fontSize: 6.5, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('Generated for Student Personal Planning & Record', style: pw.TextStyle(color: textMuted, fontSize: 6)),
                 ],
               ),
             ),
@@ -564,6 +563,7 @@ class TuitionPdfGenerator {
       final filename = 'UIU_Tuition_Statement_$cleanId.pdf';
 
       bool savedDirectly = false;
+      String savedLocation = 'Downloads folder';
 
       if (Platform.isAndroid) {
         try {
@@ -574,6 +574,7 @@ class TuitionPdfGenerator {
           });
           if (result != null && result.isNotEmpty) {
             savedDirectly = true;
+            savedLocation = result;
           }
         } catch (_) {
           savedDirectly = false;
@@ -583,12 +584,19 @@ class TuitionPdfGenerator {
       if (!savedDirectly) {
         Directory? targetDir;
         if (Platform.isAndroid) {
-          targetDir = await getExternalStorageDirectory() ?? await getApplicationDocumentsDirectory();
+          // Attempt external storage download directory directly
+          final publicDownloadDir = Directory('/storage/emulated/0/Download');
+          if (await publicDownloadDir.exists()) {
+            targetDir = publicDownloadDir;
+          } else {
+            targetDir = await getExternalStorageDirectory() ?? await getApplicationDocumentsDirectory();
+          }
         } else {
           targetDir = await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory();
         }
         final file = File('${targetDir.path}/$filename');
-        await file.writeAsBytes(pdfBytes);
+        await file.writeAsBytes(pdfBytes, flush: true);
+        savedLocation = file.path;
       }
 
       if (context.mounted) {
@@ -600,7 +608,7 @@ class TuitionPdfGenerator {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'PDF saved directly to device Downloads: $filename',
+                    'PDF saved successfully to device ($savedLocation): $filename',
                     style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                 ),
@@ -609,7 +617,7 @@ class TuitionPdfGenerator {
             backgroundColor: const Color(0xFF059669),
             duration: const Duration(seconds: 5),
             action: SnackBarAction(
-              label: 'View PDF',
+              label: 'View / Print',
               textColor: Colors.white,
               onPressed: () {
                 Printing.layoutPdf(

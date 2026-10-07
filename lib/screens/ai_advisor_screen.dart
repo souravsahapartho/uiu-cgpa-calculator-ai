@@ -212,7 +212,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                           children: [
                             Expanded(
                               child: _buildHeroMetricCard(
-                                label: 'Current Pace',
+                                label: 'Current CGPA',
                                 value: isNewStudent ? 'New Student' : '${displayCGPA.toStringAsFixed(2)} CGPA',
                                 icon: Icons.trending_up_rounded,
                               ),
@@ -220,7 +220,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: _buildHeroMetricCard(
-                                label: 'Target / Pace',
+                                label: 'Target Goal',
                                 value: '${targetCGPA.toStringAsFixed(2)} CGPA',
                                 icon: Icons.flag_rounded,
                               ),
@@ -228,7 +228,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: _buildHeroMetricCard(
-                                label: 'Recommended',
+                                label: 'Rec. Load',
                                 value: '${report.suggestedCreditLoad.toInt()} Credits',
                                 icon: Icons.balance_rounded,
                               ),
@@ -685,7 +685,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
     required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.16),
         borderRadius: AppRadius.borderMd,
@@ -693,28 +693,35 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, size: 12, color: Colors.white.withValues(alpha: 0.9)),
+              Padding(
+                padding: const EdgeInsets.only(top: 1),
+                child: Icon(icon, size: 12, color: Colors.white.withValues(alpha: 0.95)),
+              ),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.85),
+                    color: Colors.white.withValues(alpha: 0.92),
                     fontSize: 9.5,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
+                    height: 1.15,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                  softWrap: true,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           FittedBox(
             fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
             child: Text(
               value,
               style: const TextStyle(

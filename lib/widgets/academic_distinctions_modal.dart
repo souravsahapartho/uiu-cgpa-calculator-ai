@@ -47,6 +47,7 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
   bool? _isBatchTopper;
   bool? _isFacultyTopper;
   bool _hasFGrades = false;
+  int _selectedTabIndex = 0;
 
   @override
   void initState() {
@@ -81,9 +82,12 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
     );
 
     final distinctions = AcademicDistinctionEngine.evaluateDistinctions(params);
+    final selectedDistinction = (_selectedTabIndex >= 0 && _selectedTabIndex < distinctions.length)
+        ? distinctions[_selectedTabIndex]
+        : distinctions.first;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.90),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -103,7 +107,7 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
 
           // Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
+            padding: const EdgeInsets.fromLTRB(18, 8, 14, 10),
             child: Row(
               children: [
                 Container(
@@ -124,13 +128,15 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                         style: AppTypography.headlineSmall.copyWith(
                           color: textPri,
                           fontWeight: FontWeight.w900,
-                          fontSize: 16.5,
+                          fontSize: 16,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Official UIU Convocation Eligibility Rules',
-                        style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11.5),
+                        style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
                       ),
                     ],
                   ),
@@ -148,47 +154,100 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
 
           const Divider(height: 1),
 
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+          // Horizontal Distinction Selector Tabs (Separate dynamic option for each honor)
+          Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: surface,
+              border: Border(bottom: BorderSide(color: borderColor, width: 0.8)),
+            ),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              itemCount: distinctions.length,
               physics: const BouncingScrollPhysics(),
-              children: [
-                // Strict Accuracy & Source Banner
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0284C7).withValues(alpha: 0.08),
-                    borderRadius: AppRadius.borderMd,
-                    border: Border.all(color: const Color(0xFF0284C7).withValues(alpha: 0.25)),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.verified_user_rounded, color: Color(0xFF0284C7), size: 18),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Strict UIU Official Policy Engine',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF0284C7)),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'Rules are strictly mapped from official UIU examination regulations and convocation ordinances. Unofficial estimates from other universities are excluded.',
-                              style: TextStyle(fontSize: 10.5, color: textSec, height: 1.35),
-                            ),
-                          ],
+              itemBuilder: (ctx, index) {
+                final d = distinctions[index];
+                final isSelected = _selectedTabIndex == index;
+                final isEligible = d.status == EligibilityStatus.eligible;
+                final isDisqualified = d.status == EligibilityStatus.disqualified;
+
+                Color activeColor;
+                if (isEligible) {
+                  activeColor = const Color(0xFF059669);
+                } else if (isDisqualified) {
+                  activeColor = const Color(0xFFDC2626);
+                } else if (d.status == EligibilityStatus.notAwarded) {
+                  activeColor = const Color(0xFF64748B);
+                } else {
+                  activeColor = AppColors.primary;
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: InkWell(
+                    borderRadius: AppRadius.borderFull,
+                    onTap: () {
+                      setState(() {
+                        _selectedTabIndex = index;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isSelected ? activeColor : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                        borderRadius: AppRadius.borderFull,
+                        border: Border.all(
+                          color: isSelected ? activeColor : borderColor,
+                          width: 1,
                         ),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _getHonorIcon(d),
+                            size: 13,
+                            color: isSelected ? Colors.white : textSec,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _getShortHonorName(d.name),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                              color: isSelected ? Colors.white : textPri,
+                            ),
+                          ),
+                          if (isEligible) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                );
+              },
+            ),
+          ),
 
-                const SizedBox(height: 14),
-
-                // Student Academic Snapshot Card
+          // Scrollable Content for Selected Distinction & Interactive Parameters
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              physics: const BouncingScrollPhysics(),
+              children: [
+                // Student Academic Snapshot Card (Responsive row/column)
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -202,8 +261,15 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('STUDENT ACADEMIC STATUS',
-                              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: textSec, letterSpacing: 0.5)),
+                          Text(
+                            'STUDENT ACADEMIC STATUS',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: textSec,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
@@ -219,23 +285,58 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                       ),
                       const SizedBox(height: 10),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _snapshotItem('Retaken Courses', widget.hasRetakes ? 'Yes (Detected)' : 'None',
-                              widget.hasRetakes ? Colors.orange : AppColors.success, textSec),
-                          _snapshotItem('Normal Duration', _withinNormalDuration ? 'Within 12 Terms' : 'Extended',
-                              _withinNormalDuration ? AppColors.success : Colors.red, textSec),
-                          _snapshotItem('Program', widget.profile.department.isNotEmpty ? widget.profile.department : 'Undergrad',
-                              textPri, textSec),
+                          Expanded(
+                            flex: 3,
+                            child: _snapshotItem(
+                              'Retaken Courses',
+                              widget.hasRetakes ? 'Yes' : 'None',
+                              widget.hasRetakes ? Colors.orange : AppColors.success,
+                              textSec,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            flex: 3,
+                            child: _snapshotItem(
+                              'Duration',
+                              _withinNormalDuration ? '≤ 12 Terms' : 'Extended',
+                              _withinNormalDuration ? AppColors.success : Colors.red,
+                              textSec,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            flex: 4,
+                            child: _snapshotItem(
+                              'Program / Dept',
+                              widget.profile.department.isNotEmpty ? widget.profile.department : 'Undergraduate',
+                              textPri,
+                              textSec,
+                            ),
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
-                // Interactive Student Examination Parameters (Toggles)
+                // Selected Distinction Detailed Card
+                _buildFocusedDistinctionCard(
+                  selectedDistinction,
+                  isDark,
+                  surface,
+                  borderColor,
+                  textPri,
+                  textSec,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Interactive Student Examination Parameters (Toggles for Verification)
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -250,8 +351,15 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                         children: [
                           const Icon(Icons.tune_rounded, size: 16, color: AppColors.primary),
                           const SizedBox(width: 6),
-                          Text('VERIFY YOUR ELIGIBILITY CONDITIONS',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: textPri, letterSpacing: 0.4)),
+                          Text(
+                            'ELIGIBILITY VERIFICATION TOGGLES',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: textPri,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -259,7 +367,7 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                       // Improvement Exam Toggle
                       _toggleRow(
                         title: 'Appeared in Improvement Exam?',
-                        subtitle: 'Official UIU Notice: Any Mid/Final Improvement Exam strictly disqualifies from Gold Medal.',
+                        subtitle: 'Mid/Final Improvement Exam strictly disqualifies from Gold Medals.',
                         value: _hasImprovementExam,
                         isDisqualifier: true,
                         onChanged: (v) => setState(() => _hasImprovementExam = v),
@@ -271,7 +379,7 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                       // Make-up Exam Toggle
                       _toggleRow(
                         title: 'Appeared in Make-up Exam?',
-                        subtitle: 'Official UIU Notice: Any Make-up Exam strictly disqualifies from Gold Medal.',
+                        subtitle: 'Any Make-up Exam strictly disqualifies from Gold Medals.',
                         value: _hasMakeupExam,
                         isDisqualifier: true,
                         onChanged: (v) => setState(() => _hasMakeupExam = v),
@@ -283,7 +391,7 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                       // Any F-Grade Toggle
                       _toggleRow(
                         title: 'Any F Grade on Record?',
-                        subtitle: 'Official UIU Rule: Must have no failing grade (F) throughout academic history.',
+                        subtitle: 'Must have no failing grade (F) throughout academic history.',
                         value: _hasFGrades,
                         isDisqualifier: true,
                         onChanged: (v) => setState(() => _hasFGrades = v),
@@ -294,8 +402,8 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
 
                       // Normal Duration Toggle
                       _toggleRow(
-                        title: 'Degree Within Normal Duration (≤ 12 Terms)?',
-                        subtitle: 'Undergraduate degrees must be finished in 4 years without extension for honors.',
+                        title: 'Degree Completed Within Normal Duration (≤ 12 Terms)?',
+                        subtitle: 'Degrees must be completed in normal timeframe without extension.',
                         value: _withinNormalDuration,
                         onChanged: (v) => setState(() => _withinNormalDuration = v),
                         textPri: textPri,
@@ -305,25 +413,29 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
 
                       // Batch Topper Status Selector
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Batch / School Topper (#1 Rank)?',
-                                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: textPri)),
+                                Text(
+                                  'Batch / School Topper (#1 Rank)?',
+                                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: textPri),
+                                ),
                                 const SizedBox(height: 2),
-                                Text('Required for Chancellor\'s Gold Medal & Valedictorian.',
-                                    style: TextStyle(fontSize: 10, color: textSec)),
+                                Text(
+                                  'Required for Chancellor\'s Gold Medal & Valedictorian.',
+                                  style: TextStyle(fontSize: 10, color: textSec),
+                                ),
                               ],
                             ),
                           ),
+                          const SizedBox(width: 8),
                           DropdownButton<bool?>(
                             value: _isBatchTopper,
                             dropdownColor: surface,
                             underline: const SizedBox(),
-                            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: textPri),
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: textPri),
                             items: const [
                               DropdownMenuItem(value: null, child: Text('Pending / Unknown')),
                               DropdownMenuItem(value: true, child: Text('Yes (Rank #1)')),
@@ -337,21 +449,9 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
-
-                // Section title
-                Text(
-                  'HONORS & MEDALS STATUS',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: textSec, letterSpacing: 0.5),
-                ),
-                const SizedBox(height: 8),
-
-                // Distinction Cards
-                ...distinctions.map((d) => _buildDistinctionCard(d, isDark, surface, borderColor, textPri, textSec)),
-
                 const SizedBox(height: 14),
 
-                // UIU Academic Policies Reference
+                // Official Policies & Regulations Note
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -366,8 +466,10 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                         children: [
                           const Icon(Icons.gavel_rounded, size: 15, color: AppColors.primary),
                           const SizedBox(width: 6),
-                          Text('UIU OFFICIAL POLICIES SUMMARY',
-                              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: textPri)),
+                          Text(
+                            'UIU OFFICIAL CONVOCATION POLICIES',
+                            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: textPri),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -377,12 +479,12 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                       ),
                       const SizedBox(height: 4),
                       _bulletPoint(
-                        'Cum Laude: UIU Convocation does not confer Cum Laude (only Summa Cum Laude, Magna Cum Laude, and Gold Medals).',
+                        'Cum Laude: UIU Convocation does not confer Cum Laude (only Summa Cum Laude, Magna Cum Laude, and Gold Medals are awarded).',
                         textSec,
                       ),
                       const SizedBox(height: 4),
                       _bulletPoint(
-                        'Academic Probation: Term GPA < 2.00 for two consecutive trimesters/semesters or CGPA < 2.00 puts a student on Academic Probation (UIU Academic Regulation, Spring 2025).',
+                        'Academic Probation: Term GPA < 2.00 for two consecutive terms or CGPA < 2.00 places a student on Academic Probation.',
                         textSec,
                       ),
                     ],
@@ -396,13 +498,59 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
     );
   }
 
+  IconData _getHonorIcon(AcademicDistinction d) {
+    if (d.honorType == 'Gold Medal') {
+      return Icons.military_tech_rounded;
+    } else if (d.id == 'summa_cum_laude') {
+      return Icons.stars_rounded;
+    } else if (d.id == 'magna_cum_laude') {
+      return Icons.verified_rounded;
+    } else if (d.id == 'valedictorian') {
+      return Icons.record_voice_over_rounded;
+    } else {
+      return Icons.emoji_events_rounded;
+    }
+  }
+
+  String _getShortHonorName(String fullName) {
+    if (fullName.contains('Chancellor\'s Gold Medal') && !fullName.contains('Vice')) {
+      return 'Chancellor Gold';
+    }
+    if (fullName.contains('Vice-Chancellor\'s Gold Medal')) {
+      return 'VC Gold';
+    }
+    if (fullName.contains('Summa Cum Laude')) {
+      return 'Summa Cum Laude';
+    }
+    if (fullName.contains('Magna Cum Laude')) {
+      return 'Magna Cum Laude';
+    }
+    if (fullName.contains('Cum Laude')) {
+      return 'Cum Laude';
+    }
+    if (fullName.contains('Valedictorian')) {
+      return 'Valedictorian';
+    }
+    return fullName;
+  }
+
   Widget _snapshotItem(String title, String value, Color valColor, Color textSec) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: textSec)),
+        Text(
+          title,
+          style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: textSec),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         const SizedBox(height: 2),
-        Text(value, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w900, color: valColor)),
+        Text(
+          value,
+          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w900, color: valColor),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }
@@ -435,6 +583,7 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
             ],
           ),
         ),
+        const SizedBox(width: 8),
         Switch.adaptive(
           value: value,
           onChanged: onChanged,
@@ -444,7 +593,7 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
     );
   }
 
-  Widget _buildDistinctionCard(
+  Widget _buildFocusedDistinctionCard(
     AcademicDistinction d,
     bool isDark,
     Color surface,
@@ -494,7 +643,7 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
     Color verifColor;
     switch (d.verificationLevel) {
       case VerificationLevel.officiallyVerified:
-        verifLabel = 'Officially Verified';
+        verifLabel = 'Officially Verified Criterion';
         verifColor = const Color(0xFF059669);
         break;
       case VerificationLevel.partiallyVerified:
@@ -511,28 +660,18 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
         break;
     }
 
-    IconData cardIcon;
-    if (d.honorType == 'Gold Medal') {
-      cardIcon = Icons.military_tech_rounded;
-    } else if (d.id == 'summa_cum_laude') {
-      cardIcon = Icons.stars_rounded;
-    } else if (d.id == 'magna_cum_laude') {
-      cardIcon = Icons.verified_rounded;
-    } else if (d.id == 'valedictorian') {
-      cardIcon = Icons.record_voice_over_rounded;
-    } else {
-      cardIcon = Icons.emoji_events_rounded;
-    }
+    final cardIcon = _getHonorIcon(d);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: surface,
         borderRadius: AppRadius.borderLg,
         border: Border.all(
-          color: d.status == EligibilityStatus.eligible ? const Color(0xFF10B981).withValues(alpha: 0.4) : borderColor,
-          width: d.status == EligibilityStatus.eligible ? 1.4 : 1.0,
+          color: d.status == EligibilityStatus.eligible
+              ? const Color(0xFF10B981).withValues(alpha: 0.5)
+              : (d.status == EligibilityStatus.disqualified ? Colors.red.withValues(alpha: 0.3) : borderColor),
+          width: 1.4,
         ),
       ),
       child: Column(
@@ -542,27 +681,31 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(7),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: (d.honorType == 'Gold Medal' ? const Color(0xFFD97706) : AppColors.primary).withValues(alpha: 0.12),
                   borderRadius: AppRadius.borderSm,
                 ),
-                child: Icon(cardIcon, size: 20, color: d.honorType == 'Gold Medal' ? const Color(0xFFD97706) : AppColors.primary),
+                child: Icon(cardIcon, size: 22, color: d.honorType == 'Gold Medal' ? const Color(0xFFD97706) : AppColors.primary),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(d.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textPri)),
+                    Text(
+                      d.name,
+                      style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900, color: textPri),
+                    ),
                     const SizedBox(height: 2),
                     Text(
-                      d.minCgpa != null ? 'Minimum CGPA: ${d.minCgpa!.toStringAsFixed(2)}' : d.honorType,
+                      d.minCgpa != null ? 'Minimum Required CGPA: ${d.minCgpa!.toStringAsFixed(2)}' : d.honorType,
                       style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: textSec),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 6),
               // Status Badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -582,21 +725,73 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
             ],
           ),
 
+          const SizedBox(height: 10),
+
+          // Honor Description
+          Text(
+            d.description,
+            style: TextStyle(
+              fontSize: 11,
+              color: textSec,
+              height: 1.4,
+            ),
+          ),
+
           const SizedBox(height: 8),
 
           // Status Reason
-          Text(
-            d.statusReason,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: d.status == EligibilityStatus.disqualified ? Colors.red : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155)),
-              height: 1.35,
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: d.status == EligibilityStatus.eligible
+                  ? const Color(0xFF10B981).withValues(alpha: 0.08)
+                  : (d.status == EligibilityStatus.disqualified
+                      ? const Color(0xFFEF4444).withValues(alpha: 0.08)
+                      : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9))),
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(
+                color: d.status == EligibilityStatus.eligible
+                    ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                    : (d.status == EligibilityStatus.disqualified ? Colors.red.withValues(alpha: 0.3) : borderColor),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  d.status == EligibilityStatus.eligible
+                      ? Icons.check_circle_rounded
+                      : (d.status == EligibilityStatus.disqualified ? Icons.error_outline_rounded : Icons.info_outline_rounded),
+                  size: 16,
+                  color: d.status == EligibilityStatus.eligible
+                      ? const Color(0xFF059669)
+                      : (d.status == EligibilityStatus.disqualified ? Colors.red : AppColors.primary),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    d.statusReason,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: d.status == EligibilityStatus.disqualified
+                          ? Colors.red
+                          : (d.status == EligibilityStatus.eligible ? const Color(0xFF059669) : textPri),
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
           if (d.disqualifiers.isNotEmpty && d.status == EligibilityStatus.disqualified) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
+            Text(
+              'Disqualification Triggers:',
+              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Colors.red),
+            ),
+            const SizedBox(height: 4),
             ...d.disqualifiers.map((dq) => Padding(
                   padding: const EdgeInsets.only(bottom: 2),
                   child: Row(
@@ -605,6 +800,48 @@ class _AcademicDistinctionsModalState extends State<AcademicDistinctionsModal> {
                       const Text('• ', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 11)),
                       Expanded(
                         child: Text(dq, style: const TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+
+          if (d.requirements.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              'Official Evaluation Checklist:',
+              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: textPri),
+            ),
+            const SizedBox(height: 6),
+            ...d.requirements.map((req) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        req.isMet ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                        size: 14,
+                        color: req.isMet ? const Color(0xFF059669) : textSec,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              req.title,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: req.isMet ? textPri : textSec,
+                              ),
+                            ),
+                            Text(
+                              req.description,
+                              style: TextStyle(fontSize: 9.5, color: textSec),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
