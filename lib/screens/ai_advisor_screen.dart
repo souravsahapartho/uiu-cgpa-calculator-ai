@@ -207,33 +207,36 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // 3 Hero Metrics
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildHeroMetricCard(
-                                label: 'Current CGPA',
-                                value: isNewStudent ? 'New Student' : '${displayCGPA.toStringAsFixed(2)} CGPA',
-                                icon: Icons.trending_up_rounded,
+                        // 3 Hero Metrics with strict equal height
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: _buildHeroMetricCard(
+                                  label: 'Current CGPA',
+                                  value: isNewStudent ? 'New Student' : '${displayCGPA.toStringAsFixed(2)} CGPA',
+                                  icon: Icons.trending_up_rounded,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _buildHeroMetricCard(
-                                label: 'Target Goal',
-                                value: '${targetCGPA.toStringAsFixed(2)} CGPA',
-                                icon: Icons.flag_rounded,
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _buildHeroMetricCard(
+                                  label: 'Target Goal',
+                                  value: '${targetCGPA.toStringAsFixed(2)} CGPA',
+                                  icon: Icons.flag_rounded,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _buildHeroMetricCard(
-                                label: 'Rec. Load',
-                                value: '${report.suggestedCreditLoad.toInt()} Credits',
-                                icon: Icons.balance_rounded,
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _buildHeroMetricCard(
+                                  label: 'Rec. Load',
+                                  value: '${report.suggestedCreditLoad.toInt()} Credits',
+                                  icon: Icons.balance_rounded,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -241,20 +244,40 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                 ),
               ),
 
-              // UIU AI Strategic Success Playbook (Actionable Student-friendly Rules)
+              // UIU AI Strategic Advisor Consultations (Deep interactive scenarios & actionable Q&A)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, AppSpacing.s4),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s14, AppSpacing.s16, AppSpacing.s4),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(Icons.lightbulb_rounded, size: 16, color: AppColors.accent),
-                      const SizedBox(width: 6),
-                      Text(
-                        'AI STRATEGIC ADVICE FOR UIU STUDENTS',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: textSec,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
+                      Row(
+                        children: [
+                          const Icon(Icons.psychology_rounded, size: 18, color: AppColors.accent),
+                          const SizedBox(width: 6),
+                          Text(
+                            'AI ACADEMIC ADVISOR CONSULTATION',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: textSec,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          borderRadius: AppRadius.borderFull,
+                        ),
+                        child: Text(
+                          isNewStudent ? 'Newbie Guide' : 'Personalized',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ],
@@ -262,54 +285,108 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                 ),
               ),
 
-              // Strategic Guidance Cards
+              // Interactive Consultation Q&A Panels
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 6),
                   child: Column(
                     children: [
-                      _buildAdviceCard(
-                        icon: Icons.quiz_rounded,
+                      // Question 1: Mathematical Road to Target CGPA
+                      _buildAdvisorExpandableCard(
+                        icon: Icons.trending_up_rounded,
                         accentColor: const Color(0xFF0284C7),
-                        title: '1. UIU Midterm & Continuous Assessment Formula',
-                        description:
-                            'Under UIU marks distribution, Midterm accounts for 30%, Class Tests/Quizzes/Assignments account for 20-30%, and Final exam is 40%. Always secure 26+ out of 30 in Midterms and attend all quizzes. This locks in an A/A- trajectory well before final exam pressure.',
+                        question: isNewStudent
+                            ? 'How do I maintain a top CGPA right from Trimester 1?'
+                            : 'How can I mathematically reach my goal of ${targetCGPA.toStringAsFixed(2)} CGPA?',
+                        summary: isNewStudent
+                            ? 'Focus on continuous assessments: scoring 26+ in Midterms locks your course pace.'
+                            : 'You need an average SGPA of ${requiredPace.toStringAsFixed(2)} over your next ${remainingCredits.toInt()} credits.',
+                        detailedAnswer: isNewStudent
+                            ? 'As a 1st trimester student at UIU:\n\n'
+                              '• **Continuous Marks are King**: 30% Midterm + 30% Class Tests/Quizzes/Assignments = 60% of your grade is decided before the Final Exam (40%).\n'
+                              '• **Target 26+ out of 30 in Midterms**: Securing high Midterm scores removes all stressful grade-cutoff anxiety before finals.\n'
+                              '• **Never Skip a Quiz**: Even a 0.5 difference in continuous assessments can push a grade from B+ to A-.\n'
+                              '• **Foundation Prerequisites**: Trimester 1 courses like Fundamental Calculus (MATH 1151) and Intro to CS (CSE 1110) unlock essential 2nd and 3rd trimester sequences.'
+                            : 'Based on your UIU Academic Transcript:\n\n'
+                              '• **Current Completed**: ${completedCredits.toStringAsFixed(1)} credits at ${displayCGPA.toStringAsFixed(2)} CGPA (${(completedCredits * displayCGPA).toStringAsFixed(1)} earned Grade Points).\n'
+                              '• **Target Target**: ${targetCGPA.toStringAsFixed(2)} CGPA across ${totalCredits.toInt()} total degree credits requires ${(totalCredits * targetCGPA).toStringAsFixed(1)} total points.\n'
+                              '• **Mathematical Requirement**: Over the remaining ${remainingCredits.toInt()} credits, you must average an SGPA of **${requiredPace.toStringAsFixed(2)}**.\n'
+                              '• **Advisor Recommendation**: Take ${(report.suggestedCreditLoad).toInt()} credits per trimester. Prioritize 3-credit theory courses where you have strong domain foundations to consistently secure A (3.67) and A (4.00) grades.',
                         surface: surface,
                         borderClr: borderClr,
                         textPri: textPri,
                         textSec: textSec,
                       ),
                       const SizedBox(height: 8),
-                      _buildAdviceCard(
+
+                      // Question 2: Retake & Grade Replacement Formula
+                      _buildAdvisorExpandableCard(
                         icon: Icons.replay_rounded,
                         accentColor: const Color(0xFF10B981),
-                        title: '2. Retake Discount & Grade Replacement Benefit',
-                        description:
-                            'Retaking any previously taken course costs 50% tuition on your 1st retake (or with applicable waiver). More importantly, in UIU cumulative CGPA calculation, your highest grade replaces the old grade entirely. Retaking a D or F is the quickest mathematical lever to boost your overall CGPA.',
+                        question: 'Should I retake any course, and how does UIU handle retakes?',
+                        summary: 'UIU fully replaces old grades with your highest grade + offers 50% tuition retake discount.',
+                        detailedAnswer:
+                            'Here is how UIU handles retakes under official university regulations:\n\n'
+                            '• **Complete Grade Replacement**: When you retake a course at UIU, your newer higher grade replaces the previous lower grade in your cumulative CGPA calculation. The previous lower grade is removed from cumulative point calculation.\n'
+                            '• **50% Tuition Fee Reduction**: Under standard UIU policies, retaking a previously attempted course qualifies for a 50% reduction on credit tuition fee for the first retake.\n'
+                            '• **Strategic Candidates for Retake**: If you have any grade of **D (2.00)**, **D+ (2.33)**, or **C (2.67)** in a 3.0-credit theory course, retaking it and securing an **A (3.67)** or **A (4.00)** gives an immediate massive boost of +3.00 to +6.00 net Grade Points to your overall CGPA!',
                         surface: surface,
                         borderClr: borderClr,
                         textPri: textPri,
                         textSec: textSec,
                       ),
                       const SizedBox(height: 8),
-                      _buildAdviceCard(
+
+                      // Question 3: Workload, Theory vs Lab Coupling
+                      _buildAdvisorExpandableCard(
                         icon: Icons.device_hub_rounded,
                         accentColor: const Color(0xFF7C3AED),
-                        title: '3. Lab Coupling & Workload Balancing',
-                        description:
-                            'Never take more than two heavy 1.0-credit labs (such as OS Lab, Microprocessors Lab, or Networks Lab) in a single trimester. Pair 2 hard theory courses with 1 lab and 1 light General Education (GED) course to safeguard your trimester GPA from burning out.',
+                        question: 'What is the optimal course & lab combination for this trimester?',
+                        summary: 'Take maximum 1-2 heavy labs per trimester paired with balanced theory subjects.',
+                        detailedAnswer:
+                            'To protect your SGPA from heavy workload burnout:\n\n'
+                            '• **The 2-Lab Golden Rule**: Never take more than two heavy 1.0-credit laboratory courses (such as OS Lab, Microprocessors Lab, or Computer Networks Lab) in the same trimester.\n'
+                            '• **Recommended Course Structure**: Take **2 Heavy Core Theory** courses + **1 Heavy/Medium Lab** + **1 General Education (GED) / Math** course. This maintains 10 to 13 credits without exhausting your weekly assignment submission deadlines.\n'
+                            '• **Prerequisite Sequence Integrity**: Always clear prerequisites (e.g. SPL before DSA, DSA before OOP & Algorithms II) so you never get stuck blocked from registering higher-level major courses.',
                         surface: surface,
                         borderClr: borderClr,
                         textPri: textPri,
                         textSec: textSec,
                       ),
                       const SizedBox(height: 8),
-                      _buildAdviceCard(
+
+                      // Question 4: UIU Honors, Dean\'s List & Scholarships
+                      _buildAdvisorExpandableCard(
+                        icon: Icons.military_tech_rounded,
+                        accentColor: const Color(0xFFEAB308),
+                        question: 'What are the criteria for Dean\'s List, Distinction & Tuition Waivers?',
+                        summary: 'Minimum 9 completed credits in trimester + SGPA ≥ 3.50 with no incomplete or F grades.',
+                        detailedAnswer:
+                            'Official UIU Academic Distinction & Honor requirements:\n\n'
+                            '• **Dean\'s List Eligibility**: Requires completing at least 9 or more regular credits in the trimester with an SGPA of **3.50 or higher** with no grade below B- and no Incomplete (I) or Fail (F).\n'
+                            '• **Academic Distinction at Convocation**:\n'
+                            '   - *Summa Cum Laude*: CGPA 3.90 – 4.00\n'
+                            '   - *Magna Cum Laude*: CGPA 3.80 – 3.89\n'
+                            '   - *Cum Laude*: CGPA 3.65 – 3.79\n'
+                            '• **Tuition Fee Waivers**: UIU awards merit waivers (25% to 100%) to top performers based on trimester SGPA provided the minimum registered credit threshold (usually 9–12 credits) is maintained without retakes in that session.',
+                        surface: surface,
+                        borderClr: borderClr,
+                        textPri: textPri,
+                        textSec: textSec,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Question 5: Withdrawal (W) vs Incomplete (I) Deadlines
+                      _buildAdvisorExpandableCard(
                         icon: Icons.warning_amber_rounded,
                         accentColor: const Color(0xFFD97706),
-                        title: '4. Withdrawal (W) vs Incomplete (I) Policy',
-                        description:
-                            'If unavoidable circumstances arise before Week 10, officially apply for Withdrawal (W) — it will not impact your GPA, CGPA, or credit tally. Do NOT leave a course Incomplete (I) unless pre-approved, as UIU calculates uncompleted courses as 0.00 grade point (Fail).',
+                        question: 'What if an emergency happens? Withdrawal (W) vs Incomplete (I)',
+                        summary: 'Withdraw before Week 10 with zero GPA impact. Avoid unapproved Incompletes.',
+                        detailedAnswer:
+                            'Understanding the safety mechanisms when emergencies or illness occur:\n\n'
+                            '• **Course Withdrawal (W)**: If you face unavoidable medical or personal issues, apply for formal Course Withdrawal (W) through UCAM before the Week 10 deadline. A "W" has **ZERO effect** on your SGPA or CGPA.\n'
+                            '• **Incomplete (I)**: An Incomplete requires formal departmental chair approval for extreme medical emergencies right before finals. You must sit for the exam in the subsequent trimester, or the system defaults the course grade to an **F (0.00)**.\n'
+                            '• **Always Consult Your Departmental Advisor**: If you fall sick before midterms or finals, notify your advisor immediately with medical documentation to avoid unauthorized dropouts.',
                         surface: surface,
                         borderClr: borderClr,
                         textPri: textPri,
@@ -685,7 +762,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
     required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.16),
         borderRadius: AppRadius.borderMd,
@@ -693,15 +770,12 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 1),
-                child: Icon(icon, size: 12, color: Colors.white.withValues(alpha: 0.95)),
-              ),
+              Icon(icon, size: 13, color: Colors.white.withValues(alpha: 0.95)),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -712,13 +786,13 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                     fontWeight: FontWeight.w700,
                     height: 1.15,
                   ),
-                  maxLines: 2,
-                  softWrap: true,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
@@ -792,6 +866,81 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAdvisorExpandableCard({
+    required IconData icon,
+    required Color accentColor,
+    required String question,
+    required String summary,
+    required String detailedAnswer,
+    required Color surface,
+    required Color borderClr,
+    required Color textPri,
+    required Color textSec,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: borderClr),
+        boxShadow: AppShadows.soft,
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+          leading: Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.12),
+              borderRadius: AppRadius.borderMd,
+            ),
+            child: Icon(icon, color: accentColor, size: 18),
+          ),
+          title: Text(
+            question,
+            style: AppTypography.titleSmall.copyWith(
+              fontWeight: FontWeight.w800,
+              fontSize: 12.5,
+              color: textPri,
+            ),
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              summary,
+              style: AppTypography.bodySmall.copyWith(
+                fontSize: 11,
+                color: textSec,
+                height: 1.3,
+              ),
+            ),
+          ),
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.05),
+                borderRadius: AppRadius.borderMd,
+                border: Border.all(color: accentColor.withValues(alpha: 0.18)),
+              ),
+              child: Text(
+                detailedAnswer,
+                style: AppTypography.bodySmall.copyWith(
+                  fontSize: 11.5,
+                  color: textPri,
+                  height: 1.5,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart' show BuildContext, Color, ScaffoldMessenger, SnackBar, Text, Row, Icon, Icons, SizedBox, Expanded, TextStyle, FontWeight, SnackBarAction, Colors;
 import 'package:flutter/services.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -599,6 +600,14 @@ class TuitionPdfGenerator {
         savedLocation = file.path;
       }
 
+      String? localSavedFilePath;
+      try {
+        final docsDir = await getApplicationDocumentsDirectory();
+        final localFile = File('${docsDir.path}/$filename');
+        await localFile.writeAsBytes(pdfBytes, flush: true);
+        localSavedFilePath = localFile.path;
+      } catch (_) {}
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -608,22 +617,33 @@ class TuitionPdfGenerator {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'PDF saved successfully to device ($savedLocation): $filename',
+                    'PDF saved directly to device ($savedLocation): $filename',
                     style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                 ),
               ],
             ),
             backgroundColor: const Color(0xFF059669),
-            duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 6),
             action: SnackBarAction(
-              label: 'View / Print',
+              label: 'Open PDF',
               textColor: Colors.white,
-              onPressed: () {
-                Printing.layoutPdf(
-                  onLayout: (format) async => pdfBytes,
-                  name: filename,
-                );
+              onPressed: () async {
+                if (localSavedFilePath != null && await File(localSavedFilePath).exists()) {
+                  final result = await OpenFilex.open(localSavedFilePath);
+                  if (result.type != ResultType.done) {
+                    // Fallback to in-app PDF layout viewer
+                    await Printing.layoutPdf(
+                      onLayout: (format) async => pdfBytes,
+                      name: filename,
+                    );
+                  }
+                } else {
+                  await Printing.layoutPdf(
+                    onLayout: (format) async => pdfBytes,
+                    name: filename,
+                  );
+                }
               },
             ),
           ),
