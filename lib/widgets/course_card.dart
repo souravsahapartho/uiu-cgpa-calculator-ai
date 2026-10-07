@@ -158,13 +158,22 @@ class _CourseCardState extends State<CourseCard> {
                     borderRadius: AppRadius.borderMd,
                     border: Border.all(color: gradeColor.withValues(alpha: 0.25), width: 1),
                   ),
-                  child: Text(
-                    widget.course.grade!,
-                    style: AppTypography.titleLarge.copyWith(
-                      color: gradeColor,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 15,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.course.grade!,
+                        style: AppTypography.titleLarge.copyWith(
+                          color: gradeColor,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                        ),
+                      ),
+                      if (widget.onTap != null) ...[
+                        const SizedBox(width: 4),
+                        Icon(Icons.edit_outlined, size: 13, color: gradeColor.withValues(alpha: 0.7)),
+                      ],
+                    ],
                   ),
                 ),
             ],

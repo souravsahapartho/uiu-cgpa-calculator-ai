@@ -12,6 +12,7 @@ class SemesterAccordion extends StatefulWidget {
   final VoidCallback? onDelete;
   final void Function(Course course)? onDeleteCourse;
   final void Function(SemesterTranscript semester)? onAddCourse;
+  final void Function(Course course, SemesterTranscript semester)? onEditCourse;
 
   const SemesterAccordion({
     super.key,
@@ -20,6 +21,7 @@ class SemesterAccordion extends StatefulWidget {
     this.onDelete,
     this.onDeleteCourse,
     this.onAddCourse,
+    this.onEditCourse,
   });
 
   @override
@@ -349,11 +351,17 @@ class _SemesterAccordionState extends State<SemesterAccordion> with SingleTicker
                                   child: CourseCard(
                                     course: course,
                                     compact: true,
+                                    onTap: widget.onEditCourse != null
+                                        ? () => widget.onEditCourse!(course, widget.semester)
+                                        : null,
                                   ),
                                 )
                               : CourseCard(
                                   course: course,
                                   compact: true,
+                                  onTap: widget.onEditCourse != null
+                                      ? () => widget.onEditCourse!(course, widget.semester)
+                                      : null,
                                 ),
                         ),
                         if (widget.onAddCourse != null) ...[

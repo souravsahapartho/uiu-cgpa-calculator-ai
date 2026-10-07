@@ -348,7 +348,18 @@ class UserProfileProvider extends ChangeNotifier {
 
     _semesters = updatedSemesters;
 
-    // Profile currentCGPA & completedCredits remain protected and independent unless user confirms
+    if (_semesters.isNotEmpty) {
+      final cum = getTranscriptCumulativeMetrics();
+      _profile = _profile.copyWith(
+        completedCredits: cum['credits'] ?? 0.0,
+        currentCGPA: cum['cgpa'] ?? 0.0,
+      );
+    } else {
+      _profile = _profile.copyWith(
+        completedCredits: 0.0,
+        currentCGPA: 0.0,
+      );
+    }
   }
 
   void _recomputeMetricsFromSemesters() {
@@ -507,6 +518,35 @@ class UserProfileProvider extends ChangeNotifier {
       } else {
         _semesters[sIdx] = _semesters[sIdx].copyWith(courses: updatedCourses);
       }
+      _sortAndRecomputeSemesters();
+      await _saveSemestersToPrefs();
+    }
+  }
+
+  Future<void> updateCourse(String semesterName, Course oldCourse, Course updatedCourse) async {
+    final sIdx = _semesters.indexWhere(
+      (s) => s.semesterName.trim().toLowerCase() == semesterName.trim().toLowerCase(),
+    );
+    if (sIdx >= 0) {
+      final updatedCourses = List<Course>.from(_semesters[sIdx].courses);
+      final cIdx = updatedCourses.indexWhere(
+        (c) =>
+            c.code.trim().toUpperCase() == oldCourse.code.trim().toUpperCase() &&
+            c.title.trim().toLowerCase() == oldCourse.title.trim().toLowerCase(),
+      );
+      if (cIdx >= 0) {
+        updatedCourses[cIdx] = updatedCourse;
+      } else {
+        final codeIdx = updatedCourses.indexWhere(
+          (c) => c.code.trim().toUpperCase() == oldCourse.code.trim().toUpperCase(),
+        );
+        if (codeIdx >= 0) {
+          updatedCourses[codeIdx] = updatedCourse;
+        } else {
+          updatedCourses.add(updatedCourse);
+        }
+      }
+      _semesters[sIdx] = _semesters[sIdx].copyWith(courses: updatedCourses);
       _sortAndRecomputeSemesters();
       await _saveSemestersToPrefs();
     }

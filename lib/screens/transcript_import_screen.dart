@@ -275,6 +275,117 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                   ),
                 ),
 
+              // ── Live Academic Overview Banner (Dynamic CGPA, Credits, Latest GPA) ──
+              if (semesters.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 6),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                              : [const Color(0xFFF0FDF4), const Color(0xFFECFDF5)],
+                        ),
+                        borderRadius: AppRadius.borderLg,
+                        border: Border.all(
+                          color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.4 : 0.3),
+                          width: 1.2,
+                        ),
+                        boxShadow: AppShadows.soft,
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Icon(Icons.insights_rounded, color: Color(0xFF10B981), size: 15),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'ACADEMIC OVERVIEW',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.6,
+                                      color: isDark ? Colors.white : const Color(0xFF065F46),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.bolt_rounded, size: 11, color: Color(0xFF10B981)),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      'Live Auto-Sync',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF10B981),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildLiveMetricPill(
+                                  label: 'Cumulative CGPA',
+                                  value: (cumulativeMetrics['cgpa'] ?? 0.0).toStringAsFixed(2),
+                                  suffix: ' / 4.00',
+                                  valColor: const Color(0xFF10B981),
+                                  textSec: textSec,
+                                ),
+                              ),
+                              Container(width: 1, height: 32, color: borderClr),
+                              Expanded(
+                                child: _buildLiveMetricPill(
+                                  label: 'Completed Cr',
+                                  value: (cumulativeMetrics['credits'] ?? 0.0).toStringAsFixed(1),
+                                  suffix: ' Cr',
+                                  valColor: AppColors.primary,
+                                  textSec: textSec,
+                                ),
+                              ),
+                              Container(width: 1, height: 32, color: borderClr),
+                              Expanded(
+                                child: _buildLiveMetricPill(
+                                  label: 'Latest GPA',
+                                  value: semesters.first.sgpa.toStringAsFixed(2),
+                                  suffix: '',
+                                  valColor: const Color(0xFF8B5CF6),
+                                  textSec: textSec,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               // Dynamic Trimester Filter Dropdown
               if (semesters.isNotEmpty)
                 SliverToBoxAdapter(
@@ -497,6 +608,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                             semester: semester,
                             isInitiallyExpanded: index == 0,
                             onAddCourse: (sem) => _showAddCourseToSemesterDialog(context, sem),
+                            onEditCourse: (course, sem) => _showEditCourseToSemesterDialog(context, sem, course),
                             onDeleteCourse: (course) async {
                               await provider.deleteCourse(semester.semesterName, course);
                               if (context.mounted) {
@@ -1738,6 +1850,359 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Added $code to ${semester.semesterName}!'),
+                              backgroundColor: AppColors.success,
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLiveMetricPill({
+    required String label,
+    required String value,
+    required String suffix,
+    required Color valColor,
+    required Color textSec,
+  }) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: valColor,
+              ),
+            ),
+            if (suffix.isNotEmpty)
+              Text(
+                suffix,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: textSec,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: textSec,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── EDIT COURSE IN EXISTING TRIMESTER MODAL ──
+  void _showEditCourseToSemesterDialog(
+    BuildContext context,
+    SemesterTranscript semester,
+    Course course,
+  ) {
+    final codeController = TextEditingController(text: course.code);
+    final titleController = TextEditingController(text: course.title);
+    double selectedCredit = course.credit;
+    String selectedGrade = course.grade ?? 'A';
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
+    final sectionClr = isDark ? AppColors.darkSection : AppColors.section;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final otherCourses = semester.courses.where((c) => c != course).toList();
+          double previewCredits = 0.0;
+          double previewPoints = 0.0;
+          for (final c in otherCourses) {
+            final gp = c.gradePoint ?? (c.grade != null ? UIUGradingScale.getGradePoint(c.grade!) : 0.0);
+            previewCredits += c.credit;
+            previewPoints += (gp * c.credit);
+          }
+          final editedPoints = UIUGradingScale.getGradePoint(selectedGrade);
+          previewCredits += selectedCredit;
+          previewPoints += (editedPoints * selectedCredit);
+          final newSemGPA = previewCredits > 0 ? (previewPoints / previewCredits) : 0.0;
+
+          return Container(
+            decoration: BoxDecoration(
+              color: surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border.all(color: borderClr),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              MediaQuery.of(sheetCtx).viewInsets.bottom + 24,
+            ),
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 42,
+                      height: 4.5,
+                      decoration: BoxDecoration(
+                        color: borderClr,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(9),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.edit_note_rounded, color: AppColors.accent, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Edit Course: ${course.code}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: textPri,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'In ${semester.semesterName} • Current SGPA: ${semester.sgpa.toStringAsFixed(2)}',
+                              style: TextStyle(fontSize: 11.5, color: textSec, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close_rounded, color: textSec, size: 20),
+                        onPressed: () => Navigator.pop(sheetCtx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: codeController,
+                    textCapitalization: TextCapitalization.characters,
+                    style: TextStyle(fontWeight: FontWeight.w700, color: textPri),
+                    decoration: InputDecoration(
+                      labelText: 'Course Code *',
+                      hintText: 'e.g. CSE 2215',
+                      prefixIcon: const Icon(Icons.code_rounded, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: titleController,
+                    textCapitalization: TextCapitalization.words,
+                    style: TextStyle(color: textPri),
+                    decoration: InputDecoration(
+                      labelText: 'Course Title',
+                      hintText: 'e.g. Data Structures and Algorithms',
+                      prefixIcon: const Icon(Icons.title_rounded, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<double>(
+                          value: selectedCredit,
+                          style: TextStyle(fontWeight: FontWeight.w700, color: textPri, fontSize: 13),
+                          dropdownColor: surface,
+                          decoration: InputDecoration(
+                            labelText: 'Credit Hours',
+                            prefixIcon: const Icon(Icons.star_rounded, size: 18),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 1.0, child: Text('1.0 Cr (Lab)')),
+                            DropdownMenuItem(value: 1.5, child: Text('1.5 Cr (Lab)')),
+                            DropdownMenuItem(value: 2.0, child: Text('2.0 Cr')),
+                            DropdownMenuItem(value: 3.0, child: Text('3.0 Cr (Theory)')),
+                            DropdownMenuItem(value: 4.0, child: Text('4.0 Cr (Project)')),
+                            DropdownMenuItem(value: 6.0, child: Text('6.0 Cr (Thesis)')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDialogState(() => selectedCredit = val);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedGrade,
+                          style: TextStyle(fontWeight: FontWeight.w800, color: textPri, fontSize: 13),
+                          dropdownColor: surface,
+                          decoration: InputDecoration(
+                            labelText: 'Grade',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          ),
+                          items: UIUGradingScale.scale.map((g) {
+                            return DropdownMenuItem(
+                              value: g.letterGrade,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(color: g.color, shape: BoxShape.circle),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text('${g.letterGrade} (${g.gradePoint.toStringAsFixed(2)})',
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: g.color)),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDialogState(() => selectedGrade = val);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: sectionClr,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: borderClr),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Updated SGPA Preview',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: textSec),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'New SGPA: ${newSemGPA.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.accent,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '$selectedCredit Cr (${editedPoints.toStringAsFixed(2)} pts)',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.check_rounded, size: 20),
+                      label: const Text(
+                        'Save Course Changes',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                      ),
+                      onPressed: () async {
+                        final rawCode = codeController.text.trim();
+                        if (rawCode.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please enter a course code.'),
+                              backgroundColor: AppColors.danger,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          return;
+                        }
+                        final code = rawCode.toUpperCase();
+                        final title = titleController.text.trim().isEmpty ? code : titleController.text.trim();
+                        final updatedCourse = Course(
+                          code: code,
+                          title: title,
+                          credit: selectedCredit,
+                          grade: selectedGrade,
+                          gradePoint: UIUGradingScale.getGradePoint(selectedGrade),
+                        );
+
+                        final provider = ProfileProviderScope.of(context);
+                        await provider.updateCourse(semester.semesterName, course, updatedCourse);
+
+                        if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Updated $code in ${semester.semesterName} successfully!'),
                               backgroundColor: AppColors.success,
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 2),

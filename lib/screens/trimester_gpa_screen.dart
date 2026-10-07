@@ -42,7 +42,10 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
   double _currentCGPA = 0.0;
   late final TextEditingController _completedCreditsCtrl;
   late final TextEditingController _currentCGPACtrl;
-  bool _initializedFromProfile = false;
+  bool _userManuallyEditedCredits = false;
+  bool _userManuallyEditedCGPA = false;
+  double _lastKnownProfileCredits = -1.0;
+  double _lastKnownProfileCGPA = -1.0;
 
   final List<_TrimesterCourse> _courses = [
     _TrimesterCourse(name: 'Course 1', credit: 3.0, grade: 'A', gradePoint: 4.00),
@@ -86,21 +89,37 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initializedFromProfile) {
-      _initializedFromProfile = true;
-      try {
-        final provider = ProfileProviderScope.of(context);
-        final p = provider.profile;
-        if (p.completedCredits > 0 && _completedCredits == 0) {
+    try {
+      final provider = ProfileProviderScope.of(context);
+      final p = provider.profile;
+
+      // Auto-sync whenever profile/transcript updates
+      if (p.completedCredits != _lastKnownProfileCredits) {
+        _lastKnownProfileCredits = p.completedCredits;
+        if (!_userManuallyEditedCredits) {
           _completedCredits = p.completedCredits;
-          _completedCreditsCtrl.text = _completedCredits.toInt().toString();
+          if (_completedCredits > 0) {
+            _completedCreditsCtrl.text = _completedCredits % 1 == 0
+                ? _completedCredits.toInt().toString()
+                : _completedCredits.toStringAsFixed(1);
+          } else {
+            _completedCreditsCtrl.clear();
+          }
         }
-        if (p.currentCGPA > 0 && _currentCGPA == 0) {
+      }
+
+      if (p.currentCGPA != _lastKnownProfileCGPA) {
+        _lastKnownProfileCGPA = p.currentCGPA;
+        if (!_userManuallyEditedCGPA) {
           _currentCGPA = p.currentCGPA;
-          _currentCGPACtrl.text = _currentCGPA.toStringAsFixed(2);
+          if (_currentCGPA > 0) {
+            _currentCGPACtrl.text = _currentCGPA.toStringAsFixed(2);
+          } else {
+            _currentCGPACtrl.clear();
+          }
         }
-      } catch (_) {}
-    }
+      }
+    } catch (_) {}
   }
 
   @override
@@ -132,10 +151,23 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
       _courses.clear();
       _courses.add(_TrimesterCourse(name: 'Course 1', credit: 3.0, grade: 'A', gradePoint: 4.00));
       _courses.add(_TrimesterCourse(name: 'Course 2', credit: 3.0, grade: 'A', gradePoint: 4.00));
-      _completedCredits = 0;
-      _currentCGPA = 0;
-      _completedCreditsCtrl.clear();
-      _currentCGPACtrl.clear();
+      _userManuallyEditedCredits = false;
+      _userManuallyEditedCGPA = false;
+      try {
+        final provider = ProfileProviderScope.of(context);
+        final p = provider.profile;
+        _completedCredits = p.completedCredits;
+        _currentCGPA = p.currentCGPA;
+        _completedCreditsCtrl.text = _completedCredits > 0
+            ? (_completedCredits % 1 == 0 ? _completedCredits.toInt().toString() : _completedCredits.toStringAsFixed(1))
+            : '';
+        _currentCGPACtrl.text = _currentCGPA > 0 ? _currentCGPA.toStringAsFixed(2) : '';
+      } catch (_) {
+        _completedCredits = 0;
+        _currentCGPA = 0;
+        _completedCreditsCtrl.clear();
+        _currentCGPACtrl.clear();
+      }
     });
   }
 
@@ -272,6 +304,7 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
                     LengthLimitingTextInputFormatter(3),
                   ],
                   onChanged: (v) {
+                    _userManuallyEditedCredits = true;
                     final parsed = int.tryParse(v) ?? 0;
                     setState(() => _completedCredits = parsed.toDouble());
                   },
@@ -294,6 +327,7 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
                     FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
                   ],
                   onChanged: (v) {
+                    _userManuallyEditedCGPA = true;
                     final parsed = double.tryParse(v) ?? 0.0;
                     if (parsed > 4.0) {
                       _currentCGPACtrl.text = '4.00';
@@ -308,6 +342,70 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
               ),
             ],
           ),
+        ),
+
+        // Auto-sync status with transcript banner
+        Builder(
+          builder: (ctx) {
+            final provider = ProfileProviderScope.of(ctx);
+            if (provider.semesters.isEmpty) return const SizedBox.shrink();
+            final p = provider.profile;
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.12 : 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.sync_rounded, color: Color(0xFF10B981), size: 14),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Live Synced: ${p.completedCredits.toStringAsFixed(1)} Cr • ${p.currentCGPA.toStringAsFixed(2)} CGPA',
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                    ),
+                    if (_userManuallyEditedCredits || _userManuallyEditedCGPA)
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _userManuallyEditedCredits = false;
+                            _userManuallyEditedCGPA = false;
+                            _completedCredits = p.completedCredits;
+                            _currentCGPA = p.currentCGPA;
+                            _completedCreditsCtrl.text = p.completedCredits > 0
+                                ? (p.completedCredits % 1 == 0
+                                    ? p.completedCredits.toInt().toString()
+                                    : p.completedCredits.toStringAsFixed(1))
+                                : '';
+                            _currentCGPACtrl.text = p.currentCGPA > 0 ? p.currentCGPA.toStringAsFixed(2) : '';
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'Reset to Sync',
+                            style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
 
         // Column headers
@@ -473,12 +571,20 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
             padding: EdgeInsets.fromLTRB(10, course.isRetake ? 18 : 8, 8, 8),
             child: Row(
               children: [
-                // Course label/number
+                // Course Name / Code
                 Expanded(
                   flex: 2,
-                  child: InputDecorator(
+                  child: TextFormField(
+                    initialValue: course.name,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: textPri,
+                    ),
                     decoration: InputDecoration(
-                      labelText: course.isRetake ? 'Retake ${i + 1}' : '${i + 1}',
+                      labelText: course.isRetake ? 'Retake ${i + 1}' : 'Course ${i + 1}',
+                      hintText: course.isRetake ? 'e.g. Retake CSE' : 'e.g. CSE 1111',
+                      hintStyle: TextStyle(fontSize: 10.5, color: textSec.withValues(alpha: 0.45)),
                       labelStyle: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -492,28 +598,9 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
                         borderRadius: AppRadius.borderSm,
                         borderSide: BorderSide(color: borderColor),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<double>(
-                        value: course.credit,
-                        isExpanded: true,
-                        isDense: true,
-                        dropdownColor: surface,
-                        items: credits
-                            .map((c) => DropdownMenuItem(
-                                value: c,
-                                child: Text('${c.toInt()} cr',
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: textPri))))
-                            .toList(),
-                        onChanged: (v) {
-                          if (v != null) setState(() => course.credit = v);
-                        },
-                      ),
-                    ),
+                    onChanged: (v) => course.name = v,
                   ),
                 ),
                 const SizedBox(width: 8),
