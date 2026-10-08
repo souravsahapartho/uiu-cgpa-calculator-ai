@@ -1188,7 +1188,25 @@ class _TuitionFeeScreenState extends State<TuitionFeeScreen> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton.icon(
-                          onPressed: () {
+                          onPressed: () async {
+                            final currentSig = '${totalWithFine.round()}_${totalDiscount.round()}_${totalRegCredits.toStringAsFixed(1)}_${discountPct.toStringAsFixed(1)}_$_missedInstallments';
+                            if (_lastSavedCalcSignature != currentSig) {
+                              setState(() {
+                                _lastSavedCalcSignature = currentSig;
+                              });
+                              await _saveCurrentCalculationToHistory(
+                                totalPayable: totalWithFine,
+                                totalDiscount: totalDiscount,
+                                creditFee: creditFee,
+                                sessionFee: sessionFee,
+                                totalRegCredits: totalRegCredits,
+                                firstRetakeCr: firstRetakeCr,
+                                subRetakeCr: subRetakeCr,
+                                discountPct: discountPct,
+                              );
+                            }
+
+                            if (!context.mounted) return;
                             final provider = ProfileProviderScope.of(context);
                             TuitionPdfGenerator.printOrDownloadPdf(
                               context: context,

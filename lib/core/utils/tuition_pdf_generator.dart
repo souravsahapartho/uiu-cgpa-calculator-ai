@@ -166,9 +166,9 @@ class TuitionPdfGenerator {
                         pw.SizedBox(height: 2),
                         pw.Text(profile.program.isNotEmpty ? profile.program : profile.department, style: pw.TextStyle(color: textDark, fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
                         pw.SizedBox(height: 4),
-                        pw.Text('BATCH & STANDING CGPA', style: pw.TextStyle(color: textMuted, fontSize: 6, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('ACADEMIC BATCH', style: pw.TextStyle(color: textMuted, fontSize: 6, fontWeight: pw.FontWeight.bold)),
                         pw.SizedBox(height: 2),
-                        pw.Text('Batch: ${profile.batch.isNotEmpty ? profile.batch : "-"}   |   CGPA: ${profile.currentCGPA.toStringAsFixed(2)}', style: pw.TextStyle(color: textDark, fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('Batch: ${profile.batch.isNotEmpty ? profile.batch : "-"}', style: pw.TextStyle(color: textDark, fontSize: 8, fontWeight: pw.FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -466,31 +466,6 @@ class TuitionPdfGenerator {
                   _policyLine('Scholarship Cap: Merit scholarship discounts apply up to a maximum of 13.0 credits per trimester.'),
                 ],
               ),
-            ),
-
-            pw.SizedBox(height: 10),
-
-            // Verification & Signature
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Container(width: 130, height: 0.8, color: borderGray),
-                    pw.SizedBox(height: 3),
-                    pw.Text('Student Signature & Date', style: pw.TextStyle(fontSize: 6.5, color: textMuted)),
-                  ],
-                ),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Container(width: 130, height: 0.8, color: borderGray),
-                    pw.SizedBox(height: 3),
-                    pw.Text('Accounts Office / Authorized Verification', style: pw.TextStyle(fontSize: 6.5, color: textMuted)),
-                  ],
-                ),
-              ],
             ),
 
             pw.SizedBox(height: 8),
