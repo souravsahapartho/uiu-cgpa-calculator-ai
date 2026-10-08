@@ -88,6 +88,18 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                     ? 'Strong Academic Standing'
                     : 'Target Improvement Track';
 
+    // Identify retake candidate courses from transcript (grades with GP < 2.67 or C/D/F)
+    final candidateRetakes = <Course>[];
+    for (final sem in provider.semesters) {
+      for (final course in sem.courses) {
+        final gp = course.gradePoint ?? 0.0;
+        final grade = (course.grade ?? '').toUpperCase().trim();
+        if (grade != 'W' && (gp < 2.67 || grade == 'F' || grade == 'D' || grade == 'D+' || grade == 'C-')) {
+          candidateRetakes.add(course);
+        }
+      }
+    }
+
     double theoryCredits = 0.0;
     double labCredits = 0.0;
     for (final rec in report.recommendedCourses) {
@@ -247,32 +259,32 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
               // UIU AI Strategic Advisor Consultations (Deep interactive scenarios & actionable Q&A)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s4),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s6),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.psychology_rounded, size: 18, color: AppColors.accent),
-                          const SizedBox(width: 6),
-                          Text(
-                            'AI ACADEMIC ADVISOR CONSULTATION',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: textSec,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                            ),
+                      const Icon(Icons.psychology_rounded, size: 18, color: AppColors.accent),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'AI ACADEMIC ADVISOR CONSULTATION',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: textSec,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
                           ),
-                        ],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(alpha: 0.12),
                           borderRadius: AppRadius.borderFull,
                         ),
                         child: Text(
-                          isNewStudent ? 'Newbie Guide' : 'Personalized',
+                          isNewStudent ? 'Newbie Track' : 'Personalized',
                           style: const TextStyle(
                             color: AppColors.primary,
                             fontSize: 10,
@@ -285,114 +297,26 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                 ),
               ),
 
-              // Interactive Consultation Q&A Panels
+              // Interactive Consultation Q&A Panels (100% Dynamic & Personalized)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 6),
                   child: Column(
-                    children: [
-                      // Question 1: Mathematical Road to Target CGPA
-                      _buildAdvisorExpandableCard(
-                        icon: Icons.trending_up_rounded,
-                        accentColor: const Color(0xFF0284C7),
-                        question: isNewStudent
-                            ? 'How do I maintain a top CGPA right from Trimester 1?'
-                            : 'How can I mathematically reach my goal of ${targetCGPA.toStringAsFixed(2)} CGPA?',
-                        summary: isNewStudent
-                            ? 'Focus on continuous assessments: scoring 26+ in Midterms locks your course pace.'
-                            : 'You need an average SGPA of ${requiredPace.toStringAsFixed(2)} over your next ${remainingCredits.toInt()} credits.',
-                        detailedAnswer: isNewStudent
-                            ? 'As a 1st trimester student at UIU:\n\n'
-                              '• **Continuous Marks are King**: 30% Midterm + 30% Class Tests/Quizzes/Assignments = 60% of your grade is decided before the Final Exam (40%).\n'
-                              '• **Target 26+ out of 30 in Midterms**: Securing high Midterm scores removes all stressful grade-cutoff anxiety before finals.\n'
-                              '• **Never Skip a Quiz**: Even a 0.5 difference in continuous assessments can push a grade from B+ to A-.\n'
-                              '• **Foundation Prerequisites**: Trimester 1 courses like Fundamental Calculus (MATH 1151) and Intro to CS (CSE 1110) unlock essential 2nd and 3rd trimester sequences.'
-                            : 'Based on your UIU Academic Transcript:\n\n'
-                              '• **Current Completed**: ${completedCredits.toStringAsFixed(1)} credits at ${displayCGPA.toStringAsFixed(2)} CGPA (${(completedCredits * displayCGPA).toStringAsFixed(1)} earned Grade Points).\n'
-                              '• **Target Target**: ${targetCGPA.toStringAsFixed(2)} CGPA across ${totalCredits.toInt()} total degree credits requires ${(totalCredits * targetCGPA).toStringAsFixed(1)} total points.\n'
-                              '• **Mathematical Requirement**: Over the remaining ${remainingCredits.toInt()} credits, you must average an SGPA of **${requiredPace.toStringAsFixed(2)}**.\n'
-                              '• **Advisor Recommendation**: Take ${(report.suggestedCreditLoad).toInt()} credits per trimester. Prioritize 3-credit theory courses where you have strong domain foundations to consistently secure A (3.67) and A (4.00) grades.',
-                        surface: surface,
-                        borderClr: borderClr,
-                        textPri: textPri,
-                        textSec: textSec,
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Question 2: Retake & Grade Replacement Formula
-                      _buildAdvisorExpandableCard(
-                        icon: Icons.replay_rounded,
-                        accentColor: const Color(0xFF10B981),
-                        question: 'Should I retake any course, and how does UIU handle retakes?',
-                        summary: 'UIU fully replaces old grades with your highest grade + offers 50% tuition retake discount.',
-                        detailedAnswer:
-                            'Here is how UIU handles retakes under official university regulations:\n\n'
-                            '• **Complete Grade Replacement**: When you retake a course at UIU, your newer higher grade replaces the previous lower grade in your cumulative CGPA calculation. The previous lower grade is removed from cumulative point calculation.\n'
-                            '• **50% Tuition Fee Reduction**: Under standard UIU policies, retaking a previously attempted course qualifies for a 50% reduction on credit tuition fee for the first retake.\n'
-                            '• **Strategic Candidates for Retake**: If you have any grade of **D (2.00)**, **D+ (2.33)**, or **C (2.67)** in a 3.0-credit theory course, retaking it and securing an **A (3.67)** or **A (4.00)** gives an immediate massive boost of +3.00 to +6.00 net Grade Points to your overall CGPA!',
-                        surface: surface,
-                        borderClr: borderClr,
-                        textPri: textPri,
-                        textSec: textSec,
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Question 3: Workload, Theory vs Lab Coupling
-                      _buildAdvisorExpandableCard(
-                        icon: Icons.device_hub_rounded,
-                        accentColor: const Color(0xFF7C3AED),
-                        question: 'What is the optimal course & lab combination for this trimester?',
-                        summary: 'Take maximum 1-2 heavy labs per trimester paired with balanced theory subjects.',
-                        detailedAnswer:
-                            'To protect your SGPA from heavy workload burnout:\n\n'
-                            '• **The 2-Lab Golden Rule**: Never take more than two heavy 1.0-credit laboratory courses (such as OS Lab, Microprocessors Lab, or Computer Networks Lab) in the same trimester.\n'
-                            '• **Recommended Course Structure**: Take **2 Heavy Core Theory** courses + **1 Heavy/Medium Lab** + **1 General Education (GED) / Math** course. This maintains 10 to 13 credits without exhausting your weekly assignment submission deadlines.\n'
-                            '• **Prerequisite Sequence Integrity**: Always clear prerequisites (e.g. SPL before DSA, DSA before OOP & Algorithms II) so you never get stuck blocked from registering higher-level major courses.',
-                        surface: surface,
-                        borderClr: borderClr,
-                        textPri: textPri,
-                        textSec: textSec,
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Question 4: UIU Honors, Dean\'s List & Scholarships
-                      _buildAdvisorExpandableCard(
-                        icon: Icons.military_tech_rounded,
-                        accentColor: const Color(0xFFEAB308),
-                        question: 'What are the criteria for Dean\'s List, Distinction & Tuition Waivers?',
-                        summary: 'Minimum 9 completed credits in trimester + SGPA ≥ 3.50 with no incomplete or F grades.',
-                        detailedAnswer:
-                            'Official UIU Academic Distinction & Honor requirements:\n\n'
-                            '• **Dean\'s List Eligibility**: Requires completing at least 9 or more regular credits in the trimester with an SGPA of **3.50 or higher** with no grade below B- and no Incomplete (I) or Fail (F).\n'
-                            '• **Academic Distinction at Convocation**:\n'
-                            '   - *Summa Cum Laude*: CGPA 3.90 – 4.00\n'
-                            '   - *Magna Cum Laude*: CGPA 3.80 – 3.89\n'
-                            '   - *Cum Laude*: CGPA 3.65 – 3.79\n'
-                            '• **Tuition Fee Waivers**: UIU awards merit waivers (25% to 100%) to top performers based on trimester SGPA provided the minimum registered credit threshold (usually 9–12 credits) is maintained without retakes in that session.',
-                        surface: surface,
-                        borderClr: borderClr,
-                        textPri: textPri,
-                        textSec: textSec,
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Question 5: Withdrawal (W) vs Incomplete (I) Deadlines
-                      _buildAdvisorExpandableCard(
-                        icon: Icons.warning_amber_rounded,
-                        accentColor: const Color(0xFFD97706),
-                        question: 'What if an emergency happens? Withdrawal (W) vs Incomplete (I)',
-                        summary: 'Withdraw before Week 10 with zero GPA impact. Avoid unapproved Incompletes.',
-                        detailedAnswer:
-                            'Understanding the safety mechanisms when emergencies or illness occur:\n\n'
-                            '• **Course Withdrawal (W)**: If you face unavoidable medical or personal issues, apply for formal Course Withdrawal (W) through UCAM before the Week 10 deadline. A "W" has **ZERO effect** on your SGPA or CGPA.\n'
-                            '• **Incomplete (I)**: An Incomplete requires formal departmental chair approval for extreme medical emergencies right before finals. You must sit for the exam in the subsequent trimester, or the system defaults the course grade to an **F (0.00)**.\n'
-                            '• **Always Consult Your Departmental Advisor**: If you fall sick before midterms or finals, notify your advisor immediately with medical documentation to avoid unauthorized dropouts.',
-                        surface: surface,
-                        borderClr: borderClr,
-                        textPri: textPri,
-                        textSec: textSec,
-                      ),
-                    ],
+                    children: _buildDynamicConsultationItems(
+                      isNewStudent: isNewStudent,
+                      displayCGPA: displayCGPA,
+                      targetCGPA: targetCGPA,
+                      completedCredits: completedCredits,
+                      remainingCredits: remainingCredits,
+                      totalCredits: totalCredits,
+                      requiredPace: requiredPace,
+                      candidateRetakes: candidateRetakes,
+                      surface: surface,
+                      borderClr: borderClr,
+                      textPri: textPri,
+                      textSec: textSec,
+                      report: report,
+                    ),
                   ),
                 ),
               ),
@@ -929,19 +853,313 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                 borderRadius: AppRadius.borderMd,
                 border: Border.all(color: accentColor.withValues(alpha: 0.18)),
               ),
-              child: Text(
-                detailedAnswer,
-                style: AppTypography.bodySmall.copyWith(
-                  fontSize: 11.5,
-                  color: textPri,
-                  height: 1.5,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              child: _buildFormattedAdvisorContent(detailedAnswer, textPri, textSec),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildFormattedAdvisorContent(String rawText, Color textPri, Color textSec) {
+    final lines = rawText.split('\n');
+    final widgets = <Widget>[];
+
+    for (final line in lines) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty) {
+        widgets.add(const SizedBox(height: 6));
+        continue;
+      }
+
+      final isBullet = trimmed.startsWith('•') || trimmed.startsWith('-');
+      final contentText = isBullet ? trimmed.substring(1).trim() : trimmed;
+
+      final spans = <InlineSpan>[];
+      final regex = RegExp(r'\*\*(.*?)\*\*');
+      int lastMatchEnd = 0;
+
+      for (final match in regex.allMatches(contentText)) {
+        if (match.start > lastMatchEnd) {
+          spans.add(TextSpan(
+            text: contentText.substring(lastMatchEnd, match.start),
+            style: TextStyle(
+              color: textPri,
+              fontSize: 11.5,
+              height: 1.45,
+              fontWeight: FontWeight.w400,
+            ),
+          ));
+        }
+        spans.add(TextSpan(
+          text: match.group(1),
+          style: TextStyle(
+            color: textPri,
+            fontSize: 11.5,
+            height: 1.45,
+            fontWeight: FontWeight.w800,
+          ),
+        ));
+        lastMatchEnd = match.end;
+      }
+
+      if (lastMatchEnd < contentText.length) {
+        spans.add(TextSpan(
+          text: contentText.substring(lastMatchEnd),
+          style: TextStyle(
+            color: textPri,
+            fontSize: 11.5,
+            height: 1.45,
+            fontWeight: FontWeight.w400,
+          ),
+        ));
+      }
+
+      if (isBullet) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 5.5, right: 6),
+                  width: 5,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: AppRadius.borderFull,
+                  ),
+                ),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(children: spans),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      } else {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: RichText(
+              text: TextSpan(children: spans),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    );
+  }
+
+  List<Widget> _buildDynamicConsultationItems({
+    required bool isNewStudent,
+    required double displayCGPA,
+    required double targetCGPA,
+    required double completedCredits,
+    required double remainingCredits,
+    required double totalCredits,
+    required double requiredPace,
+    required List<Course> candidateRetakes,
+    required Color surface,
+    required Color borderClr,
+    required Color textPri,
+    required Color textSec,
+    required AIAdvisorReport report,
+  }) {
+    final items = <Widget>[];
+
+    // Card 1: Target Goal & Mathematical Pathway (Personalized for every student)
+    if (isNewStudent) {
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.trending_up_rounded,
+        accentColor: const Color(0xFF0284C7),
+        question: 'How do I secure an immediate 3.80+ CGPA starting from Trimester 1?',
+        summary: 'Focus on continuous assessment: scoring 26+ in Midterms locks your course pace.',
+        detailedAnswer:
+            'Welcome to UIU! As a 1st trimester student:\n\n'
+            '• **Continuous Marks are King**: 30% Midterm + 30% Class Tests/Quizzes/Assignments = 60% of your total grade is finalized before the Final Exam (40%).\n'
+            '• **Target 26+ out of 30 in Midterms**: Securing high Midterm scores completely removes stressful cutoff anxiety before finals.\n'
+            '• **Never Skip a Quiz**: Even a 0.5 difference in continuous assessments can push a grade from B+ to A-.\n'
+            '• **Foundation Prerequisites**: Trimester 1 courses like Fundamental Calculus (MATH 1151) and Intro to CS (CSE 1110) unlock essential 2nd and 3rd trimester sequences.',
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+    } else {
+      final achievable = requiredPace <= 4.0;
+      final pointsEarned = completedCredits * displayCGPA;
+      final pointsNeeded = totalCredits * targetCGPA;
+      final pointsRemaining = (pointsNeeded - pointsEarned).clamp(0.0, 999.0);
+
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.trending_up_rounded,
+        accentColor: const Color(0xFF0284C7),
+        question: 'How can I mathematically reach my goal of ${targetCGPA.toStringAsFixed(2)} CGPA?',
+        summary: achievable
+            ? 'Maintain an average SGPA of ${requiredPace.toStringAsFixed(2)} over your remaining ${remainingCredits.toInt()} credits.'
+            : 'Goal requires SGPA > 4.00. Consider strategic course retakes to unlock cumulative grade points!',
+        detailedAnswer:
+            'Based on your official UIU Academic Transcript:\n\n'
+            '• **Current Completed**: ${completedCredits.toStringAsFixed(1)} credits at ${displayCGPA.toStringAsFixed(2)} CGPA (${pointsEarned.toStringAsFixed(1)} earned Grade Points).\n'
+            '• **Target Goal**: ${targetCGPA.toStringAsFixed(2)} CGPA across ${totalCredits.toInt()} total degree credits requires ${pointsNeeded.toStringAsFixed(1)} total points (${pointsRemaining.toStringAsFixed(1)} points remaining).\n'
+            '• **Mathematical Requirement**: Over your remaining ${remainingCredits.toInt()} credits, you need an average SGPA of **${requiredPace.toStringAsFixed(2)}**.\n'
+            '• **Advisor Recommendation**: ' +
+            (achievable
+                ? 'Register for ${(report.suggestedCreditLoad).toInt()} credits per trimester. Focus on 3-credit core theory courses where you have strong domain foundations to consistently secure A (3.67) and A (4.00) grades.'
+                : 'Since the remaining credits alone cannot bridge the gap to ${targetCGPA.toStringAsFixed(2)}, retaking low-grade courses (such as D or C) is your best mathematical option, as replacing a low grade adds instant net grade points without needing extra credits!'),
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+    }
+
+    items.add(const SizedBox(height: 8));
+
+    // Card 2: Deeply Personalized Retake Advice
+    if (isNewStudent) {
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.replay_rounded,
+        accentColor: const Color(0xFF10B981),
+        question: 'How does UIU handle retakes, and do I need to worry about retakes now?',
+        summary: 'As a new student, you have 0 retakes! Focus on passing all courses on your first attempt.',
+        detailedAnswer:
+            'UIU Retake Policy Overview for New Students:\n\n'
+            '• **Current Status**: You are in your 1st Trimester with no previous grades on your transcript. No retakes needed!\n'
+            '• **50% Retake Tuition Discount**: UIU offers a 50% flat credit tuition reduction if a student ever needs to retake an attempted course for the first time.\n'
+            '• **Grade Replacement Rule**: UIU completely replaces lower grades with the highest achieved grade in your cumulative CGPA. However, clearing all subjects with A/A- on your first try saves both time and tuition costs!',
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+    } else if (candidateRetakes.isNotEmpty) {
+      final retakeLines = candidateRetakes.take(4).map((c) {
+        final gp = c.gradePoint ?? 0.0;
+        final grade = c.grade ?? 'D';
+        return '• **${c.code}** (${c.title}): Current Grade **$grade** (${gp.toStringAsFixed(2)} GP). Retaking and scoring A (3.67) adds **+${((3.67 - gp) * c.credit).toStringAsFixed(2)} net points**!';
+      }).join('\n');
+
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.warning_amber_rounded,
+        accentColor: const Color(0xFFDC2626),
+        question: 'Should I retake any course? (Recommended: ${candidateRetakes.length} Courses Found)',
+        summary: 'Yes! Retaking ${candidateRetakes.first.code} (${candidateRetakes.first.grade ?? 'low grade'}) will immediately boost your CGPA.',
+        detailedAnswer:
+            'UIU Academic Advisor Retake Analysis:\n\n'
+            'We analyzed your transcript and detected **${candidateRetakes.length} course(s)** with low grades (below B- / 2.67 GP):\n\n'
+            '$retakeLines\n\n'
+            '• **Why Retake Now**: In UIU cumulative CGPA, your highest grade completely replaces the previous grade. Retaking these gives you the fastest mathematical boost to your CGPA.\n'
+            '• **Tuition Benefit**: You qualify for a **50% tuition reduction** on credit rates for your 1st retake attempt.',
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+    } else {
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.check_circle_outline_rounded,
+        accentColor: const Color(0xFF10B981),
+        question: 'Should I retake any course? (Transcript Status: Clean)',
+        summary: 'No retakes required! All your completed courses maintain high academic standing (≥ B-).',
+        detailedAnswer:
+            'Excellent academic record:\n\n'
+            '• **No Low Grades Detected**: None of your completed courses have D or F grades. Your entire transcript is clean with solid passing grades.\n'
+            '• **Advisor Recommendation**: Do NOT spend credits or tuition on retakes. Focus 100% of your energy on enrolling in regular curriculum progression and higher-level electives.\n'
+            '• **UIU Policy Note**: If you ever choose to improve a B- grade in the future, remember that UIU allows retakes with a 50% discount on credit tuition, but given your current trajectory, advancing forward is the best choice.',
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+    }
+
+    items.add(const SizedBox(height: 8));
+
+    // Card 3: Workload & Theory vs Lab Coupling
+    items.add(_buildAdvisorExpandableCard(
+      icon: Icons.device_hub_rounded,
+      accentColor: const Color(0xFF7C3AED),
+      question: 'What is the optimal course & lab combination for this trimester?',
+      summary: 'Take maximum 1-2 heavy labs per trimester paired with balanced theory subjects.',
+      detailedAnswer:
+          'To protect your trimester GPA from excessive assignment and project burnout:\n\n'
+          '• **The 2-Lab Golden Rule**: Never take more than two heavy 1.0-credit laboratory courses (such as OS Lab, Microprocessors Lab, or Computer Networks Lab) in the same trimester.\n'
+          '• **Recommended Course Structure**: Take **2 Heavy Core Theory** courses + **1 Heavy/Medium Lab** + **1 General Education (GED) / Math** course. This maintains 10 to 13 credits without exhausting your weekly submission deadlines.\n'
+          '• **Prerequisite Sequence Integrity**: Always clear prerequisites (e.g. SPL before DSA, DSA before OOP & Algorithms II) so you never get blocked from registering higher-level major courses.',
+      surface: surface,
+      borderClr: borderClr,
+      textPri: textPri,
+      textSec: textSec,
+    ));
+
+    items.add(const SizedBox(height: 8));
+
+    // Card 4: Honors, Dean\'s List & Scholarships (Dynamic by student CGPA)
+    if (displayCGPA >= 3.50 || isNewStudent) {
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.military_tech_rounded,
+        accentColor: const Color(0xFFEAB308),
+        question: 'What are the criteria for Dean\'s List, Distinction & Tuition Waivers?',
+        summary: 'Minimum 9 completed credits in trimester + SGPA ≥ 3.50 with no incomplete or F grades.',
+        detailedAnswer:
+            'Official UIU Academic Distinction & Honor requirements:\n\n'
+            '• **Dean\'s List Eligibility**: Requires completing at least 9 or more regular credits in the trimester with an SGPA of **3.50 or higher** with no grade below B- and no Incomplete (I) or Fail (F).\n'
+            '• **Academic Distinction at Convocation**:\n'
+            '   - *Summa Cum Laude*: CGPA 3.90 – 4.00\n'
+            '   - *Magna Cum Laude*: CGPA 3.80 – 3.89\n'
+            '   - *Cum Laude*: CGPA 3.65 – 3.79\n'
+            '• **Tuition Fee Waivers**: UIU awards merit waivers (25% to 100%) to top performers based on trimester SGPA provided the minimum registered credit threshold (usually 9–12 credits) is maintained without retakes in that session.',
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+    } else {
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.shield_rounded,
+        accentColor: const Color(0xFFE65100),
+        question: 'How do I avoid academic probation and qualify for Dean\'s List?',
+        summary: 'Keep cumulative CGPA strictly above 2.00 to avoid probation; aim for SGPA ≥ 3.50 for honors.',
+        detailedAnswer:
+            'UIU Academic Standing Rules:\n\n'
+            '• **Academic Probation Warning**: At UIU, if a student\'s CGPA falls below **2.00**, they are placed on Academic Probation. You must bring it back above 2.00 within two trimesters.\n'
+            '• **Dean\'s List Recovery Pathway**: To qualify for Dean\'s List in upcoming trimesters, you need at least 9 registered credits with an SGPA of **3.50 or higher** and zero F/I grades.\n'
+            '• **Key Recovery Strategy**: Balance your schedule by registering for 9–10 credits including at least 1 manageable General Education course to guarantee high term GPAs and rebuild your standing.',
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+    }
+
+    items.add(const SizedBox(height: 8));
+
+    // Card 5: Withdrawal (W) vs Incomplete (I) Deadlines
+    items.add(_buildAdvisorExpandableCard(
+      icon: Icons.warning_amber_rounded,
+      accentColor: const Color(0xFFD97706),
+      question: 'What if an emergency happens? Withdrawal (W) vs Incomplete (I)',
+      summary: 'Withdraw before Week 10 with zero GPA impact. Avoid unapproved Incompletes.',
+      detailedAnswer:
+          'Understanding the safety mechanisms when emergencies or illness occur:\n\n'
+          '• **Course Withdrawal (W)**: If you face unavoidable medical or personal issues, apply for formal Course Withdrawal (W) through UCAM before the Week 10 deadline. A "W" has **ZERO effect** on your SGPA or CGPA.\n'
+          '• **Incomplete (I)**: An Incomplete requires formal departmental chair approval for extreme medical emergencies right before finals. You must sit for the exam in the subsequent trimester, or the system defaults the course grade to an **F (0.00)**.\n'
+          '• **Always Consult Your Departmental Advisor**: If you fall sick before midterms or finals, notify your advisor immediately with medical documentation to avoid unauthorized dropouts.',
+      surface: surface,
+      borderClr: borderClr,
+      textPri: textPri,
+      textSec: textSec,
+    ));
+
+    return items;
   }
 }

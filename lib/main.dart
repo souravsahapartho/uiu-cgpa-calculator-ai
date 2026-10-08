@@ -4,6 +4,7 @@ import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 import 'core/constants/app_constants.dart';
 import 'core/providers/user_profile_provider.dart';
+import 'core/services/uiu_notice_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,9 @@ void main() async {
 
   final provider = UserProfileProvider();
   await provider.loadFromPrefs();
+
+  // Initialize UIU notice service in background
+  UIUNoticeService().init();
 
   runApp(UIUCGPACalculatorApp(profileProvider: provider));
 }

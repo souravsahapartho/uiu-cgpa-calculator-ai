@@ -7,6 +7,8 @@ import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_shadows.dart';
 import '../widgets/uiu_bottom_sheet.dart';
+import '../widgets/uiu_notice_modal.dart';
+import '../core/services/uiu_notice_service.dart';
 import 'main_navigation_screen.dart';
 import 'profile_screen.dart';
 
@@ -401,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _headerIconBtn(Icons.verified_rounded, () => UIUBottomSheet.showGradingScale(context)),
+              _buildNoticeBellBtn(context),
               const SizedBox(width: 8),
               _headerIconBtn(Icons.person_rounded, () {
                 Navigator.push(
@@ -413,6 +415,70 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNoticeBellBtn(BuildContext context) {
+    return AnimatedBuilder(
+      animation: UIUNoticeService(),
+      builder: (context, _) {
+        final noticeService = UIUNoticeService();
+        final hasUnread = noticeService.hasUnread;
+        final unreadCount = noticeService.unreadCount;
+
+        return GestureDetector(
+          onTap: () => UIUNoticeModal.show(context),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: hasUnread
+                      ? Colors.white.withValues(alpha: 0.28)
+                      : Colors.white.withValues(alpha: 0.18),
+                  borderRadius: AppRadius.borderMd,
+                  border: hasUnread
+                      ? Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.2)
+                      : null,
+                ),
+                child: Icon(
+                  hasUnread ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              if (hasUnread)
+                Positioned(
+                  top: -3,
+                  right: -3,
+                  child: Container(
+                    padding: const EdgeInsets.all(3.5),
+                    decoration: const BoxDecoration(
+                      color: AppColors.danger,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Center(
+                      child: Text(
+                        unreadCount > 9 ? '9+' : '$unreadCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
