@@ -199,3 +199,4 @@ class UIUNoticeService extends ChangeNotifier {
     await prefs.setStringList(_readIdsKey, _readNoticeIds.toList());
   }
 }
+

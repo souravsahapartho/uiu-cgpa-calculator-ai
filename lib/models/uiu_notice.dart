@@ -51,3 +51,4 @@ class UIUNotice {
         isRead: json['isRead'] ?? false,
       );
 }
+

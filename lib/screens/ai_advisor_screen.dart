@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../models/course.dart';
+import '../models/ai_recommendation.dart';
 import '../core/services/academic_advisor_engine.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -259,7 +261,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
               // UIU AI Strategic Advisor Consultations (Deep interactive scenarios & actionable Q&A)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s6),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s8),
                   child: Row(
                     children: [
                       const Icon(Icons.psychology_rounded, size: 18, color: AppColors.accent),
