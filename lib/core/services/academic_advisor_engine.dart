@@ -5,7 +5,7 @@ import '../providers/user_profile_provider.dart';
 
 /// Official UIU Course Offering Curriculum Definition
 class UIUCurriculumCourse {
-  final int trimester; // 1 to 12, or 0 for GenEd/Elective
+  final int trimester; // 1 to 12
   final int sl;
   final String code;
   final String title;
@@ -14,6 +14,9 @@ class UIUCurriculumCourse {
   final String examDay;
   final String examSlot;
   final bool isLab;
+  final bool isProject;
+  final bool isGedOptional;
+  final bool isElective;
   final String domain;
 
   const UIUCurriculumCourse({
@@ -26,6 +29,9 @@ class UIUCurriculumCourse {
     required this.examDay,
     required this.examSlot,
     required this.isLab,
+    this.isProject = false,
+    this.isGedOptional = false,
+    this.isElective = false,
     required this.domain,
   });
 }
@@ -68,70 +74,70 @@ class AcademicAdvisorEngine {
 
     // Trimester 6
     UIUCurriculumCourse(trimester: 6, sl: 1, code: 'CSE 3521', title: 'Database Management Systems', credit: 3.0, prerequisite: 'CSE 2215', examDay: 'Day 2', examSlot: 'T1', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 6, sl: 2, code: 'CSE 3522', title: 'Database Management Systems Lab', credit: 1.0, prerequisite: 'CSE 2216', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 6, sl: 2, code: 'CSE 3522', title: 'Database Management Systems Lab', credit: 1.0, prerequisite: 'CSE 2216', examDay: 'N/A', examSlot: 'N/A', isLab: true, isProject: true, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 6, sl: 3, code: 'EEE 2123', title: 'Electronics', credit: 3.0, prerequisite: 'EEE 2113', examDay: 'Day 6', examSlot: 'T3', isLab: false, domain: 'Hardware & Architecture'),
-    UIUCurriculumCourse(trimester: 6, sl: 4, code: 'EEE 2124', title: 'Electronics Lab', credit: 1.0, prerequisite: 'X', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Hardware & Architecture'),
+    UIUCurriculumCourse(trimester: 6, sl: 4, code: 'EEE 2124', title: 'Electronics Lab', credit: 1.0, prerequisite: 'X', examDay: 'N/A', examSlot: 'N/A', isLab: true, isProject: true, domain: 'Hardware & Architecture'),
     UIUCurriculumCourse(trimester: 6, sl: 5, code: 'CSE 4165', title: 'Web Programming', credit: 3.0, prerequisite: 'CSE 1115, CSE 1116', examDay: 'Day 7', examSlot: 'T1', isLab: false, domain: 'Programming & CS'),
 
     // Trimester 7
     UIUCurriculumCourse(trimester: 7, sl: 1, code: 'CSE 3313', title: 'Computer Architecture', credit: 3.0, prerequisite: 'CSE 1325', examDay: 'Day 1', examSlot: 'T3', isLab: false, domain: 'Hardware & Architecture'),
-    UIUCurriculumCourse(trimester: 7, sl: 2, code: 'CSE 2118', title: 'Advanced Object Oriented Programming Lab', credit: 1.0, prerequisite: 'CSE 1116', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Programming & CS'),
+    UIUCurriculumCourse(trimester: 7, sl: 2, code: 'CSE 2118', title: 'Advanced Object Oriented Programming Lab', credit: 1.0, prerequisite: 'CSE 1116', examDay: 'N/A', examSlot: 'N/A', isLab: true, isProject: true, domain: 'Programming & CS'),
     UIUCurriculumCourse(trimester: 7, sl: 3, code: 'BIO 3105', title: 'Biology for Engineers', credit: 3.0, prerequisite: 'X', examDay: 'Day 3', examSlot: 'T3', isLab: false, domain: 'Sciences'),
     UIUCurriculumCourse(trimester: 7, sl: 4, code: 'CSE 3411', title: 'System Analysis and Design', credit: 3.0, prerequisite: 'CSE 3521', examDay: 'Day 5', examSlot: 'T1', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 7, sl: 5, code: 'CSE 3412', title: 'System Analysis and Design Lab', credit: 1.0, prerequisite: 'CSE 3522', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 7, sl: 5, code: 'CSE 3412', title: 'System Analysis and Design Lab', credit: 1.0, prerequisite: 'CSE 3522', examDay: 'N/A', examSlot: 'N/A', isLab: true, isProject: true, domain: 'Software & Systems'),
 
     // Trimester 8
     UIUCurriculumCourse(trimester: 8, sl: 1, code: 'CSE 4325', title: 'Microprocessors and Microcontrollers', credit: 3.0, prerequisite: 'CSE 3313', examDay: 'Day 2', examSlot: 'T2', isLab: false, domain: 'Hardware & Architecture'),
-    UIUCurriculumCourse(trimester: 8, sl: 2, code: 'CSE 4326', title: 'Microprocessors and Microcontrollers Lab', credit: 1.0, prerequisite: 'EEE 2124', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Hardware & Architecture'),
+    UIUCurriculumCourse(trimester: 8, sl: 2, code: 'CSE 4326', title: 'Microprocessors and Microcontrollers Lab', credit: 1.0, prerequisite: 'EEE 2124', examDay: 'N/A', examSlot: 'N/A', isLab: true, isProject: true, domain: 'Hardware & Architecture'),
     UIUCurriculumCourse(trimester: 8, sl: 3, code: 'CSE 3421', title: 'Software Engineering', credit: 3.0, prerequisite: 'CSE 3411', examDay: 'Day 5', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 8, sl: 4, code: 'CSE 3422', title: 'Software Engineering Lab', credit: 1.0, prerequisite: 'CSE 3412', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 8, sl: 4, code: 'CSE 3422', title: 'Software Engineering Lab', credit: 1.0, prerequisite: 'CSE 3412', examDay: 'N/A', examSlot: 'N/A', isLab: true, isProject: true, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 8, sl: 5, code: 'CSE 3811', title: 'Artificial Intelligence', credit: 3.0, prerequisite: 'MATH 2205, CSE 2217', examDay: 'Day 3', examSlot: 'T1', isLab: false, domain: 'Artificial Intelligence'),
     UIUCurriculumCourse(trimester: 8, sl: 6, code: 'CSE 3812', title: 'Artificial Intelligence Lab', credit: 1.0, prerequisite: 'MATH 2205, CSE 2218', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Artificial Intelligence'),
 
     // Trimester 9
     UIUCurriculumCourse(trimester: 9, sl: 1, code: 'CSE 2233', title: 'Theory of Computation', credit: 3.0, prerequisite: 'X', examDay: 'Day 7', examSlot: 'T2', isLab: false, domain: 'Programming & CS'),
-    UIUCurriculumCourse(trimester: 9, sl: 2, code: 'GED 1005', title: 'AI Literacy and Prompt Engineering', credit: 3.0, prerequisite: 'X', examDay: 'Day 1', examSlot: 'T1', isLab: false, domain: 'General Education'),
+    UIUCurriculumCourse(trimester: 9, sl: 2, code: 'GED 1005', title: 'AI Literacy and Prompt Engineering', credit: 3.0, prerequisite: 'X', examDay: 'Day 1', examSlot: 'T1', isLab: false, isGedOptional: true, domain: 'General Education'),
     UIUCurriculumCourse(trimester: 9, sl: 3, code: 'PMG 4101', title: 'Project Management', credit: 3.0, prerequisite: 'CSE 3411', examDay: 'Day 3', examSlot: 'T2', isLab: false, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 9, sl: 4, code: 'CSE 3711', title: 'Computer Networks', credit: 3.0, prerequisite: 'CSE 2217', examDay: 'Day 4', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 9, sl: 5, code: 'CSE 3712', title: 'Computer Networks Lab', credit: 1.0, prerequisite: 'X', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Software & Systems'),
 
     // Trimester 10
-    UIUCurriculumCourse(trimester: 10, sl: 1, code: 'ECO 4101', title: 'Economics', credit: 3.0, prerequisite: 'X', examDay: 'Day 6', examSlot: 'T1', isLab: false, domain: 'General Education'),
-    UIUCurriculumCourse(trimester: 10, sl: 2, code: 'CSE 4000A', title: 'Final Year Design Project - I', credit: 2.0, prerequisite: 'CREDITS_85', examDay: 'N/A', examSlot: 'N/A', isLab: false, domain: 'Project & Thesis'),
+    UIUCurriculumCourse(trimester: 10, sl: 1, code: 'ECO 4101', title: 'Economics', credit: 3.0, prerequisite: 'X', examDay: 'Day 6', examSlot: 'T1', isLab: false, isGedOptional: true, domain: 'General Education'),
+    UIUCurriculumCourse(trimester: 10, sl: 2, code: 'CSE 4000A', title: 'Final Year Design Project - I', credit: 2.0, prerequisite: 'CREDITS_85', examDay: 'N/A', examSlot: 'N/A', isLab: false, isProject: true, domain: 'Project & Thesis'),
     UIUCurriculumCourse(trimester: 10, sl: 3, code: 'CSE 4509', title: 'Operating Systems', credit: 3.0, prerequisite: 'CSE 2217, CSE 3313', examDay: 'Day 1', examSlot: 'T1', isLab: false, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 10, sl: 4, code: 'CSE 4510', title: 'Operating Systems Laboratory', credit: 1.0, prerequisite: 'CSE 2218', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 10, sl: 5, code: 'CSE 4611', title: 'Compiler Design', credit: 3.0, prerequisite: 'CSE 2233', examDay: 'Day 4', examSlot: 'T1', isLab: false, domain: 'Programming & CS'),
 
     // Trimester 11
-    UIUCurriculumCourse(trimester: 11, sl: 1, code: 'ACT 2111', title: 'Financial and Managerial Accounting', credit: 3.0, prerequisite: 'X', examDay: 'Day 2', examSlot: 'T3', isLab: false, domain: 'General Education'),
-    UIUCurriculumCourse(trimester: 11, sl: 2, code: 'CSE 4000B', title: 'Final Year Design Project - II', credit: 2.0, prerequisite: 'CSE 4000A', examDay: 'N/A', examSlot: 'N/A', isLab: false, domain: 'Project & Thesis'),
+    UIUCurriculumCourse(trimester: 11, sl: 1, code: 'ACT 2111', title: 'Financial and Managerial Accounting', credit: 3.0, prerequisite: 'X', examDay: 'Day 2', examSlot: 'T3', isLab: false, isGedOptional: true, domain: 'General Education'),
+    UIUCurriculumCourse(trimester: 11, sl: 2, code: 'CSE 4000B', title: 'Final Year Design Project - II', credit: 2.0, prerequisite: 'CSE 4000A', examDay: 'N/A', examSlot: 'N/A', isLab: false, isProject: true, domain: 'Project & Thesis'),
     UIUCurriculumCourse(trimester: 11, sl: 3, code: 'CSE 4531', title: 'Computer Security', credit: 3.0, prerequisite: 'CSE 3711, CSE 4509', examDay: 'Day 6', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 11, sl: 4, code: 'CSE 4889', title: 'Machine Learning', credit: 3.0, prerequisite: 'CSE 3811, CSE 3812, MATH 2183', examDay: 'Day 1', examSlot: 'T3', isLab: false, domain: 'Artificial Intelligence'),
     UIUCurriculumCourse(trimester: 11, sl: 5, code: 'CSE 4621', title: 'Computer Graphics', credit: 3.0, prerequisite: 'MATH 2201, MATH 2183', examDay: 'Day 2', examSlot: 'T1', isLab: false, domain: 'Programming & CS'),
 
     // Trimester 12
-    UIUCurriculumCourse(trimester: 12, sl: 1, code: 'CSE 4000C', title: 'Final Year Design Project - III', credit: 2.0, prerequisite: 'CSE 4000A, CSE 4000B', examDay: 'N/A', examSlot: 'N/A', isLab: false, domain: 'Project & Thesis'),
-    UIUCurriculumCourse(trimester: 12, sl: 2, code: 'EEE 4261', title: 'Green Computing', credit: 3.0, prerequisite: 'X', examDay: 'Day 5', examSlot: 'T1', isLab: false, domain: 'Hardware & Architecture'),
-    UIUCurriculumCourse(trimester: 12, sl: 3, code: 'CSE 4587', title: 'Cloud Computing', credit: 3.0, prerequisite: 'CSE 4509, CSE 3711', examDay: 'Day 5', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 12, sl: 4, code: 'CSE 4451', title: 'Human Computer Interaction', credit: 3.0, prerequisite: 'CREDITS_70', examDay: 'Day 3', examSlot: 'T1', isLab: false, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 12, sl: 1, code: 'CSE 4000C', title: 'Final Year Design Project - III', credit: 2.0, prerequisite: 'CSE 4000A, CSE 4000B', examDay: 'N/A', examSlot: 'N/A', isLab: false, isProject: true, domain: 'Project & Thesis'),
+    UIUCurriculumCourse(trimester: 12, sl: 2, code: 'EEE 4261', title: 'Green Computing', credit: 3.0, prerequisite: 'X', examDay: 'Day 5', examSlot: 'T1', isLab: false, isElective: true, domain: 'Hardware & Architecture'),
+    UIUCurriculumCourse(trimester: 12, sl: 3, code: 'CSE 4587', title: 'Cloud Computing', credit: 3.0, prerequisite: 'CSE 4509, CSE 3711', examDay: 'Day 5', examSlot: 'T3', isLab: false, isElective: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 12, sl: 4, code: 'CSE 4451', title: 'Human Computer Interaction', credit: 3.0, prerequisite: 'CREDITS_70', examDay: 'Day 3', examSlot: 'T1', isLab: false, isElective: true, domain: 'Software & Systems'),
 
-    // Specialized Electives & GED Optionals (Fall 2026 Dept. of CSE)
-    UIUCurriculumCourse(trimester: 0, sl: 1, code: 'TEC 2499', title: 'Technology Entrepreneurship', credit: 3.0, prerequisite: 'X', examDay: 'Day 3', examSlot: 'T2', isLab: false, domain: 'General Education'),
-    UIUCurriculumCourse(trimester: 0, sl: 2, code: 'CSE 4125', title: 'Ethical Hacking and Network Defense', credit: 3.0, prerequisite: 'CSE 4531', examDay: 'Day 1', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 0, sl: 3, code: 'CSE 4777', title: 'Network Security', credit: 3.0, prerequisite: 'CSE 4531', examDay: 'Day 3', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 0, sl: 4, code: 'CSE 4435', title: 'Software Architecture', credit: 3.0, prerequisite: 'X', examDay: 'Day 4', examSlot: 'T2', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 0, sl: 5, code: 'CSE 4181', title: 'Mobile Application Development', credit: 3.0, prerequisite: 'CSE 4165', examDay: 'Day 6', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 0, sl: 6, code: 'CSE 4945', title: 'UI: Concepts and Design', credit: 3.0, prerequisite: 'X', examDay: 'Day 1', examSlot: 'T2', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 0, sl: 7, code: 'CSE 4495', title: 'Software Testing and Quality Assurance', credit: 3.0, prerequisite: 'CSE 3421', examDay: 'Day 7', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 0, sl: 8, code: 'CSE 4327', title: 'VLSI Design', credit: 3.0, prerequisite: 'CSE 4325', examDay: 'Day 4', examSlot: 'T1', isLab: false, domain: 'Hardware & Architecture'),
-    UIUCurriculumCourse(trimester: 0, sl: 9, code: 'CSE 4399', title: 'Embedded Machine Learning', credit: 3.0, prerequisite: 'CSE 1111, CSE 4325', examDay: 'Day 7', examSlot: 'T2', isLab: false, domain: 'Hardware & Architecture'),
-    UIUCurriculumCourse(trimester: 0, sl: 10, code: 'CSE 4891', title: 'Data Mining', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 7', examSlot: 'T1', isLab: false, domain: 'Artificial Intelligence'),
-    UIUCurriculumCourse(trimester: 0, sl: 11, code: 'CSE 4817', title: 'Big Data Analytics', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 5', examSlot: 'T3', isLab: false, domain: 'Artificial Intelligence'),
-    UIUCurriculumCourse(trimester: 0, sl: 12, code: 'CSE 4883', title: 'Digital Image Processing', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 4', examSlot: 'T1', isLab: false, domain: 'Artificial Intelligence'),
-    UIUCurriculumCourse(trimester: 0, sl: 13, code: 'CSE 4811', title: 'Natural Language Processing', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 4', examSlot: 'T1', isLab: false, domain: 'Artificial Intelligence'),
-    UIUCurriculumCourse(trimester: 0, sl: 14, code: 'CSE 4813', title: 'Deep Learning', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 1', examSlot: 'T3', isLab: false, domain: 'Artificial Intelligence'),
-    UIUCurriculumCourse(trimester: 0, sl: 15, code: 'CSE 4893', title: 'Introduction to Bioinformatics', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 4', examSlot: 'T3', isLab: false, domain: 'Artificial Intelligence'),
-    UIUCurriculumCourse(trimester: 0, sl: 16, code: 'CSE 4133', title: 'Business Intelligence', credit: 3.0, prerequisite: 'CSE 3411', examDay: 'Day 6', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
+    // Specialized Electives & Additional GED Optionals
+    UIUCurriculumCourse(trimester: 10, sl: 6, code: 'TEC 2499', title: 'Technology Entrepreneurship', credit: 3.0, prerequisite: 'X', examDay: 'Day 3', examSlot: 'T2', isLab: false, isGedOptional: true, domain: 'General Education'),
+    UIUCurriculumCourse(trimester: 10, sl: 7, code: 'CSE 4125', title: 'Ethical Hacking and Network Defense', credit: 3.0, prerequisite: 'CSE 4531', examDay: 'Day 1', examSlot: 'T3', isLab: false, isElective: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 10, sl: 8, code: 'CSE 4777', title: 'Network Security', credit: 3.0, prerequisite: 'CSE 4531', examDay: 'Day 3', examSlot: 'T3', isLab: false, isElective: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 10, sl: 9, code: 'CSE 4435', title: 'Software Architecture', credit: 3.0, prerequisite: 'X', examDay: 'Day 4', examSlot: 'T2', isLab: false, isElective: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 10, sl: 10, code: 'CSE 4181', title: 'Mobile Application Development', credit: 3.0, prerequisite: 'CSE 4165', examDay: 'Day 6', examSlot: 'T3', isLab: false, isElective: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 10, sl: 11, code: 'CSE 4945', title: 'UI: Concepts and Design', credit: 3.0, prerequisite: 'X', examDay: 'Day 1', examSlot: 'T2', isLab: false, isElective: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 10, sl: 12, code: 'CSE 4495', title: 'Software Testing and Quality Assurance', credit: 3.0, prerequisite: 'CSE 3421', examDay: 'Day 7', examSlot: 'T3', isLab: false, isElective: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 10, sl: 13, code: 'CSE 4327', title: 'VLSI Design', credit: 3.0, prerequisite: 'CSE 4325', examDay: 'Day 4', examSlot: 'T1', isLab: false, isElective: true, domain: 'Hardware & Architecture'),
+    UIUCurriculumCourse(trimester: 10, sl: 14, code: 'CSE 4399', title: 'Embedded Machine Learning', credit: 3.0, prerequisite: 'CSE 1111, CSE 4325', examDay: 'Day 7', examSlot: 'T2', isLab: false, isElective: true, domain: 'Hardware & Architecture'),
+    UIUCurriculumCourse(trimester: 11, sl: 6, code: 'CSE 4891', title: 'Data Mining', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 7', examSlot: 'T1', isLab: false, isElective: true, domain: 'Artificial Intelligence'),
+    UIUCurriculumCourse(trimester: 11, sl: 7, code: 'CSE 4817', title: 'Big Data Analytics', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 5', examSlot: 'T3', isLab: false, isElective: true, domain: 'Artificial Intelligence'),
+    UIUCurriculumCourse(trimester: 11, sl: 8, code: 'CSE 4883', title: 'Digital Image Processing', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 4', examSlot: 'T1', isLab: false, isElective: true, domain: 'Artificial Intelligence'),
+    UIUCurriculumCourse(trimester: 11, sl: 9, code: 'CSE 4811', title: 'Natural Language Processing', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 4', examSlot: 'T1', isLab: false, isElective: true, domain: 'Artificial Intelligence'),
+    UIUCurriculumCourse(trimester: 11, sl: 10, code: 'CSE 4813', title: 'Deep Learning', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 1', examSlot: 'T3', isLab: false, isElective: true, domain: 'Artificial Intelligence'),
+    UIUCurriculumCourse(trimester: 11, sl: 11, code: 'CSE 4893', title: 'Introduction to Bioinformatics', credit: 3.0, prerequisite: 'CSE 4889', examDay: 'Day 4', examSlot: 'T3', isLab: false, isElective: true, domain: 'Artificial Intelligence'),
+    UIUCurriculumCourse(trimester: 11, sl: 12, code: 'CSE 4133', title: 'Business Intelligence', credit: 3.0, prerequisite: 'CSE 3411', examDay: 'Day 6', examSlot: 'T3', isLab: false, isElective: true, domain: 'Software & Systems'),
   ];
 
   /// Generates a personalized AI advisor report based on official UIU course sequences
@@ -257,24 +263,67 @@ class AcademicAdvisorEngine {
             unlockRationale: 'Retake Policy: Eligible for immediate retake registration with 50% waiver if 1st retake.',
             examDay: match.examDay,
             examSlot: match.examSlot,
+            isProject: match.isProject,
+            isLab: match.isLab,
+            isGed: match.isGedOptional,
+            isElective: match.isElective,
           ));
         }
       }
     }
 
-    // 3. Find eligible next curriculum courses based on completed prerequisites
+    // 3. Quota tracking: UIU BSCSE degree requires exactly 3 GED Optionals and 5 Electives
+    int completedGedOptionalCount = 0;
+    int completedElectiveCount = 0;
+    for (final c in bestAttemptsMap.values) {
+      if ((c.gradePoint ?? 0.0) > 0.0) {
+        if (_isGedOptionalCourse(c.code, c.title)) completedGedOptionalCount++;
+        if (_isElectiveCourse(c.code, c.title)) completedElectiveCount++;
+      }
+    }
+    for (final c in ongoingCourses) {
+      if (_isGedOptionalCourse(c.code, c.title)) completedGedOptionalCount++;
+      if (_isElectiveCourse(c.code, c.title)) completedElectiveCount++;
+    }
+
+    // Determine student's earliest incomplete core trimester milestone
+    int earliestIncompleteCoreTrimester = 12;
+    for (final c in uiuCurriculum) {
+      if (!c.isElective && !c.isGedOptional) {
+        final isDone = bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
+        final isOngoing = ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title));
+        if (!isDone && !isOngoing && c.trimester < earliestIncompleteCoreTrimester) {
+          earliestIncompleteCoreTrimester = c.trimester;
+        }
+      }
+    }
+
+    // 4. Find eligible next curriculum courses based on completed prerequisites
     final eligibleCourses = <UIUCurriculumCourse>[];
 
     for (final c in uiuCurriculum) {
-      // EXCLUDE courses already enrolled in ongoing trimester (matching by equivalent code or title)!
+      // EXCLUDE courses already enrolled in ongoing trimester!
       if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) {
         continue;
       }
 
-      // Skip if already passed with gp >= 2.50 (matching by equivalent code or title)!
+      // Skip if already passed with gp >= 2.50!
       if (bestAttemptsMap.values.any((comp) =>
           (comp.gradePoint ?? 0.0) >= 2.50 &&
           _isCourseMatch(comp.code, comp.title, c.code, c.title))) {
+        continue;
+      }
+
+      // Respect strict category caps
+      if (c.isGedOptional && completedGedOptionalCount >= 3) {
+        continue; // Quota of 3 GED optionals already completed/taken
+      }
+      if (c.isElective && completedElectiveCount >= 5) {
+        continue; // Quota of 5 Electives already completed/taken
+      }
+
+      // Student should not take 4th year electives ahead of time if early core courses are still pending
+      if (c.isElective && (realCompletedCredits + ongoingCredits < 75.0 || earliestIncompleteCoreTrimester < 9)) {
         continue;
       }
 
@@ -307,10 +356,17 @@ class AcademicAdvisorEngine {
       }
     }
 
-    // Sort eligible courses: lowest trimester first, core subjects first
-    eligibleCourses.sort((a, b) => a.trimester.compareTo(b.trimester));
+    // Sort eligible courses: prioritize core progression of earliest trimesters over electives/GEDs
+    eligibleCourses.sort((a, b) {
+      if (a.trimester != b.trimester) {
+        return a.trimester.compareTo(b.trimester);
+      }
+      final weightA = a.isElective ? 20 : (a.isGedOptional ? 10 : 0);
+      final weightB = b.isElective ? 20 : (b.isGedOptional ? 10 : 0);
+      return weightA.compareTo(weightB);
+    });
 
-    // 4. Select balanced set of courses adhering to UIU Credit Capacity policy
+    // 5. Select balanced set of courses adhering to UIU Credit Capacity policy
     // (3.00-4.00: 16 Cr, 2.50-3.00: 14 Cr, 2.00-2.49: 12 Cr, <2.00: 10 Cr)
     final double maxCreditCap = realCGPA >= 3.00
         ? 16.0
@@ -318,46 +374,72 @@ class AcademicAdvisorEngine {
 
     final recommended = <CourseRecommendation>[...retakeRecommendations];
     double currentAccumulatedCredits = recommended.fold(0.0, (sum, r) => sum + r.course.credit);
-    double theoryCredits = recommended.where((r) => !r.course.isLab).fold(0.0, (sum, r) => sum + r.course.credit);
+    double theoryCredits = recommended.where((r) => !r.course.isLab && !r.isProject).fold(0.0, (sum, r) => sum + r.course.credit);
     double labCredits = recommended.where((r) => r.course.isLab).fold(0.0, (sum, r) => sum + r.course.credit);
+    int recommendedGedCount = 0;
+    int recommendedElectiveCount = 0;
 
     final conflicts = <CourseConflictWarning>[];
     
-    // Map of occupied time slots: "${examDay}_${examSlot}" -> courseCode
+    // Register used exam days and time slots
+    final usedExamDays = <String>{};
     final occupiedTimeSlots = <String, String>{};
     for (final r in recommended) {
-      if (r.examDay != 'N/A' && r.examDay != '----' && r.examSlot != 'N/A' && r.examSlot != '----') {
-        occupiedTimeSlots['${r.examDay}_${r.examSlot}'] = r.course.code;
+      final hasExam = r.examDay != 'N/A' && r.examDay != '----' && !r.isLab && !r.isProject;
+      if (hasExam) {
+        usedExamDays.add(r.examDay);
+        if (r.examSlot != 'N/A' && r.examSlot != '----') {
+          occupiedTimeSlots['${r.examDay}_${r.examSlot}'] = r.course.code;
+        }
       }
     }
 
+    String getCourseReason(UIUCurriculumCourse c) {
+      if (c.isProject && !c.isLab) {
+        return 'Final Year Design Project (FYDP). Continuous supervisor assessment & milestone defense with no written final exam.';
+      } else if (c.isProject && c.isLab) {
+        return 'Practical Term Project Lab. Continuous evaluation and project submission with no conflicting written final exam.';
+      } else if (c.isLab) {
+        return 'Hands-on laboratory practical course. Continuous assessment with no conflicting theory final.';
+      } else if (c.isGedOptional) {
+        return 'General Education (GED) Optional requirement towards degree completion.';
+      } else if (c.isElective) {
+        return 'Specialized Elective course fulfilling degree track focus area.';
+      } else {
+        return 'Core degree milestone for Trimester ${c.trimester}. Fulfills prerequisites for advanced upper-level courses.';
+      }
+    }
+
+    // PASS 1: STRICT SINGLE EXAM PER DAY (ZERO SAME-DAY EXAMS)
     for (final c in eligibleCourses) {
       if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) continue;
       if (bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title))) continue;
+      if (recommended.any((r) => _isCourseMatch(r.course.code, r.course.title, c.code, c.title))) continue;
+      if (c.isGedOptional && (completedGedOptionalCount + recommendedGedCount >= 3)) continue;
+      if (c.isElective && (completedElectiveCount + recommendedElectiveCount >= 5)) continue;
       if (currentAccumulatedCredits + c.credit > maxCreditCap) continue;
       if (currentAccumulatedCredits >= (maxCreditCap - 2.0) && currentAccumulatedCredits >= 11.0) break;
       if (c.isLab && labCredits >= 2.0) continue;
-      if (recommended.any((r) => _isCourseMatch(r.course.code, r.course.title, c.code, c.title))) continue;
 
-      // RULE 1: STRICT TIME CONFLICT PREVENT (Same Day AND Same Time Slot)
-      final hasExam = c.examDay != 'N/A' && c.examDay != '----' && c.examSlot != 'N/A' && c.examSlot != '----';
-      final slotKey = hasExam ? '${c.examDay}_${c.examSlot}' : null;
+      final hasExam = c.examDay != 'N/A' && c.examDay != '----' && !c.isLab && !c.isProject;
 
+      // In Pass 1: NEVER allow 2 exams on the same day!
+      if (hasExam && usedExamDays.contains(c.examDay)) {
+        continue; // Skip course to maintain 0 same-day clashes
+      }
+
+      final slotKey = hasExam && c.examSlot != 'N/A' && c.examSlot != '----' ? '${c.examDay}_${c.examSlot}' : null;
       if (slotKey != null && occupiedTimeSlots.containsKey(slotKey)) {
-        final clashingCourse = occupiedTimeSlots[slotKey]!;
-        conflicts.add(CourseConflictWarning(
-          title: 'Exam Time Conflict Prevented (${c.examDay} • Slot ${c.examSlot})',
-          conflictingCourses: [c.code, clashingCourse],
-          severity: 'Critical',
-          explanation: 'Both ${c.code} and $clashingCourse have examinations scheduled at the exact same time on ${c.examDay} (Slot ${c.examSlot}). The AI Advisor automatically skipped ${c.code} for this term to avoid an exam hall clash.',
-          recommendation: 'Choose an alternative elective or take ${c.code} in the subsequent trimester.',
-        ));
-        continue; // HARD AVOID: Student cannot attend two exams at the same time slot!
+        continue;
       }
 
-      if (slotKey != null) {
-        occupiedTimeSlots[slotKey] = c.code;
+      if (hasExam) {
+        usedExamDays.add(c.examDay);
+        if (slotKey != null) occupiedTimeSlots[slotKey] = c.code;
       }
+
+      if (c.isGedOptional) recommendedGedCount++;
+      if (c.isElective) recommendedElectiveCount++;
 
       recommended.add(CourseRecommendation(
         course: Course(
@@ -368,25 +450,86 @@ class AcademicAdvisorEngine {
           gradePoint: 4.0,
         ),
         priorityRank: rank++,
-        reason: c.isLab
-            ? 'Hands-on practical laboratory course. Continuous assessment with no conflicting theory final.'
-            : (c.trimester > 0
-                ? 'Core degree milestone for Trimester ${c.trimester}. Fulfills prerequisites for advanced upper-level courses.'
-                : 'Specialized Elective / General Education course contributing to degree completion.'),
+        reason: getCourseReason(c),
         unlockRationale: 'Prerequisites verified and satisfied under UIU curriculum guidelines.',
         examDay: c.examDay,
         examSlot: c.examSlot,
+        isProject: c.isProject,
+        isLab: c.isLab,
+        isGed: c.isGedOptional,
+        isElective: c.isElective,
       ));
 
       currentAccumulatedCredits += c.credit;
       if (c.isLab) {
         labCredits += c.credit;
-      } else {
+      } else if (!c.isProject) {
         theoryCredits += c.credit;
       }
     }
 
-    // If still empty (e.g. fresh 1st trimester student), give next curriculum defaults (excluding ongoing courses)
+    // PASS 2: EMERGENCY FALLBACK (Absolute Worst-Case Only: if student load < 11.0 credits)
+    if (currentAccumulatedCredits < 11.0) {
+      for (final c in eligibleCourses) {
+        if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) continue;
+        if (bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title))) continue;
+        if (recommended.any((r) => _isCourseMatch(r.course.code, r.course.title, c.code, c.title))) continue;
+        if (c.isGedOptional && (completedGedOptionalCount + recommendedGedCount >= 3)) continue;
+        if (c.isElective && (completedElectiveCount + recommendedElectiveCount >= 5)) continue;
+        if (currentAccumulatedCredits + c.credit > maxCreditCap) continue;
+        if (currentAccumulatedCredits >= 11.0) break;
+        if (c.isLab && labCredits >= 2.0) continue;
+
+        final hasExam = c.examDay != 'N/A' && c.examDay != '----' && !c.isLab && !c.isProject;
+        final slotKey = hasExam && c.examSlot != 'N/A' && c.examSlot != '----' ? '${c.examDay}_${c.examSlot}' : null;
+
+        // Strictly avoid exact time slot collisions
+        if (slotKey != null && occupiedTimeSlots.containsKey(slotKey)) {
+          final clashingCourse = occupiedTimeSlots[slotKey]!;
+          conflicts.add(CourseConflictWarning(
+            title: 'Exam Time Conflict Prevented (${c.examDay} • Slot ${c.examSlot})',
+            conflictingCourses: [c.code, clashingCourse],
+            severity: 'Critical',
+            explanation: 'Both ${c.code} and $clashingCourse have examinations scheduled at the exact same time on ${c.examDay} (Slot ${c.examSlot}). Skipped to avoid an exam hall clash.',
+            recommendation: 'Register for an alternative elective or take ${c.code} in the next trimester.',
+          ));
+          continue;
+        }
+
+        if (slotKey != null) occupiedTimeSlots[slotKey] = c.code;
+        if (hasExam) usedExamDays.add(c.examDay);
+        if (c.isGedOptional) recommendedGedCount++;
+        if (c.isElective) recommendedElectiveCount++;
+
+        recommended.add(CourseRecommendation(
+          course: Course(
+            code: c.code,
+            title: c.title,
+            credit: c.credit,
+            grade: 'A',
+            gradePoint: 4.0,
+          ),
+          priorityRank: rank++,
+          reason: getCourseReason(c),
+          unlockRationale: 'Prerequisites verified and satisfied under UIU curriculum guidelines.',
+          examDay: c.examDay,
+          examSlot: c.examSlot,
+          isProject: c.isProject,
+          isLab: c.isLab,
+          isGed: c.isGedOptional,
+          isElective: c.isElective,
+        ));
+
+        currentAccumulatedCredits += c.credit;
+        if (c.isLab) {
+          labCredits += c.credit;
+        } else if (!c.isProject) {
+          theoryCredits += c.credit;
+        }
+      }
+    }
+
+    // Fallback for 1st trimester fresh students or empty transcripts
     if (recommended.isEmpty) {
       final eligibleFallbacks = uiuCurriculum
           .where((c) =>
@@ -400,10 +543,14 @@ class AcademicAdvisorEngine {
         if (currentAccumulatedCredits >= (maxCreditCap - 2.0) && currentAccumulatedCredits >= 11.0) break;
         if (c.isLab && labCredits >= 2.0) continue;
 
-        final hasExam = c.examDay != 'N/A' && c.examDay != '----' && c.examSlot != 'N/A' && c.examSlot != '----';
-        final slotKey = hasExam ? '${c.examDay}_${c.examSlot}' : null;
+        final hasExam = c.examDay != 'N/A' && c.examDay != '----' && !c.isLab && !c.isProject;
+        if (hasExam && usedExamDays.contains(c.examDay)) continue;
+
+        final slotKey = hasExam && c.examSlot != 'N/A' && c.examSlot != '----' ? '${c.examDay}_${c.examSlot}' : null;
         if (slotKey != null && occupiedTimeSlots.containsKey(slotKey)) continue;
+
         if (slotKey != null) occupiedTimeSlots[slotKey] = c.code;
+        if (hasExam) usedExamDays.add(c.examDay);
 
         recommended.add(CourseRecommendation(
           course: Course(
@@ -418,21 +565,24 @@ class AcademicAdvisorEngine {
           unlockRationale: 'Curriculum pathway progression course.',
           examDay: c.examDay,
           examSlot: c.examSlot,
+          isProject: c.isProject,
+          isLab: c.isLab,
+          isGed: c.isGedOptional,
+          isElective: c.isElective,
         ));
         currentAccumulatedCredits += c.credit;
         if (c.isLab) {
           labCredits += c.credit;
-        } else {
+        } else if (!c.isProject) {
           theoryCredits += c.credit;
         }
       }
     }
 
-    // RULE 2: SAME-DAY 2 EXAMS DETECTION & ALERT
-    // Map examDay -> courses with exams on that day
+    // SAME-DAY 2 EXAMS DETECTION & ALERT (If any emergency occurrence in Pass 2)
     final examsByDay = <String, List<CourseRecommendation>>{};
     for (final rec in recommended) {
-      if (rec.examDay != 'N/A' && rec.examDay != '----' && !rec.course.isLab) {
+      if (rec.examDay != 'N/A' && rec.examDay != '----' && !rec.course.isLab && !rec.isProject) {
         examsByDay.putIfAbsent(rec.examDay, () => []).add(rec);
       }
     }
@@ -452,22 +602,22 @@ class AcademicAdvisorEngine {
       }
     }
 
-    // Inject high-visibility warnings for every day with 2 or more exams
+    // Inject high-visibility warnings for every day with 2 or more exams (without emoji in title)
     examsByDay.forEach((day, dayCourses) {
       if (dayCourses.length >= 2) {
         final courseDetails = dayCourses.map((c) => '${c.course.code} (Slot ${c.examSlot})').join(' & ');
         final codes = dayCourses.map((c) => c.course.code).toList();
         conflicts.insert(0, CourseConflictWarning(
-          title: '⚠️ 2 Exams on Same Day Alert ($day)',
+          title: '2 Exams on Same Day Alert ($day)',
           conflictingCourses: codes,
           severity: 'High',
-          explanation: 'You have ${dayCourses.length} exams scheduled on the SAME DAY ($day): $courseDetails. While their time slots do not directly clash, preparing and sitting for two major final exams on the same date will create intense exam pressure.',
+          explanation: 'You have ${dayCourses.length} exams scheduled on the SAME DAY ($day): $courseDetails. While their time slots do not directly clash, preparing and sitting for two major final exams on the same date creates intense exam pressure.',
           recommendation: 'Start your study preparations early in the trimester. If you prefer a lighter finals routine, consider swapping one of these courses with a laboratory or another course scheduled on a different exam day.',
         ));
       }
     });
 
-    // Additional common UIU workload warning if theory courses >= 4 or labs >= 3
+    // Workload warning if theory courses >= 4 or labs >= 3
     if (theoryCredits >= 12.0) {
       conflicts.add(const CourseConflictWarning(
         title: 'Heavy Theoretical Workload Notice',
@@ -534,6 +684,14 @@ class AcademicAdvisorEngine {
       ));
     });
 
+    final bool isMeritScholarshipEligible = realCGPA >= 3.50;
+    final String? meritScholarshipNotice = isMeritScholarshipEligible
+        ? '🏆 UIU Trimester Merit Scholarship Track (Top 10% Waiver Pace):\n'
+          '• Top 2%: 100% Tuition Waiver | Next 4%: 50% Waiver | Next 4%: 25% Waiver\n'
+          '• Official Policy: Minimum 3.50 GPA and regular credit completion required.\n'
+          '• ⚠️ Important Exclusion Rule: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit scholarship calculation. Maintain at least 9–12 credits of regular fresh courses to protect your waiver eligibility!'
+        : null;
+
     final summary = realCompletedCredits == 0
         ? 'Welcome to UIU! As a 1st trimester student, your focus should be on building a strong foundation in Structured Programming and Calculus. Attending all quizzes and securing 26+ out of 30 in midterms will lock in an immediate Dean\'s Honor pace.'
         : 'Based on your completed ${realCompletedCredits.toStringAsFixed(1)} credits and current CGPA of ${realCGPA.toStringAsFixed(2)}, you are maintaining a ${(realCGPA >= 3.75 ? 'Dean\'s Honor' : 'solid academic')} trajectory. To hit your target of ${targetCGPA.toStringAsFixed(2)}, maintain an average SGPA of ${projectedPace.toStringAsFixed(2)} across your remaining ${remainingCredits.toInt()} credits.';
@@ -551,11 +709,32 @@ class AcademicAdvisorEngine {
         'Retake any D/F grade to replace it completely in your cumulative CGPA.',
       ],
       suggestedCreditLoad: currentAccumulatedCredits,
+      isMeritScholarshipEligible: isMeritScholarshipEligible,
+      meritScholarshipNotice: meritScholarshipNotice,
     );
   }
 
-  static String _normalizeCode(String code) {
-    return code.replaceAll(RegExp(r'\s+'), ' ').trim().toUpperCase();
+  static bool _isGedOptionalCourse(String code, String title) {
+    final clean = _cleanCode(code);
+    final cleanT = _cleanTitle(title);
+    return clean == 'GED1005' ||
+        clean == 'ECO4101' ||
+        clean == 'ECO2101' ||
+        clean == 'ACT2111' ||
+        clean == 'TEC2499' ||
+        cleanT.contains('promptengineering') ||
+        cleanT.contains('entrepreneurship') ||
+        cleanT.contains('economics') ||
+        cleanT.contains('accounting');
+  }
+
+  static bool _isElectiveCourse(String code, String title) {
+    for (final c in uiuCurriculum) {
+      if (c.isElective && _isCourseMatch(c.code, c.title, code, title)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static String _cleanCode(String code) {

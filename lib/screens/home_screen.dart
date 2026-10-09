@@ -6,7 +6,6 @@ import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_shadows.dart';
-import '../widgets/uiu_bottom_sheet.dart';
 import '../widgets/uiu_notice_modal.dart';
 import '../core/services/uiu_notice_service.dart';
 import 'main_navigation_screen.dart';

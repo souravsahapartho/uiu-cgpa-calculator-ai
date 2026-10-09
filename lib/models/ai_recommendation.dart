@@ -25,6 +25,10 @@ class CourseRecommendation {
   final String examSlot; // e.g. 'T1', 'T2', 'N/A'
   final bool hasSameDayExam;
   final String? sameDayWithCourse;
+  final bool isProject; // e.g. FYDP
+  final bool isLab;
+  final bool isGed;
+  final bool isElective;
 
   const CourseRecommendation({
     required this.course,
@@ -35,6 +39,10 @@ class CourseRecommendation {
     this.examSlot = 'N/A',
     this.hasSameDayExam = false,
     this.sameDayWithCourse,
+    this.isProject = false,
+    this.isLab = false,
+    this.isGed = false,
+    this.isElective = false,
   });
 
   CourseRecommendation copyWith({
@@ -46,6 +54,10 @@ class CourseRecommendation {
     String? examSlot,
     bool? hasSameDayExam,
     String? sameDayWithCourse,
+    bool? isProject,
+    bool? isLab,
+    bool? isGed,
+    bool? isElective,
   }) {
     return CourseRecommendation(
       course: course ?? this.course,
@@ -56,6 +68,10 @@ class CourseRecommendation {
       examSlot: examSlot ?? this.examSlot,
       hasSameDayExam: hasSameDayExam ?? this.hasSameDayExam,
       sameDayWithCourse: sameDayWithCourse ?? this.sameDayWithCourse,
+      isProject: isProject ?? this.isProject,
+      isLab: isLab ?? this.isLab,
+      isGed: isGed ?? this.isGed,
+      isElective: isElective ?? this.isElective,
     );
   }
 }
@@ -85,6 +101,8 @@ class AIAdvisorReport {
   final List<CourseConflictWarning> conflictWarnings;
   final List<String> gpaBoosterTips;
   final double suggestedCreditLoad;
+  final bool isMeritScholarshipEligible;
+  final String? meritScholarshipNotice;
 
   const AIAdvisorReport({
     required this.overallSummary,
@@ -95,6 +113,8 @@ class AIAdvisorReport {
     required this.conflictWarnings,
     required this.gpaBoosterTips,
     required this.suggestedCreditLoad,
+    this.isMeritScholarshipEligible = false,
+    this.meritScholarshipNotice,
   });
 }
 

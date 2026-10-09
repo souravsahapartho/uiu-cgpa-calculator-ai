@@ -527,6 +527,77 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                   ),
                 ),
 
+              // UIU Trimester Merit Scholarship Guidance Banner
+              if (report.isMeritScholarshipEligible && report.meritScholarshipNotice != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [const Color(0xFF2A2007), const Color(0xFF1E1705)]
+                              : [const Color(0xFFFFFBEB), const Color(0xFFFEF3C7)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: AppRadius.borderLg,
+                        border: Border.all(
+                          color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.4 : 0.6),
+                        ),
+                        boxShadow: AppShadows.soft,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.workspace_premium_rounded, color: Color(0xFFD97706), size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'UIU Trimester Merit Scholarship Status',
+                                  style: AppTypography.titleSmall.copyWith(
+                                    color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFD97706).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  'Top 10% Waiver Track',
+                                  style: TextStyle(
+                                    color: Color(0xFFD97706),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            report.meritScholarshipNotice!,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: isDark ? const Color(0xFFFCD34D) : const Color(0xFF78350F),
+                              fontSize: 11,
+                              height: 1.45,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               // Recommended Next Courses
               SliverToBoxAdapter(
                 child: Padding(
@@ -619,8 +690,58 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 5),
-                                  // Exam schedule badge & same-day alert
-                                  if (rec.hasSameDayExam) ...[
+                                  // Exam schedule badge & project/lab badges
+                                  if (rec.isProject && !rec.course.isLab) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.10),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.3)),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.rocket_launch_rounded, size: 11, color: Color(0xFF8B5CF6)),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'Capstone Project (Defense • No Written Exam)',
+                                            style: TextStyle(
+                                              color: Color(0xFF8B5CF6),
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 9.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                  ] else if (rec.isProject && rec.course.isLab) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF0D9488).withValues(alpha: 0.10),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: const Color(0xFF0D9488).withValues(alpha: 0.3)),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.terminal_rounded, size: 11, color: Color(0xFF0D9488)),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'Term Project Lab (Continuous • No Written Exam)',
+                                            style: TextStyle(
+                                              color: Color(0xFF0D9488),
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 9.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                  ] else if (rec.hasSameDayExam) ...[
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
                                       decoration: BoxDecoration(
@@ -910,64 +1031,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
     );
   }
 
-  Widget _buildAdviceCard({
-    required IconData icon,
-    required Color accentColor,
-    required String title,
-    required String description,
-    required Color surface,
-    required Color borderClr,
-    required Color textPri,
-    required Color textSec,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: AppRadius.borderLg,
-        border: Border.all(color: borderClr),
-        boxShadow: AppShadows.soft,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: accentColor.withValues(alpha: 0.12),
-              borderRadius: AppRadius.borderMd,
-            ),
-            child: Icon(icon, color: accentColor, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.titleSmall.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                    color: textPri,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: AppTypography.bodySmall.copyWith(
-                    fontSize: 11,
-                    color: textSec,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildAdvisorExpandableCard({
     required IconData icon,
