@@ -671,6 +671,11 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     Color textPri,
     Color textSec,
   ) {
+    final provider = ProfileProviderScope.of(context);
+    final metrics = provider.getTranscriptCumulativeMetrics();
+    final double currentCGPA = metrics['cgpa'] ?? 0.0;
+    final double earnedCredits = metrics['credits'] ?? 0.0;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -708,7 +713,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                         color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: AppRadius.borderMd,
                       ),
-                      child: const Icon(Icons.menu_book_rounded, color: AppColors.primary, size: 22),
+                      child: const Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 22),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -716,7 +721,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Academic Records & Policies',
+                            'Academic Guidelines & Policies',
                             style: AppTypography.titleLarge.copyWith(
                               fontWeight: FontWeight.w900,
                               color: textPri,
@@ -724,7 +729,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                             ),
                           ),
                           Text(
-                            'UIU official guidelines & calculation rules',
+                            'UIU official guidelines, scholarships & calculation rules',
                             style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
                           ),
                         ],
@@ -744,6 +749,18 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                   children: [
+                    // ── UIU Trimester Merit Scholarship Status & Policy Card ──
+                    _buildMeritScholarshipCard(
+                      isDark: isDark,
+                      surface: surface,
+                      borderClr: borderClr,
+                      textPri: textPri,
+                      textSec: textSec,
+                      currentCGPA: currentCGPA,
+                      earnedCredits: earnedCredits,
+                    ),
+                    const SizedBox(height: 14),
+
                     // ── AI Prompt Helper: Convert UCAM Result to CSV ──
                     _buildAIPromptHelperCard(
                       context: context,
@@ -823,6 +840,151 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildMeritScholarshipCard({
+    required bool isDark,
+    required Color surface,
+    required Color borderClr,
+    required Color textPri,
+    required Color textSec,
+    required double currentCGPA,
+    required double earnedCredits,
+  }) {
+    final bool isEligiblePace = currentCGPA >= 3.50;
+
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF2C2007), const Color(0xFF1E1705)]
+              : [const Color(0xFFFFFBEB), const Color(0xFFFEF3C7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(
+          color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.45 : 0.6),
+          width: 1.2,
+        ),
+        boxShadow: AppShadows.soft,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD97706).withValues(alpha: 0.18),
+                  borderRadius: AppRadius.borderMd,
+                ),
+                child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFD97706), size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'UIU Trimester Merit Scholarship Status',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      'Official Performance-Based Tuition Waiver',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                decoration: BoxDecoration(
+                  color: isEligiblePace
+                      ? const Color(0xFF10B981).withValues(alpha: 0.18)
+                      : const Color(0xFFD97706).withValues(alpha: 0.15),
+                  borderRadius: AppRadius.borderFull,
+                  border: Border.all(
+                    color: isEligiblePace ? const Color(0xFF10B981) : const Color(0xFFD97706),
+                    width: 0.8,
+                  ),
+                ),
+                child: Text(
+                  isEligiblePace ? 'Top 10% Pace' : 'CGPA < 3.50',
+                  style: TextStyle(
+                    color: isEligiblePace
+                        ? (isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857))
+                        : const Color(0xFFD97706),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Student Live Status pill
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isEligiblePace ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+                  size: 15,
+                  color: isEligiblePace ? const Color(0xFF10B981) : const Color(0xFFD97706),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    isEligiblePace
+                        ? 'Your Cumulative CGPA is ${currentCGPA.toStringAsFixed(2)}. You are maintaining the academic standing required for UIU merit scholarship consideration!'
+                        : 'Your Cumulative CGPA is ${currentCGPA > 0 ? currentCGPA.toStringAsFixed(2) : '0.00'}. Secure ≥ 3.50 SGPA with 9+ regular credits in upcoming trimesters to qualify for waivers.',
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFFFEF3C7) : const Color(0xFF78350F),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '🏆 Trimester Merit Scholarship Tiers (Top 10% Performers):\n'
+            '• Top 2%: 100% Tuition Fee Waiver\n'
+            '• Next 4%: 50% Tuition Fee Waiver\n'
+            '• Next 4%: 25% Tuition Fee Waiver\n\n'
+            '📋 Official UIU Eligibility Regulations:\n'
+            '• Minimum 3.50 GPA / CGPA and regular credit completion required.\n'
+            '• ⚠️ Crucial Exclusion Rule: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit scholarship calculation. You must take at least 9–12 credits of regular fresh courses to protect waiver eligibility.',
+            style: TextStyle(
+              color: isDark ? const Color(0xFFFDE68A).withValues(alpha: 0.95) : const Color(0xFF78350F),
+              fontSize: 11.5,
+              height: 1.45,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
