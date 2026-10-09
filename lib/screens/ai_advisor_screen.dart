@@ -583,16 +583,60 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        rec.course.code,
-                                        style: AppTypography.labelLarge.copyWith(
-                                          fontWeight: FontWeight.w800,
-                                          color: textPri,
+                                  if (rec.trackName != null || rec.isChoiceOption) ...[
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 5),
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                      decoration: BoxDecoration(
+                                        color: rec.isGed
+                                            ? const Color(0xFF0284C7).withValues(alpha: 0.12)
+                                            : const Color(0xFF7C3AED).withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: rec.isGed
+                                              ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                                              : const Color(0xFF7C3AED).withValues(alpha: 0.35),
                                         ),
                                       ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            rec.isGed ? Icons.menu_book_rounded : Icons.track_changes_rounded,
+                                            size: 11,
+                                            color: rec.isGed ? const Color(0xFF0284C7) : const Color(0xFF7C3AED),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              rec.trackName ?? (rec.isGed ? 'GED Optional Choice' : 'Major Track Choice'),
+                                              style: TextStyle(
+                                                color: rec.isGed ? const Color(0xFF0284C7) : const Color(0xFF7C3AED),
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 9.5,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          rec.course.code,
+                                          style: AppTypography.labelLarge.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            color: textPri,
+                                            fontSize: rec.isChoiceOption ? 12.5 : 14,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
@@ -600,7 +644,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
-                                          '${rec.course.credit.toInt()} Credits',
+                                          rec.isChoiceOption ? '3 Cr (Pick 1)' : '${rec.course.credit.toInt()} Credits',
                                           style: AppTypography.bodySmall.copyWith(
                                             color: textSec,
                                             fontWeight: FontWeight.w700,
@@ -619,9 +663,98 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                                       color: textPri,
                                     ),
                                   ),
-                                  const SizedBox(height: 5),
+                                  if (rec.isChoiceOption && rec.choiceDetails.isNotEmpty) ...[
+                                    Container(
+                                      margin: const EdgeInsets.symmetric(vertical: 6),
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: (rec.isGed ? const Color(0xFF0284C7) : const Color(0xFF7C3AED)).withValues(alpha: 0.2),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                rec.isGed ? Icons.menu_book_rounded : Icons.track_changes_rounded,
+                                                size: 12,
+                                                color: rec.isGed ? const Color(0xFF0284C7) : const Color(0xFF7C3AED),
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Text(
+                                                'CHOOSE 1 OF ${rec.choiceDetails.length} OPTIONS:',
+                                                style: TextStyle(
+                                                  fontSize: 9.5,
+                                                  fontWeight: FontWeight.w800,
+                                                  letterSpacing: 0.4,
+                                                  color: rec.isGed ? const Color(0xFF0284C7) : const Color(0xFF7C3AED),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          ...rec.choiceDetails.map((opt) {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(bottom: 5),
+                                              child: Row(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                                    decoration: BoxDecoration(
+                                                      color: (rec.isGed ? const Color(0xFF0284C7) : const Color(0xFF7C3AED)).withValues(alpha: 0.12),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                    ),
+                                                    child: Text(
+                                                      opt.code,
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.w800,
+                                                        color: rec.isGed ? const Color(0xFF0284C7) : const Color(0xFF7C3AED),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          opt.title,
+                                                          style: AppTypography.bodySmall.copyWith(
+                                                            fontWeight: FontWeight.w700,
+                                                            fontSize: 11,
+                                                            color: textPri,
+                                                          ),
+                                                        ),
+                                                        if (opt.examDay != 'N/A' && opt.examDay != '----')
+                                                          Text(
+                                                            'Exam: ${opt.examDay} • Slot ${opt.examSlot}',
+                                                            style: TextStyle(
+                                                              fontSize: 9.5,
+                                                              fontWeight: FontWeight.w600,
+                                                              color: textSec,
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }),
+                                        ],
+                                      ),
+                                    ),
+                                  ] else ...[
+                                    const SizedBox(height: 5),
+                                  ],
                                   // Exam schedule badge & project/lab badges
-                                  if (rec.isProject && !rec.course.isLab) ...[
+                                  if (!rec.isChoiceOption && rec.isProject && !rec.course.isLab) ...[
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
                                       decoration: BoxDecoration(

@@ -140,6 +140,46 @@ class AcademicAdvisorEngine {
     UIUCurriculumCourse(trimester: 11, sl: 12, code: 'CSE 4133', title: 'Business Intelligence', credit: 3.0, prerequisite: 'CSE 3411', examDay: 'Day 6', examSlot: 'T3', isLab: false, isElective: true, domain: 'Software & Systems'),
   ];
 
+  /// Official UIU GED Optional Course Pool (Students must complete any 3 courses)
+  static const List<UIUCurriculumCourse> gedOptionalCatalog = [
+    UIUCurriculumCourse(trimester: 9, sl: 2, code: 'GED 1005', title: 'AI Literacy and Prompt Engineering', credit: 3.0, prerequisite: 'X', examDay: 'Day 1', examSlot: 'T1', isLab: false, isGedOptional: true, domain: 'General Education'),
+    UIUCurriculumCourse(trimester: 10, sl: 6, code: 'TEC 2499', title: 'Technology Entrepreneurship', credit: 3.0, prerequisite: 'X', examDay: 'Day 3', examSlot: 'T2', isLab: false, isGedOptional: true, domain: 'General Education'),
+    UIUCurriculumCourse(trimester: 10, sl: 1, code: 'ECO 4101', title: 'Economics', credit: 3.0, prerequisite: 'X', examDay: 'Day 6', examSlot: 'T1', isLab: false, isGedOptional: true, domain: 'General Education'),
+    UIUCurriculumCourse(trimester: 11, sl: 1, code: 'ACT 2111', title: 'Financial and Managerial Accounting', credit: 3.0, prerequisite: 'X', examDay: 'Day 2', examSlot: 'T3', isLab: false, isGedOptional: true, domain: 'General Education'),
+  ];
+
+  /// Specialization Tracks Course Mappings
+  static const List<String> trackAiDataCodes = [
+    'CSE 4889', // Machine Learning (Gateway)
+    'CSE 4813', // Deep Learning
+    'CSE 4811', // Natural Language Processing
+    'CSE 4891', // Data Mining
+    'CSE 4883', // Digital Image Processing
+    'CSE 4817', // Big Data Analytics
+    'CSE 4893', // Introduction to Bioinformatics
+  ];
+
+  static const List<String> trackSoftwareCodes = [
+    'CSE 4181', // Mobile Application Development (Gateway)
+    'CSE 4435', // Software Architecture (Gateway)
+    'CSE 4945', // UI: Concepts and Design (Gateway)
+    'CSE 4495', // Software Testing and Quality Assurance
+    'CSE 4133', // Business Intelligence
+    'CSE 4451', // Human Computer Interaction
+  ];
+
+  static const List<String> trackSecurityCodes = [
+    'CSE 4777', // Network Security (Gateway)
+    'CSE 4125', // Ethical Hacking and Network Defense
+    'CSE 4587', // Cloud Computing
+  ];
+
+  static const List<String> trackHardwareCodes = [
+    'CSE 4327', // VLSI Design (Gateway)
+    'CSE 4399', // Embedded Machine Learning
+    'EEE 4261', // Green Computing
+  ];
+
   /// Generates a personalized AI advisor report based on official UIU course sequences
   static AIAdvisorReport generateReport({
     required UserProfile profile,
@@ -286,11 +326,54 @@ class AcademicAdvisorEngine {
       if (_isElectiveCourse(c.code, c.title)) completedElectiveCount++;
     }
 
+    // Track detection for Major / Specialization Electives
+    int countTrackEnrollments(List<String> codes) {
+      int count = 0;
+      for (final code in codes) {
+        final taken = bestAttemptsMap.values.any((comp) =>
+            (comp.gradePoint ?? 0.0) >= 2.0 && _isCourseMatch(comp.code, comp.title, code, ''));
+        final ongoing = ongoingCourses.any((ong) => _isCourseMatch(ong.code, ong.title, code, ''));
+        if (taken || ongoing) count++;
+      }
+      return count;
+    }
+
+    final int aiTrackCount = countTrackEnrollments(trackAiDataCodes);
+    final int seTrackCount = countTrackEnrollments(trackSoftwareCodes);
+    final int secTrackCount = countTrackEnrollments(trackSecurityCodes);
+    final int hwTrackCount = countTrackEnrollments(trackHardwareCodes);
+    final int maxTrackScore = [aiTrackCount, seTrackCount, secTrackCount, hwTrackCount].reduce((a, b) => a > b ? a : b);
+
+    // Prerequisite satisfaction helper
+    bool isPrereqSatisfied(String prerequisite) {
+      if (prerequisite == 'X') return true;
+      if (prerequisite == 'CREDITS_85' || prerequisite.contains('85')) {
+        return (realCompletedCredits + ongoingCredits) >= 85.0;
+      }
+      if (prerequisite == 'CREDITS_70' || prerequisite.contains('70')) {
+        return (realCompletedCredits + ongoingCredits) >= 70.0;
+      }
+      final reqs = prerequisite
+          .replaceAll('&', ',')
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty && s != 'X')
+          .toList();
+      return reqs.every((r) {
+        final isComp = bestAttemptsMap.values.any((comp) =>
+            (comp.gradePoint ?? 0.0) > 0.0 &&
+            _isCourseMatch(comp.code, comp.title, r, ''));
+        final isOng = ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, r, ''));
+        return isComp || isOng;
+      });
+    }
+
     // Determine student's earliest incomplete core trimester milestone
     int earliestIncompleteCoreTrimester = 12;
     for (final c in uiuCurriculum) {
       if (!c.isElective && !c.isGedOptional) {
-        final isDone = bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
+        final isDone = bestAttemptsMap.values.any((comp) =>
+            (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
         final isOngoing = ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title));
         if (!isDone && !isOngoing && c.trimester < earliestIncompleteCoreTrimester) {
           earliestIncompleteCoreTrimester = c.trimester;
@@ -298,10 +381,177 @@ class AcademicAdvisorEngine {
       }
     }
 
-    // 4. Find eligible next curriculum courses based on completed prerequisites
+    // 4. Build Smart GED Choice Recommendation (if quota < 3 and eligible)
+    CourseRecommendation? gedChoiceRec;
+    if (completedGedOptionalCount < 3) {
+      final remainingGedPool = <UIUCurriculumCourse>[];
+      for (final ged in gedOptionalCatalog) {
+        final isDone = bestAttemptsMap.values.any((comp) =>
+            (comp.gradePoint ?? 0.0) > 0.0 && _isCourseMatch(comp.code, comp.title, ged.code, ged.title));
+        final isOng = ongoingCourses.any((ong) => _isCourseMatch(ong.code, ong.title, ged.code, ged.title));
+        if (!isDone && !isOng && isPrereqSatisfied(ged.prerequisite)) {
+          remainingGedPool.add(ged);
+        }
+      }
+
+      if (remainingGedPool.isNotEmpty) {
+        final choices = remainingGedPool.take(3).toList();
+        final slashCodes = choices.map((c) => c.code).join(' / ');
+        final slashTitles = choices.map((c) => c.title.replaceAll(' and ', ' & ')).join(' / ');
+        final choiceDetails = choices.map((c) => ChoiceOptionDetail(
+          code: c.code,
+          title: c.title,
+          examDay: c.examDay,
+          examSlot: c.examSlot,
+          credit: c.credit,
+        )).toList();
+
+        gedChoiceRec = CourseRecommendation(
+          course: Course(
+            code: slashCodes,
+            title: slashTitles,
+            credit: 3.0,
+            grade: 'A',
+            gradePoint: 4.0,
+          ),
+          priorityRank: rank++,
+          reason: 'UIU BSCSE requires 3 GED Optionals ($completedGedOptionalCount/3 completed). Choose 1 course among the remaining available options: ${choices.map((c) => c.code).join(", ")}.',
+          unlockRationale: 'No prerequisite restrictions. Choose according to career orientation.',
+          examDay: choices.map((c) => c.examDay).toSet().join(' / '),
+          examSlot: choices.map((c) => c.examSlot).toSet().join(' / '),
+          isGed: true,
+          isChoiceOption: choices.length > 1,
+          trackName: 'GED Optional Choice ($completedGedOptionalCount/3 Completed)',
+          optionCodes: choices.map((c) => c.code).toList(),
+          choiceDetails: choiceDetails,
+        );
+      }
+    }
+
+    // 5. Build Smart Specialization / Major Elective Choice Recommendation (if quota < 5 and eligible)
+    CourseRecommendation? electiveChoiceRec;
+    if (completedElectiveCount < 5) {
+      if (maxTrackScore == 0) {
+        // Gateway choice across multiple tracks
+        final gatewayCodes = ['CSE 4889', 'CSE 4181', 'CSE 4435', 'CSE 4777'];
+        final eligibleGateways = <UIUCurriculumCourse>[];
+        for (final code in gatewayCodes) {
+          final c = uiuCurriculum.firstWhere((x) => _isCourseMatch(x.code, x.title, code, ''));
+          final isDone = bestAttemptsMap.values.any((comp) =>
+              (comp.gradePoint ?? 0.0) >= 2.0 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
+          final isOng = ongoingCourses.any((ong) => _isCourseMatch(ong.code, ong.title, c.code, c.title));
+          if (!isDone && !isOng && isPrereqSatisfied(c.prerequisite)) {
+            eligibleGateways.add(c);
+          }
+        }
+
+        if (eligibleGateways.isNotEmpty) {
+          final choices = eligibleGateways.take(3).toList();
+          final slashCodes = choices.map((c) => c.code).join(' / ');
+          final slashTitles = choices.map((c) => c.title.replaceAll(' and ', ' & ')).join(' / ');
+          final choiceDetails = choices.map((c) => ChoiceOptionDetail(
+            code: c.code,
+            title: c.title,
+            examDay: c.examDay,
+            examSlot: c.examSlot,
+            credit: c.credit,
+          )).toList();
+
+          electiveChoiceRec = CourseRecommendation(
+            course: Course(
+              code: slashCodes,
+              title: slashTitles,
+              credit: 3.0,
+              grade: 'A',
+              gradePoint: 4.0,
+            ),
+            priorityRank: rank++,
+            reason: 'Specialization Track Gateway. You have not initiated a major track yet. Choose an introductory gateway course to declare your focus area (AI & Data Science, Software Eng, or Cybersecurity).',
+            unlockRationale: 'Prerequisites verified. Selecting one gateway sets your major specialization track.',
+            examDay: choices.map((c) => c.examDay).toSet().join(' / '),
+            examSlot: choices.map((c) => c.examSlot).toSet().join(' / '),
+            isElective: true,
+            isChoiceOption: choices.length > 1,
+            trackName: 'Major Track Gateway Choice',
+            optionCodes: choices.map((c) => c.code).toList(),
+            choiceDetails: choiceDetails,
+          );
+        }
+      } else {
+        // Track declared: suggest follow-up courses from the declared track
+        String activeTrackName = '';
+        List<String> activeTrackCodes = [];
+        if (aiTrackCount == maxTrackScore) {
+          activeTrackName = 'AI & Data Science';
+          activeTrackCodes = trackAiDataCodes;
+        } else if (seTrackCount == maxTrackScore) {
+          activeTrackName = 'Software Engineering';
+          activeTrackCodes = trackSoftwareCodes;
+        } else if (secTrackCount == maxTrackScore) {
+          activeTrackName = 'Cybersecurity & Networks';
+          activeTrackCodes = trackSecurityCodes;
+        } else {
+          activeTrackName = 'Hardware & Embedded';
+          activeTrackCodes = trackHardwareCodes;
+        }
+
+        final eligibleTrackCourses = <UIUCurriculumCourse>[];
+        for (final code in activeTrackCodes) {
+          final match = uiuCurriculum.where((x) => _isCourseMatch(x.code, x.title, code, ''));
+          if (match.isEmpty) continue;
+          final c = match.first;
+          final isDone = bestAttemptsMap.values.any((comp) =>
+              (comp.gradePoint ?? 0.0) >= 2.0 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
+          final isOng = ongoingCourses.any((ong) => _isCourseMatch(ong.code, ong.title, c.code, c.title));
+          if (!isDone && !isOng && isPrereqSatisfied(c.prerequisite)) {
+            eligibleTrackCourses.add(c);
+          }
+        }
+
+        if (eligibleTrackCourses.isNotEmpty) {
+          final choices = eligibleTrackCourses.take(3).toList();
+          final slashCodes = choices.map((c) => c.code).join(' / ');
+          final slashTitles = choices.map((c) => c.title.replaceAll(' and ', ' & ')).join(' / ');
+          final choiceDetails = choices.map((c) => ChoiceOptionDetail(
+            code: c.code,
+            title: c.title,
+            examDay: c.examDay,
+            examSlot: c.examSlot,
+            credit: c.credit,
+          )).toList();
+
+          electiveChoiceRec = CourseRecommendation(
+            course: Course(
+              code: slashCodes,
+              title: slashTitles,
+              credit: 3.0,
+              grade: 'A',
+              gradePoint: 4.0,
+            ),
+            priorityRank: rank++,
+            reason: 'Active Specialization Track: You have initiated $activeTrackName. Choose an advanced follow-up course aligned with your specialization.',
+            unlockRationale: 'Prerequisites verified under UIU specialization guidelines.',
+            examDay: choices.map((c) => c.examDay).toSet().join(' / '),
+            examSlot: choices.map((c) => c.examSlot).toSet().join(' / '),
+            isElective: true,
+            isChoiceOption: choices.length > 1,
+            trackName: '$activeTrackName Track Follow-up',
+            optionCodes: choices.map((c) => c.code).toList(),
+            choiceDetails: choiceDetails,
+          );
+        }
+      }
+    }
+
+    // 6. Find eligible core curriculum courses based on completed prerequisites
+    // (GED Optionals & Electives are handled via our smart choice recommenders above)
     final eligibleCourses = <UIUCurriculumCourse>[];
 
     for (final c in uiuCurriculum) {
+      if (c.isGedOptional || c.isElective) {
+        continue; // Handled intelligently above
+      }
+
       // EXCLUDE courses already enrolled in ongoing trimester!
       if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) {
         continue;
@@ -314,59 +564,16 @@ class AcademicAdvisorEngine {
         continue;
       }
 
-      // Respect strict category caps
-      if (c.isGedOptional && completedGedOptionalCount >= 3) {
-        continue; // Quota of 3 GED optionals already completed/taken
-      }
-      if (c.isElective && completedElectiveCount >= 5) {
-        continue; // Quota of 5 Electives already completed/taken
-      }
-
-      // Student should not take 4th year electives ahead of time if early core courses are still pending
-      if (c.isElective && (realCompletedCredits + ongoingCredits < 75.0 || earliestIncompleteCoreTrimester < 9)) {
-        continue;
-      }
-
       // Check prerequisites
-      bool prereqMet = false;
-      if (c.prerequisite == 'X') {
-        prereqMet = true;
-      } else if (c.prerequisite == 'CREDITS_85' || c.prerequisite.contains('85')) {
-        prereqMet = (realCompletedCredits + ongoingCredits) >= 85.0;
-      } else if (c.prerequisite == 'CREDITS_70' || c.prerequisite.contains('70')) {
-        prereqMet = (realCompletedCredits + ongoingCredits) >= 70.0;
-      } else {
-        final reqs = c.prerequisite
-            .replaceAll('&', ',')
-            .split(',')
-            .map((s) => s.trim())
-            .where((s) => s.isNotEmpty && s != 'X')
-            .toList();
-        prereqMet = reqs.every((r) {
-          final isComp = bestAttemptsMap.values.any((comp) =>
-              (comp.gradePoint ?? 0.0) > 0.0 &&
-              _isCourseMatch(comp.code, comp.title, r, ''));
-          final isOng = ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, r, ''));
-          return isComp || isOng;
-        });
-      }
-
-      if (prereqMet) {
+      if (isPrereqSatisfied(c.prerequisite)) {
         eligibleCourses.add(c);
       }
     }
 
-    // Sort eligible courses: prioritize core progression of earliest trimesters over electives/GEDs
-    eligibleCourses.sort((a, b) {
-      if (a.trimester != b.trimester) {
-        return a.trimester.compareTo(b.trimester);
-      }
-      final weightA = a.isElective ? 20 : (a.isGedOptional ? 10 : 0);
-      final weightB = b.isElective ? 20 : (b.isGedOptional ? 10 : 0);
-      return weightA.compareTo(weightB);
-    });
+    // Sort eligible core courses: prioritize earliest trimesters
+    eligibleCourses.sort((a, b) => a.trimester.compareTo(b.trimester));
 
-    // 5. Select balanced set of courses adhering to UIU Credit Capacity policy
+    // 7. Select balanced set of courses adhering to UIU Credit Capacity policy
     // (3.00-4.00: 16 Cr, 2.50-3.00: 14 Cr, 2.00-2.49: 12 Cr, <2.00: 10 Cr)
     final double maxCreditCap = realCGPA >= 3.00
         ? 16.0
@@ -392,6 +599,32 @@ class AcademicAdvisorEngine {
           occupiedTimeSlots['${r.examDay}_${r.examSlot}'] = r.course.code;
         }
       }
+    }
+
+    // Check if eligible to inject GED Choice
+    final bool canInjectGed = gedChoiceRec != null &&
+        completedGedOptionalCount < 3 &&
+        (realCompletedCredits + ongoingCredits >= 50.0 || earliestIncompleteCoreTrimester >= 8) &&
+        (currentAccumulatedCredits + 3.0 <= maxCreditCap);
+
+    if (canInjectGed) {
+      recommended.add(gedChoiceRec);
+      currentAccumulatedCredits += 3.0;
+      theoryCredits += 3.0;
+      recommendedGedCount++;
+    }
+
+    // Check if eligible to inject Specialization Elective Choice
+    final bool canInjectElective = electiveChoiceRec != null &&
+        completedElectiveCount < 5 &&
+        (realCompletedCredits + ongoingCredits >= 70.0 || earliestIncompleteCoreTrimester >= 9) &&
+        (currentAccumulatedCredits + 3.0 <= maxCreditCap);
+
+    if (canInjectElective) {
+      recommended.add(electiveChoiceRec);
+      currentAccumulatedCredits += 3.0;
+      theoryCredits += 3.0;
+      recommendedElectiveCount++;
     }
 
     String getCourseReason(UIUCurriculumCourse c) {
@@ -722,10 +955,14 @@ class AcademicAdvisorEngine {
         clean == 'ECO2101' ||
         clean == 'ACT2111' ||
         clean == 'TEC2499' ||
+        clean == 'IPE3401' ||
+        clean == 'IPE2101' ||
         cleanT.contains('promptengineering') ||
         cleanT.contains('entrepreneurship') ||
         cleanT.contains('economics') ||
-        cleanT.contains('accounting');
+        cleanT.contains('accounting') ||
+        cleanT.contains('industrial') ||
+        cleanT.contains('operationalmanagement');
   }
 
   static bool _isElectiveCourse(String code, String title) {
@@ -787,6 +1024,9 @@ class AcademicAdvisorEngine {
 
     'ECO4101': {'ECO4101', 'ECO2101'}, // Economics
     'ECO2101': {'ECO4101', 'ECO2101'},
+
+    'IPE3401': {'IPE3401', 'IPE2101'}, // Industrial and Operational Management
+    'IPE2101': {'IPE3401', 'IPE2101'},
   };
 
   static bool _areCodesEquivalent(String codeA, String codeB) {

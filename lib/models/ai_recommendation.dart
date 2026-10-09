@@ -29,6 +29,10 @@ class CourseRecommendation {
   final bool isLab;
   final bool isGed;
   final bool isElective;
+  final bool isChoiceOption;
+  final String? trackName;
+  final List<String> optionCodes;
+  final List<ChoiceOptionDetail> choiceDetails;
 
   const CourseRecommendation({
     required this.course,
@@ -43,6 +47,10 @@ class CourseRecommendation {
     this.isLab = false,
     this.isGed = false,
     this.isElective = false,
+    this.isChoiceOption = false,
+    this.trackName,
+    this.optionCodes = const [],
+    this.choiceDetails = const [],
   });
 
   CourseRecommendation copyWith({
@@ -58,6 +66,10 @@ class CourseRecommendation {
     bool? isLab,
     bool? isGed,
     bool? isElective,
+    bool? isChoiceOption,
+    String? trackName,
+    List<String>? optionCodes,
+    List<ChoiceOptionDetail>? choiceDetails,
   }) {
     return CourseRecommendation(
       course: course ?? this.course,
@@ -72,8 +84,28 @@ class CourseRecommendation {
       isLab: isLab ?? this.isLab,
       isGed: isGed ?? this.isGed,
       isElective: isElective ?? this.isElective,
+      isChoiceOption: isChoiceOption ?? this.isChoiceOption,
+      trackName: trackName ?? this.trackName,
+      optionCodes: optionCodes ?? this.optionCodes,
+      choiceDetails: choiceDetails ?? this.choiceDetails,
     );
   }
+}
+
+class ChoiceOptionDetail {
+  final String code;
+  final String title;
+  final String examDay;
+  final String examSlot;
+  final double credit;
+
+  const ChoiceOptionDetail({
+    required this.code,
+    required this.title,
+    this.examDay = 'N/A',
+    this.examSlot = 'N/A',
+    this.credit = 3.0,
+  });
 }
 
 class CourseConflictWarning {
