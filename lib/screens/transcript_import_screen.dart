@@ -140,7 +140,12 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                 title: 'Academic Records',
                 subtitle: semesters.isEmpty
                     ? 'No recorded trimesters yet'
-                    : '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed',
+                    : () {
+                        final ongoingCredits = semesters.fold(0.0, (sum, s) => sum + s.courses.where((c) => c.isOngoing).fold(0.0, (ss, c) => ss + c.credit));
+                        return ongoingCredits > 0
+                            ? '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Completed (${ongoingCredits.toStringAsFixed(1)} Cr Enrolled)'
+                            : '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed';
+                      }(),
                 trailing: IconButton(
                   tooltip: 'Academic Guidelines & Policy',
                   onPressed: () => _showAcademicGuidelinesModal(context, isDark, surface, borderClr, textPri, textSec),
@@ -372,7 +377,9 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                               Expanded(
                                 child: _buildLiveMetricPill(
                                   label: 'Latest GPA',
-                                  value: semesters.first.sgpa.toStringAsFixed(2),
+                                  value: semesters.any((s) => s.hasGradedCourses)
+                                      ? semesters.firstWhere((s) => s.hasGradedCourses).sgpa.toStringAsFixed(2)
+                                      : '--',
                                   suffix: '',
                                   valColor: const Color(0xFF8B5CF6),
                                   textSec: textSec,

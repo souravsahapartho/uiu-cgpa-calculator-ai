@@ -5,9 +5,7 @@ import '../models/uiu_notice.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
-import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import 'subtle_background.dart';
 
 class UIUNoticeModal extends StatefulWidget {
   const UIUNoticeModal({super.key});

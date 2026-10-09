@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/course.dart';
 import '../models/ai_recommendation.dart';
+import '../core/constants/uiu_grading_scale.dart';
+import '../core/providers/user_profile_provider.dart';
 import '../core/services/academic_advisor_engine.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -90,15 +92,40 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                     ? 'Strong Academic Standing'
                     : 'Target Improvement Track';
 
-    // Identify retake candidate courses from transcript (grades with GP < 2.67 or C/D/F)
-    final candidateRetakes = <Course>[];
+    // Identify ongoing course keys across all semesters
+    final ongoingCourseKeys = <String>{};
     for (final sem in provider.semesters) {
       for (final course in sem.courses) {
-        final gp = course.gradePoint ?? 0.0;
-        final grade = (course.grade ?? '').toUpperCase().trim();
-        if (grade != 'W' && (gp < 2.67 || grade == 'F' || grade == 'D' || grade == 'D+' || grade == 'C-')) {
-          candidateRetakes.add(course);
+        if (course.isOngoing || sem.isOngoing) {
+          ongoingCourseKeys.add(UserProfileProvider.getCourseKey(course));
         }
+      }
+    }
+
+    // Identify retake candidate courses from transcript (excluding ongoing courses, tracking best attempt)
+    final latestBestAttempts = <String, Course>{};
+    for (final sem in provider.semesters) {
+      for (final course in sem.courses) {
+        if (course.isOngoing || sem.isOngoing) continue;
+        final key = UserProfileProvider.getCourseKey(course);
+        final gp = course.gradePoint ?? (course.grade != null ? UIUGradingScale.getGradePoint(course.grade!) : 0.0);
+        if (!latestBestAttempts.containsKey(key) || gp > (latestBestAttempts[key]!.gradePoint ?? 0.0)) {
+          latestBestAttempts[key] = course;
+        }
+      }
+    }
+
+    final candidateRetakes = <Course>[];
+    for (final entry in latestBestAttempts.entries) {
+      final key = entry.key;
+      final course = entry.value;
+      // Skip if course is currently enrolled in ongoing trimester
+      if (ongoingCourseKeys.contains(key)) continue;
+
+      final gp = course.gradePoint ?? (course.grade != null ? UIUGradingScale.getGradePoint(course.grade!) : 0.0);
+      final grade = (course.grade ?? '').toUpperCase().trim();
+      if (grade.isNotEmpty && grade != 'W' && (gp < 2.67 || grade == 'F' || grade == 'D' || grade == 'D+' || grade == 'C-')) {
+        candidateRetakes.add(course);
       }
     }
 

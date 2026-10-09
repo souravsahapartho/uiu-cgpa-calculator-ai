@@ -119,6 +119,8 @@ class AcademicAdvisorEngine {
   }) {
     // 1. Gather all completed course codes & their best grade point
     final completedCourseMap = <String, double>{};
+    final ongoingCourseCodes = <String>{};
+    double ongoingCredits = 0.0;
     final gradesByDomain = <String, List<double>>{
       'Programming & CS': [],
       'Mathematics': [],
@@ -136,11 +138,19 @@ class AcademicAdvisorEngine {
     for (final sem in semesters) {
       for (final course in sem.courses) {
         if (course.credit <= 0) continue;
+        final key = _normalizeCode(course.code);
+
+        // Track ongoing / in-progress courses
+        if (course.isOngoing || sem.isOngoing) {
+          ongoingCourseCodes.add(key);
+          ongoingCredits += course.credit;
+          continue; // Ongoing courses must not be recorded as failed or finished with 0 GP!
+        }
+
         final grade = (course.grade ?? '').trim().toUpperCase();
-        if (grade == 'W') continue; // Withdraw excluded
+        if (grade == 'W' || grade.isEmpty) continue; // Withdraw excluded
 
         final gp = course.gradePoint ?? 0.0;
-        final key = _normalizeCode(course.code);
 
         if (!completedCourseMap.containsKey(key) || gp > completedCourseMap[key]!) {
           completedCourseMap[key] = gp;
@@ -191,11 +201,14 @@ class AcademicAdvisorEngine {
       projectedPace = ((totalTargetPoints - currentPoints) / remainingCredits).clamp(2.0, 4.0);
     }
 
-    // 2. Identify potential retakes (courses taken with gp < 2.50 or F)
+    // 2. Identify potential retakes (courses taken with gp < 2.50 or F, excluding ongoing courses)
     final retakeRecommendations = <CourseRecommendation>[];
     int rank = 1;
 
     completedCourseMap.forEach((code, gp) {
+      // Exclude courses that student is currently taking in ongoing trimester
+      if (ongoingCourseCodes.contains(code)) return;
+
       if (gp < 2.50) {
         // find details
         UIUCurriculumCourse? match;
@@ -229,6 +242,12 @@ class AcademicAdvisorEngine {
 
     for (final c in uiuCurriculum) {
       final codeNorm = _normalizeCode(c.code);
+
+      // EXCLUDE courses already enrolled in ongoing trimester!
+      if (ongoingCourseCodes.contains(codeNorm)) {
+        continue;
+      }
+
       // Skip if already passed with gp >= 2.50
       if (completedCourseMap.containsKey(codeNorm) && completedCourseMap[codeNorm]! >= 2.50) {
         continue;
@@ -238,10 +257,12 @@ class AcademicAdvisorEngine {
       if (c.prerequisite == 'X') {
         prereqMet = true;
       } else if (c.prerequisite == 'CREDITS_85') {
-        prereqMet = realCompletedCredits >= 85.0;
+        prereqMet = (realCompletedCredits + ongoingCredits) >= 85.0;
       } else {
         final reqs = c.prerequisite.split(',').map((s) => _normalizeCode(s.trim())).toList();
-        prereqMet = reqs.every((r) => completedCourseMap.containsKey(r) && completedCourseMap[r]! > 0.0);
+        prereqMet = reqs.every((r) =>
+            (completedCourseMap.containsKey(r) && completedCourseMap[r]! > 0.0) ||
+            ongoingCourseCodes.contains(r));
       }
 
       if (prereqMet) {
@@ -311,10 +332,18 @@ class AcademicAdvisorEngine {
       }
     }
 
-    // If still empty (e.g. fresh 1st trimester student), give trimester 1 defaults
+    // If still empty (e.g. fresh 1st trimester student), give next curriculum defaults (excluding ongoing courses)
     if (recommended.isEmpty) {
-      final t1 = uiuCurriculum.where((c) => c.trimester == 1).toList();
-      for (final c in t1) {
+      final eligibleFallbacks = uiuCurriculum
+          .where((c) => !ongoingCourseCodes.contains(_normalizeCode(c.code)) && !completedCourseMap.containsKey(_normalizeCode(c.code)))
+          .toList();
+      eligibleFallbacks.sort((a, b) => a.trimester.compareTo(b.trimester));
+
+      for (final c in eligibleFallbacks) {
+        if (currentAccumulatedCredits + c.credit > maxCreditCap) continue;
+        if (currentAccumulatedCredits >= (maxCreditCap - 2.0) && currentAccumulatedCredits >= 11.0) break;
+        if (c.isLab && labCredits >= 2.0) continue;
+
         recommended.add(CourseRecommendation(
           course: Course(
             code: c.code,
@@ -325,7 +354,7 @@ class AcademicAdvisorEngine {
           ),
           priorityRank: rank++,
           reason: 'UIU Foundation Curriculum Course. Essential stepping stone for your academic career.',
-          unlockRationale: 'Direct entry course without prerequisite requirements.',
+          unlockRationale: 'Curriculum pathway progression course.',
         ));
         currentAccumulatedCredits += c.credit;
         if (c.isLab) {

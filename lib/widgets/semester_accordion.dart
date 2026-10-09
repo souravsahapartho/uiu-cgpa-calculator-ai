@@ -182,7 +182,7 @@ class _SemesterAccordionState extends State<SemesterAccordion> with SingleTicker
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    '${widget.semester.creditsEarned.toStringAsFixed(1)} Cr',
+                                    '${widget.semester.displayCredits.toStringAsFixed(1)} Cr',
                                     style: TextStyle(
                                       color: textSec,
                                       fontWeight: FontWeight.w700,
@@ -302,11 +302,28 @@ class _SemesterAccordionState extends State<SemesterAccordion> with SingleTicker
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _metricItem('TERM SGPA', widget.semester.gpa.toStringAsFixed(2), gpaColor, textSec),
+                        _metricItem(
+                          widget.semester.isOngoing ? 'TERM STATUS' : 'TERM SGPA',
+                          widget.semester.isOngoing ? 'Ongoing' : widget.semester.gpa.toStringAsFixed(2),
+                          widget.semester.isOngoing ? AppColors.accent : gpaColor,
+                          textSec,
+                        ),
                         Container(width: 1, height: 22, color: borderColor),
-                        _metricItem('CUMULATIVE CGPA', widget.semester.cgpa.toStringAsFixed(2), textPri, textSec),
+                        _metricItem(
+                          'CUMULATIVE CGPA',
+                          widget.semester.isOngoing
+                              ? (widget.semester.cgpa > 0 ? widget.semester.cgpa.toStringAsFixed(2) : '--')
+                              : widget.semester.cgpa.toStringAsFixed(2),
+                          textPri,
+                          textSec,
+                        ),
                         Container(width: 1, height: 22, color: borderColor),
-                        _metricItem('CREDITS', '${widget.semester.creditsEarned.toStringAsFixed(1)} Cr', textPri, textSec),
+                        _metricItem(
+                          widget.semester.isOngoing ? 'ENROLLED CR' : 'CREDITS',
+                          '${widget.semester.displayCredits.toStringAsFixed(1)} Cr',
+                          textPri,
+                          textSec,
+                        ),
                       ],
                     ),
                   ),

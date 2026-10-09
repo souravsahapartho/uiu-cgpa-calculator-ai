@@ -26,9 +26,15 @@ class SemesterTranscript {
 
   int get aGradeCount => courses.where((c) => c.grade == 'A' || c.grade == 'A-').length;
 
+  /// Total credit count of all courses in this trimester (enrolled or completed).
+  double get totalEnrolledCredits => courses.fold(0.0, (sum, c) => sum + c.credit);
+
+  /// Dynamic display credits: returns creditsEarned if > 0, otherwise total enrolled credits.
+  double get displayCredits => creditsEarned > 0 ? creditsEarned : totalEnrolledCredits;
+
   bool get hasGradedCourses => courses.any((c) => !c.isOngoing && c.grade != null && c.grade!.isNotEmpty && c.grade != 'W');
 
-  bool get isOngoing => courses.isNotEmpty && courses.every((c) => c.isOngoing);
+  bool get isOngoing => courses.isNotEmpty && !hasGradedCourses;
 
   Map<String, dynamic> toJson() {
     return {

@@ -331,8 +331,9 @@ class UserProfileProvider extends ChangeNotifier {
       }
       final progressiveCGPA = progCredits > 0 ? (progPoints / progCredits) : 0.0;
 
+      final totalSemCredits = sem.courses.fold(0.0, (s, c) => s + c.credit);
       updatedSemesters.add(sem.copyWith(
-        creditsEarned: termEarned,
+        creditsEarned: termEarned > 0 ? termEarned : (sem.isOngoing ? totalSemCredits : 0.0),
         sgpa: double.parse(termGPA.toStringAsFixed(2)),
         cgpa: double.parse(progressiveCGPA.toStringAsFixed(2)),
       ));
