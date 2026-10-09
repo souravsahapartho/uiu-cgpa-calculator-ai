@@ -177,40 +177,14 @@ class WorkloadIndicator extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'UIU Cap: ${maxAllowedCap.toInt()}.0 Cr (${getUIUCapTier(cgpa ?? 3.50)})',
+                'UIU Cap: ${maxAllowedCap.toInt()}.0 Cr',
                 style: AppTypography.bodySmall.copyWith(
-                  color: textSec.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10.5,
+                  color: textSec.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 10),
-          // Credit Capacity Rule Breakdown Banner
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: workloadColor.withValues(alpha: isDark ? 0.12 : 0.06),
-              borderRadius: AppRadius.borderSm,
-              border: Border.all(color: workloadColor.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline_rounded, size: 13, color: workloadColor),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    'UIU Credit Limits: 3.00-4.00 (16 Cr) • 2.50-3.00 (14 Cr) • 2.00-2.49 (12 Cr) • <2.00 (10 Cr)',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: textSec,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

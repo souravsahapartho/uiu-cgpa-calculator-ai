@@ -148,39 +148,44 @@ class _CourseCardState extends State<CourseCard> {
                   ],
                 ),
               ),
-              const SizedBox(width: AppSpacing.s8),
-              // Letter Grade Chip or Ongoing Badge
+              const SizedBox(width: 8),
+              // Letter Grade Chip or Ongoing Badge (Compact & Responsive)
               if (widget.course.isOngoing)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: isDark ? 0.2 : 0.12),
-                    borderRadius: AppRadius.borderMd,
-                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.4), width: 1),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.timelapse_rounded, size: 14, color: AppColors.accent),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Ongoing',
-                        style: AppTypography.titleSmall.copyWith(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12,
-                        ),
-                      ),
-                      if (widget.onTap != null) ...[
-                        const SizedBox(width: 4),
-                        Icon(Icons.edit_outlined, size: 13, color: AppColors.accent.withValues(alpha: 0.7)),
+                Tooltip(
+                  message: 'Ongoing Course (Running Trimester)',
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: isDark ? 0.2 : 0.12),
+                      borderRadius: AppRadius.borderMd,
+                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.4), width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.timelapse_rounded, size: 14, color: AppColors.accent),
+                        if (MediaQuery.of(context).size.width > 350) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            'Ongoing',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 10.5,
+                            ),
+                          ),
+                        ],
+                        if (widget.onTap != null) ...[
+                          const SizedBox(width: 3),
+                          Icon(Icons.edit_outlined, size: 12, color: AppColors.accent.withValues(alpha: 0.7)),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 )
               else if (widget.course.grade != null && widget.course.grade!.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                   decoration: BoxDecoration(
                     color: gradeColor.withValues(alpha: 0.1),
                     borderRadius: AppRadius.borderMd,
@@ -191,15 +196,15 @@ class _CourseCardState extends State<CourseCard> {
                     children: [
                       Text(
                         widget.course.grade!,
-                        style: AppTypography.titleLarge.copyWith(
+                        style: AppTypography.titleMedium.copyWith(
                           color: gradeColor,
                           fontWeight: FontWeight.w900,
-                          fontSize: 15,
+                          fontSize: 14,
                         ),
                       ),
                       if (widget.onTap != null) ...[
-                        const SizedBox(width: 4),
-                        Icon(Icons.edit_outlined, size: 13, color: gradeColor.withValues(alpha: 0.7)),
+                        const SizedBox(width: 3),
+                        Icon(Icons.edit_outlined, size: 12, color: gradeColor.withValues(alpha: 0.7)),
                       ],
                     ],
                   ),
