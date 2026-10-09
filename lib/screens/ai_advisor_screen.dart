@@ -1418,17 +1418,19 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
     final widgets = <Widget>[];
 
     for (final line in lines) {
+      final isIndented = line.startsWith('  ') || line.startsWith('\t');
       final trimmed = line.trim();
       if (trimmed.isEmpty) {
         widgets.add(const SizedBox(height: 6));
         continue;
       }
 
-      final isBullet = trimmed.startsWith('•') || trimmed.startsWith('-');
-      final contentText = isBullet ? trimmed.substring(1).trim() : trimmed;
+      final isBullet = trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*');
+      var contentText = isBullet ? trimmed.substring(1).trim() : trimmed;
 
+      // Match ***bold italic***, **bold**, *italic*, or _italic_
       final spans = <InlineSpan>[];
-      final regex = RegExp(r'\*\*(.*?)\*\*');
+      final regex = RegExp(r'(\*\*\*(.*?)\*\*\*|\*\*(.*?)\*\*|\*(.*?)\*|_(.*?)_)');
       int lastMatchEnd = 0;
 
       for (final match in regex.allMatches(contentText)) {
@@ -1437,21 +1439,50 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
             text: contentText.substring(lastMatchEnd, match.start),
             style: TextStyle(
               color: textPri,
-              fontSize: 11.5,
+              fontSize: isIndented ? 11.2 : 11.5,
               height: 1.45,
               fontWeight: FontWeight.w400,
             ),
           ));
         }
-        spans.add(TextSpan(
-          text: match.group(1),
-          style: TextStyle(
-            color: textPri,
-            fontSize: 11.5,
-            height: 1.45,
-            fontWeight: FontWeight.w800,
-          ),
-        ));
+
+        final boldItalic = match.group(2);
+        final bold = match.group(3);
+        final italic = match.group(4) ?? match.group(5);
+
+        if (boldItalic != null) {
+          spans.add(TextSpan(
+            text: boldItalic,
+            style: TextStyle(
+              color: textPri,
+              fontSize: isIndented ? 11.2 : 11.5,
+              height: 1.45,
+              fontWeight: FontWeight.w800,
+              fontStyle: FontStyle.italic,
+            ),
+          ));
+        } else if (bold != null) {
+          spans.add(TextSpan(
+            text: bold,
+            style: TextStyle(
+              color: textPri,
+              fontSize: isIndented ? 11.2 : 11.5,
+              height: 1.45,
+              fontWeight: FontWeight.w800,
+            ),
+          ));
+        } else if (italic != null) {
+          spans.add(TextSpan(
+            text: italic,
+            style: TextStyle(
+              color: textPri,
+              fontSize: isIndented ? 11.2 : 11.5,
+              height: 1.45,
+              fontWeight: FontWeight.w700,
+              fontStyle: FontStyle.italic,
+            ),
+          ));
+        }
         lastMatchEnd = match.end;
       }
 
@@ -1460,7 +1491,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
           text: contentText.substring(lastMatchEnd),
           style: TextStyle(
             color: textPri,
-            fontSize: 11.5,
+            fontSize: isIndented ? 11.2 : 11.5,
             height: 1.45,
             fontWeight: FontWeight.w400,
           ),
@@ -1470,16 +1501,21 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
       if (isBullet) {
         widgets.add(
           Padding(
-            padding: const EdgeInsets.only(bottom: 5),
+            padding: EdgeInsets.only(
+              left: isIndented ? 16.0 : 0.0,
+              bottom: 4.5,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  margin: const EdgeInsets.only(top: 5.5, right: 6),
-                  width: 5,
-                  height: 5,
+                  margin: EdgeInsets.only(top: isIndented ? 6.0 : 5.5, right: 6),
+                  width: isIndented ? 4 : 5,
+                  height: isIndented ? 4 : 5,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: isIndented
+                        ? AppColors.primary.withValues(alpha: 0.65)
+                        : AppColors.primary,
                     borderRadius: AppRadius.borderFull,
                   ),
                 ),
@@ -1495,7 +1531,10 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
       } else {
         widgets.add(
           Padding(
-            padding: const EdgeInsets.only(bottom: 5),
+            padding: EdgeInsets.only(
+              left: isIndented ? 16.0 : 0.0,
+              bottom: 4.5,
+            ),
             child: RichText(
               text: TextSpan(children: spans),
             ),
@@ -1664,12 +1703,12 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
         summary: 'Minimum 9 completed credits in trimester + SGPA ≥ 3.50 with no incomplete or F grades.',
         detailedAnswer:
             'Official UIU Academic Distinction & Honor requirements:\n\n'
-            '• **Dean\'s List Eligibility**: Requires completing at least 9 or more regular credits in the trimester with an SGPA of **3.50 or higher** with no grade below B- and no Incomplete (I) or Fail (F).\n'
+            '• **Dean\'s List Eligibility**: Requires completing at least 9 regular credits in the trimester with an SGPA of **3.50 or higher**, with no grade below B- and no Incomplete (I) or Fail (F).\n'
             '• **Academic Distinction at Convocation**:\n'
-            '   - *Summa Cum Laude*: CGPA 3.90 – 4.00\n'
-            '   - *Magna Cum Laude*: CGPA 3.80 – 3.89\n'
-            '   - *Cum Laude*: CGPA 3.65 – 3.79\n'
-            '• **Tuition Fee Waivers**: UIU awards merit waivers (25% to 100%) to top performers based on trimester SGPA provided the minimum registered credit threshold (usually 9–12 credits) is maintained without retakes in that session.',
+            '  - **Summa Cum Laude** (Highest Distinction): CGPA **3.90 – 4.00**\n'
+            '  - **Magna Cum Laude** (High Distinction): CGPA **3.80 – 3.89**\n'
+            '  - **Cum Laude** (Distinction): CGPA **3.65 – 3.79**\n'
+            '• **Trimester Merit Scholarships / Tuition Waivers**: UIU awards performance waivers to the top 10% students each trimester (Top 2% get 100%, next 4% get 50%, next 4% get 25%) with minimum 3.50 SGPA, regular credits, and zero retakes.',
         surface: surface,
         borderClr: borderClr,
         textPri: textPri,
