@@ -61,6 +61,11 @@ class Course {
     );
   }
 
+  bool get isOngoing {
+    final g = (grade ?? '').trim().toUpperCase();
+    return g.isEmpty || g == 'ONGOING' || g == 'IN PROGRESS' || g == 'ENROLLED';
+  }
+
   bool get isLab =>
       category == CourseCategory.lab ||
       credit <= 1.5 ||

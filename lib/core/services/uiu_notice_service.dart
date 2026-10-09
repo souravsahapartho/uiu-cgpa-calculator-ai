@@ -12,7 +12,10 @@ class UIUNoticeService extends ChangeNotifier {
 
   static const String _noticesCacheKey = 'uiu_cached_notices_v1';
   static const String _readIdsKey = 'uiu_read_notice_ids_v1';
-  static const String _rssFeedUrl = 'https://www.uiu.ac.bd/notice/feed/';
+  static const List<String> _rssFeedUrls = [
+    'https://www.uiu.ac.bd/notice/feed/',
+    'https://www.uiu.ac.bd/feed/?post_type=notice',
+  ];
 
   List<UIUNotice> _notices = [];
   Set<String> _readNoticeIds = {};
@@ -63,13 +66,29 @@ class UIUNoticeService extends ChangeNotifier {
 
     try {
       final client = HttpClient();
-      client.connectionTimeout = const Duration(seconds: 8);
-      final request = await client.getUrl(Uri.parse(_rssFeedUrl));
-      request.headers.set('User-Agent', 'Mozilla/5.0 (UIU-Grade-Calculator-AI/1.0)');
-      final response = await request.close();
+      client.connectionTimeout = const Duration(seconds: 10);
+      client.badCertificateCallback = (cert, host, port) => true;
 
-      if (response.statusCode == 200) {
-        final xmlContent = await response.transform(utf8.decoder).join();
+      String? xmlContent;
+      for (final url in _rssFeedUrls) {
+        try {
+          final request = await client.getUrl(Uri.parse(url));
+          request.headers.set('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 UIU-CGPA-Calculator/1.0');
+          request.headers.set('Accept', 'application/rss+xml, application/xml, text/xml, */*');
+          final response = await request.close().timeout(const Duration(seconds: 6));
+
+          if (response.statusCode == 200) {
+            xmlContent = await response.transform(utf8.decoder).join();
+            if (xmlContent.contains('<item>')) {
+              break;
+            }
+          }
+        } catch (e) {
+          debugPrint('Error with feed URL $url: $e');
+        }
+      }
+
+      if (xmlContent != null && xmlContent.isNotEmpty) {
         final parsed = _parseRssFeed(xmlContent);
 
         if (parsed.isNotEmpty) {
@@ -87,12 +106,14 @@ class UIUNoticeService extends ChangeNotifier {
             jsonEncode(_notices.map((n) => n.toJson()).toList()),
           );
         }
-      } else {
-        _errorMessage = 'Server response: ${response.statusCode}';
+      } else if (_notices.isEmpty) {
+        _errorMessage = 'Could not fetch latest notices. Showing offline records.';
       }
     } catch (e) {
       debugPrint('Error fetching UIU notices: $e');
-      _errorMessage = 'Could not fetch latest notices. Showing offline records.';
+      if (_notices.isEmpty) {
+        _errorMessage = 'Could not fetch latest notices. Showing offline records.';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

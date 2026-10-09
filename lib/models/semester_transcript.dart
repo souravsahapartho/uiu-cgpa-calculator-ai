@@ -1,4 +1,4 @@
-﻿import 'course.dart';
+import 'course.dart';
 
 class SemesterTranscript {
   final String semesterName;
@@ -25,6 +25,10 @@ class SemesterTranscript {
   int get courseCount => courses.length;
 
   int get aGradeCount => courses.where((c) => c.grade == 'A' || c.grade == 'A-').length;
+
+  bool get hasGradedCourses => courses.any((c) => !c.isOngoing && c.grade != null && c.grade!.isNotEmpty && c.grade != 'W');
+
+  bool get isOngoing => courses.isNotEmpty && courses.every((c) => c.isOngoing);
 
   Map<String, dynamic> toJson() {
     return {

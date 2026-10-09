@@ -666,6 +666,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s4, AppSpacing.s16, 40),
                   child: WorkloadIndicator(
+                    cgpa: displayCGPA,
                     theoryCredits: theoryCredits > 0 ? theoryCredits : 8.0,
                     labCredits: labCredits > 0 ? labCredits : 2.0,
                     totalCredits: report.suggestedCreditLoad > 0 ? report.suggestedCreditLoad : (theoryCredits + labCredits),

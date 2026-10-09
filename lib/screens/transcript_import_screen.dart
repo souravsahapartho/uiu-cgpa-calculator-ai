@@ -1729,23 +1729,38 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           ),
-                          items: UIUGradingScale.scale.map((g) {
-                            return DropdownMenuItem(
-                              value: g.letterGrade,
+                          items: [
+                            const DropdownMenuItem(
+                              value: 'ONGOING',
                               child: Row(
                                 children: [
-                                  Container(
-                                    width: 10,
-                                    height: 10,
-                                    decoration: BoxDecoration(color: g.color, shape: BoxShape.circle),
+                                  Icon(Icons.timelapse_rounded, size: 14, color: AppColors.accent),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Ongoing (Running)',
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.accent),
                                   ),
-                                  const SizedBox(width: 6),
-                                  Text('${g.letterGrade} (${g.gradePoint.toStringAsFixed(2)})',
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: g.color)),
                                 ],
                               ),
-                            );
-                          }).toList(),
+                            ),
+                            ...UIUGradingScale.scale.map((g) {
+                              return DropdownMenuItem(
+                                value: g.letterGrade,
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(color: g.color, shape: BoxShape.circle),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text('${g.letterGrade} (${g.gradePoint.toStringAsFixed(2)})',
+                                        style: TextStyle(fontWeight: FontWeight.bold, color: g.color)),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
                           onChanged: (val) {
                             if (val != null) {
                               setDialogState(() => selectedGrade = val);
@@ -1834,12 +1849,13 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                         }
                         final code = rawCode.toUpperCase();
                         final title = titleController.text.trim().isEmpty ? code : titleController.text.trim();
+                        final isOngoing = selectedGrade == 'ONGOING';
                         final newCourse = Course(
                           code: code,
                           title: title,
                           credit: selectedCredit,
-                          grade: selectedGrade,
-                          gradePoint: UIUGradingScale.getGradePoint(selectedGrade),
+                          grade: isOngoing ? null : selectedGrade,
+                          gradePoint: isOngoing ? null : UIUGradingScale.getGradePoint(selectedGrade),
                         );
 
                         final provider = ProfileProviderScope.of(context);
@@ -1923,7 +1939,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     final codeController = TextEditingController(text: course.code);
     final titleController = TextEditingController(text: course.title);
     double selectedCredit = course.credit;
-    String selectedGrade = course.grade ?? 'A';
+    String selectedGrade = course.isOngoing ? 'ONGOING' : (course.grade ?? 'A');
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? AppColors.darkSurface : AppColors.surface;
@@ -2084,23 +2100,38 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           ),
-                          items: UIUGradingScale.scale.map((g) {
-                            return DropdownMenuItem(
-                              value: g.letterGrade,
+                          items: [
+                            const DropdownMenuItem(
+                              value: 'ONGOING',
                               child: Row(
                                 children: [
-                                  Container(
-                                    width: 10,
-                                    height: 10,
-                                    decoration: BoxDecoration(color: g.color, shape: BoxShape.circle),
+                                  Icon(Icons.timelapse_rounded, size: 14, color: AppColors.accent),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Ongoing (Running)',
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.accent),
                                   ),
-                                  const SizedBox(width: 6),
-                                  Text('${g.letterGrade} (${g.gradePoint.toStringAsFixed(2)})',
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: g.color)),
                                 ],
                               ),
-                            );
-                          }).toList(),
+                            ),
+                            ...UIUGradingScale.scale.map((g) {
+                              return DropdownMenuItem(
+                                value: g.letterGrade,
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(color: g.color, shape: BoxShape.circle),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text('${g.letterGrade} (${g.gradePoint.toStringAsFixed(2)})',
+                                        style: TextStyle(fontWeight: FontWeight.bold, color: g.color)),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
                           onChanged: (val) {
                             if (val != null) {
                               setDialogState(() => selectedGrade = val);
@@ -2187,12 +2218,13 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                         }
                         final code = rawCode.toUpperCase();
                         final title = titleController.text.trim().isEmpty ? code : titleController.text.trim();
+                        final isOngoing = selectedGrade == 'ONGOING';
                         final updatedCourse = Course(
                           code: code,
                           title: title,
                           credit: selectedCredit,
-                          grade: selectedGrade,
-                          gradePoint: UIUGradingScale.getGradePoint(selectedGrade),
+                          grade: isOngoing ? null : selectedGrade,
+                          gradePoint: isOngoing ? null : UIUGradingScale.getGradePoint(selectedGrade),
                         );
 
                         final provider = ProfileProviderScope.of(context);

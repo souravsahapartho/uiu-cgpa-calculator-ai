@@ -197,48 +197,74 @@ class _SemesterAccordionState extends State<SemesterAccordion> with SingleTicker
                       ),
                       const SizedBox(width: 8),
 
-                      // GPA & CGPA Column Badges
+                      // GPA & CGPA Column Badges or Ongoing Badge
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: gpaColor.withValues(alpha: isDark ? 0.2 : 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: gpaColor.withValues(alpha: 0.35), width: 1),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'GPA ',
-                                  style: TextStyle(
-                                    color: gpaColor.withValues(alpha: 0.8),
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 9.5,
+                          if (widget.semester.isOngoing)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.accent.withValues(alpha: isDark ? 0.25 : 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.accent.withValues(alpha: 0.45), width: 1),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.timelapse_rounded, size: 12, color: AppColors.accent),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Ongoing',
+                                    style: TextStyle(
+                                      color: AppColors.accent,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 11,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  widget.semester.gpa.toStringAsFixed(2),
-                                  style: TextStyle(
-                                    color: gpaColor,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 13,
+                                ],
+                              ),
+                            )
+                          else ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: gpaColor.withValues(alpha: isDark ? 0.2 : 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: gpaColor.withValues(alpha: 0.35), width: 1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'GPA ',
+                                    style: TextStyle(
+                                      color: gpaColor.withValues(alpha: 0.8),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 9.5,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  Text(
+                                    widget.semester.gpa.toStringAsFixed(2),
+                                    style: TextStyle(
+                                      color: gpaColor,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'CGPA ${widget.semester.cgpa.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              color: textSec,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
+                            const SizedBox(height: 3),
+                            Text(
+                              'CGPA ${widget.semester.cgpa.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: textSec,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
 

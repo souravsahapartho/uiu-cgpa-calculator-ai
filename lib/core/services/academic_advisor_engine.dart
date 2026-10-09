@@ -252,7 +252,12 @@ class AcademicAdvisorEngine {
     // Sort eligible courses: lowest trimester first, labs paired with theory
     eligibleCourses.sort((a, b) => a.trimester.compareTo(b.trimester));
 
-    // 4. Select balanced set of courses (around 10.0 - 12.0 credits, maximum 1-2 labs)
+    // 4. Select balanced set of courses adhering to UIU Credit Capacity policy
+    // (3.00-4.00: 16 Cr, 2.50-3.00: 14 Cr, 2.00-2.49: 12 Cr, <2.00: 10 Cr)
+    final double maxCreditCap = realCGPA >= 3.00
+        ? 16.0
+        : (realCGPA >= 2.50 ? 14.0 : (realCGPA >= 2.00 ? 12.0 : 10.0));
+
     final recommended = <CourseRecommendation>[...retakeRecommendations];
     double currentAccumulatedCredits = recommended.fold(0.0, (sum, r) => sum + r.course.credit);
     double theoryCredits = recommended.where((r) => !r.course.isLab).fold(0.0, (sum, r) => sum + r.course.credit);
@@ -262,7 +267,8 @@ class AcademicAdvisorEngine {
     final selectedSlots = <String, String>{}; // "Day 1" -> "T1"
 
     for (final c in eligibleCourses) {
-      if (currentAccumulatedCredits >= 11.0) break;
+      if (currentAccumulatedCredits + c.credit > maxCreditCap) continue;
+      if (currentAccumulatedCredits >= (maxCreditCap - 2.0) && currentAccumulatedCredits >= 11.0) break;
       if (c.isLab && labCredits >= 2.0) continue;
       if (recommended.any((r) => _normalizeCode(r.course.code) == _normalizeCode(c.code))) continue;
 

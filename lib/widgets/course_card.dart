@@ -149,8 +149,36 @@ class _CourseCardState extends State<CourseCard> {
                 ),
               ),
               const SizedBox(width: AppSpacing.s8),
-              // Letter Grade Chip
-              if (widget.course.grade != null)
+              // Letter Grade Chip or Ongoing Badge
+              if (widget.course.isOngoing)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: isDark ? 0.2 : 0.12),
+                    borderRadius: AppRadius.borderMd,
+                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.4), width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.timelapse_rounded, size: 14, color: AppColors.accent),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Ongoing',
+                        style: AppTypography.titleSmall.copyWith(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                        ),
+                      ),
+                      if (widget.onTap != null) ...[
+                        const SizedBox(width: 4),
+                        Icon(Icons.edit_outlined, size: 13, color: AppColors.accent.withValues(alpha: 0.7)),
+                      ],
+                    ],
+                  ),
+                )
+              else if (widget.course.grade != null && widget.course.grade!.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(

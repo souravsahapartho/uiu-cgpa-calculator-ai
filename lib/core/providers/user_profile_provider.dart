@@ -300,6 +300,7 @@ class UserProfileProvider extends ChangeNotifier {
 
       for (final course in sem.courses) {
         final grade = course.grade?.trim().toUpperCase() ?? '';
+        if (course.isOngoing) continue; // Ongoing course: do not calculate GPA or earned credits yet
         if (UIUGradingScale.isWithdrawn(grade)) continue; // 'W' completely excluded
         final gp = UIUGradingScale.isIncomplete(grade)
             ? 0.0 // 'I' counts as Fail (0.00 gp)
@@ -372,6 +373,7 @@ class UserProfileProvider extends ChangeNotifier {
     for (final sem in _semesters) {
       for (final course in sem.courses) {
         if (course.credit <= 0) continue;
+        if (course.isOngoing) continue; // Exclude ongoing courses from cumulative metrics
         final grade = course.grade?.trim().toUpperCase() ?? '';
         if (UIUGradingScale.isWithdrawn(grade)) continue; // 'W' completely excluded
         final key = getCourseKey(course);
@@ -622,6 +624,12 @@ class UserProfileProvider extends ChangeNotifier {
       caseSensitive: false,
     );
 
+    final ongoingKeywordsRegex = RegExp(r'^(ongoing|in\s*progress|enrolled|current|running|n/a|-|--)$', caseSensitive: false);
+    final spaceOngoingRegex = RegExp(
+      r'([A-Za-z]{2,5}\s*\d{3,4})\s+(.+?)\s+([0-9.]+)\s*$',
+      caseSensitive: false,
+    );
+
     for (var rawLine in lines) {
       final line = rawLine.trim();
       if (line.isEmpty) continue;
@@ -648,7 +656,7 @@ class UserProfileProvider extends ChangeNotifier {
             .where((s) => s.isNotEmpty)
             .toList();
 
-        if (parts.length >= 3) {
+        if (parts.length >= 2) {
           String rowTerm = currentTerm;
 
           // Check if any column contains a trimester name
@@ -666,7 +674,7 @@ class UserProfileProvider extends ChangeNotifier {
             parts.removeAt(termColIdx);
           }
 
-          if (parts.length < 3) continue;
+          if (parts.length < 2) continue;
 
           // Skip header rows like "Course Code, Title, Credit, Grade"
           if (parts[0].toLowerCase().contains('code') || parts[0].toLowerCase().contains('course')) {
@@ -676,7 +684,7 @@ class UserProfileProvider extends ChangeNotifier {
           String code = '';
           String title = '';
           double cr = 3.0;
-          String gr = 'A';
+          String gr = '';
 
           int codeIdx = -1;
           int gradeIdx = -1;
@@ -686,7 +694,7 @@ class UserProfileProvider extends ChangeNotifier {
             final p = parts[i];
             if (codeIdx == -1 && codeRegex.hasMatch(p)) {
               codeIdx = i;
-            } else if (gradeIdx == -1 && gradeRegex.hasMatch(p)) {
+            } else if (gradeIdx == -1 && (gradeRegex.hasMatch(p) || ongoingKeywordsRegex.hasMatch(p))) {
               gradeIdx = i;
             } else if (creditIdx == -1) {
               final d = double.tryParse(p);
@@ -696,9 +704,12 @@ class UserProfileProvider extends ChangeNotifier {
             }
           }
 
-          if (codeIdx != -1 && gradeIdx != -1) {
+          if (codeIdx != -1) {
             code = parts[codeIdx].toUpperCase();
-            gr = parts[gradeIdx].toUpperCase();
+            if (gradeIdx != -1) {
+              final rawGr = parts[gradeIdx].toUpperCase();
+              gr = ongoingKeywordsRegex.hasMatch(rawGr) ? '' : rawGr;
+            }
             if (creditIdx != -1) {
               cr = double.tryParse(parts[creditIdx]) ?? 3.0;
             }
@@ -713,19 +724,23 @@ class UserProfileProvider extends ChangeNotifier {
             title = titleParts.isNotEmpty ? titleParts.join(' ') : code;
           } else {
             code = parts[0];
-            title = parts.length >= 4 ? parts[1] : code;
-            cr = double.tryParse(parts.length >= 4 ? parts[2] : parts[1]) ?? 3.0;
-            gr = (parts.length >= 4 ? parts[3] : parts[2]).toUpperCase();
+            title = parts.length >= 3 ? parts[1] : code;
+            cr = double.tryParse(parts.length >= 3 ? parts[2] : parts[1]) ?? 3.0;
+            gr = parts.length >= 4 ? parts[3].toUpperCase() : '';
+            if (ongoingKeywordsRegex.hasMatch(gr)) gr = '';
           }
 
-          final gp = UIUGradingScale.getGradePoint(gr);
-          if (code.isNotEmpty && (UIUGradingScale.isValidGrade(gr) || gr == 'F' || gr == 'W' || gr == 'I')) {
+          final isGradeValid = UIUGradingScale.isValidGrade(gr) || gr == 'F' || gr == 'W' || gr == 'I';
+          final isOngoingCourse = gr.isEmpty;
+
+          if (code.isNotEmpty && (isGradeValid || isOngoingCourse)) {
+            final double? gp = isOngoingCourse ? null : UIUGradingScale.getGradePoint(gr);
             trimestersMap.putIfAbsent(rowTerm, () => []);
             trimestersMap[rowTerm]!.add(Course(
               code: code,
               title: title,
               credit: cr,
-              grade: gr,
+              grade: isOngoingCourse ? null : gr,
               gradePoint: gp,
             ));
             continue;
@@ -733,7 +748,8 @@ class UserProfileProvider extends ChangeNotifier {
         }
       }
 
-      // 3. Space-separated format: CSE 1111 Structured Programming 3.00 A
+      // 3. Space-separated format:
+      // A) Graded: CSE 1111 Structured Programming 3.00 A
       final sMatch = spaceCourseRegex.firstMatch(line);
       if (sMatch != null) {
         final code = sMatch.group(1)!.trim().toUpperCase();
@@ -749,6 +765,24 @@ class UserProfileProvider extends ChangeNotifier {
           credit: cr,
           grade: gr,
           gradePoint: gp,
+        ));
+        continue;
+      }
+
+      // B) Ongoing course without grade: CSE 1111 Structured Programming 3.00
+      final sOngoingMatch = spaceOngoingRegex.firstMatch(line);
+      if (sOngoingMatch != null) {
+        final code = sOngoingMatch.group(1)!.trim().toUpperCase();
+        final title = sOngoingMatch.group(2)!.trim();
+        final cr = double.tryParse(sOngoingMatch.group(3)!) ?? 3.0;
+
+        trimestersMap.putIfAbsent(currentTerm, () => []);
+        trimestersMap[currentTerm]!.add(Course(
+          code: code,
+          title: title,
+          credit: cr,
+          grade: null,
+          gradePoint: null,
         ));
       }
     }
