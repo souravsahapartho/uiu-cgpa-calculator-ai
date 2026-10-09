@@ -271,7 +271,35 @@ class UserProfileProvider extends ChangeNotifier {
     return null;
   }
 
-  
+  /// Returns the chronological next trimester in UIU sequence (Spring -> Summer -> Fall -> Spring (next year)).
+  static String getNextTrimester(String term) {
+    final detected = detectTrimester(term);
+    if (detected != null) {
+      final parts = detected.split(' ');
+      if (parts.length == 2) {
+        final season = parts[0].toLowerCase();
+        final year = int.tryParse(parts[1]) ?? DateTime.now().year;
+        if (season.startsWith('spr')) return 'Summer $year';
+        if (season.startsWith('sum')) return 'Fall $year';
+        if (season.startsWith('fal')) return 'Spring ${year + 1}';
+      }
+    }
+    return getDynamicDefaultTrimester();
+  }
+
+  static String getDynamicDefaultTrimester() {
+    final now = DateTime.now();
+    final month = now.month;
+    final year = now.year;
+    if (month >= 1 && month <= 4) {
+      return 'Spring $year';
+    } else if (month >= 5 && month <= 8) {
+      return 'Summer $year';
+    } else {
+      return 'Fall $year';
+    }
+  }
+
   static String getCourseKey(Course course) {
     final cleanCode = course.code.replaceAll(RegExp(r'[^A-Za-z0-9]'), '').toUpperCase();
     if (cleanCode.isNotEmpty) return cleanCode;
@@ -615,12 +643,57 @@ class UserProfileProvider extends ChangeNotifier {
   /// Automatically creates and groups courses into their respective trimesters according to UIU order.
   Future<Map<String, int>> importMultiTrimesterContent(String defaultTerm, String content) async {
     final trimestersMap = <String, List<Course>>{};
-    String currentTerm = detectTrimester(defaultTerm) ?? (defaultTerm.trim().isEmpty ? 'Spring 2024' : defaultTerm.trim());
+
+    // Determine the baseline running trimester for this import session
+    String sessionRunningTrimester = '';
+    if (_semesters.isNotEmpty) {
+      final ongoingExisting = _semesters.where((s) => s.isOngoing).toList();
+      if (ongoingExisting.isNotEmpty) {
+        sessionRunningTrimester = ongoingExisting.first.semesterName;
+      } else {
+        sessionRunningTrimester = getNextTrimester(_semesters.first.semesterName);
+      }
+    } else {
+      sessionRunningTrimester = detectTrimester(defaultTerm) ?? getDynamicDefaultTrimester();
+    }
+
+    String currentTerm = detectTrimester(defaultTerm) ?? sessionRunningTrimester;
+    String? lastGradedTerm; // Tracks the most recent trimester with graded courses in this import
 
     final lines = content.split(RegExp(r'\r?\n'));
     final codeRegex = RegExp(r'^[A-Za-z]{2,5}\s*[-]?\s*\d{3,4}[A-Za-z]?$', caseSensitive: false);
     final gradeRegex = RegExp(r'^(A|A-|B\+|B|B-|C\+|C|C-|D\+|D|F|W|I)$', caseSensitive: false);
-    
+
+    bool isOngoingGrade(String str) {
+      final s = str.trim().toLowerCase();
+      return s.isEmpty ||
+          s == 'running' ||
+          s == 'running course' ||
+          s == 'ongoing' ||
+          s == 'in progress' ||
+          s == 'enrolled' ||
+          s == 'registered' ||
+          s == 'current' ||
+          s == 'current course' ||
+          s == 'ip' ||
+          s == 'tbd' ||
+          s == 'n/a' ||
+          s == 'na' ||
+          s == '-' ||
+          s == '--' ||
+          s.contains('running') ||
+          s.contains('ongoing') ||
+          s.contains('progress') ||
+          s.contains('enrolled') ||
+          s.contains('registered');
+    }
+
+    String cleanCourseTitle(String rawTitle) {
+      return rawTitle
+          .replaceAll(RegExp(r'[\(\[]?\s*(?:running(?:\s*course)?|ongoing|enrolled|registered|current(?:\s*course)?)\s*[\)\]]?', caseSensitive: false), '')
+          .trim();
+    }
+
     // Graded: CSE 1111 Structured Programming 3.00 A (or W, I)
     final spaceCourseRegex = RegExp(
       r'([A-Za-z]{2,5}\s*\d{3,4}[A-Za-z]?)\s+(.+?)\s+([0-9.]+)\s+([A-D][+-]?|F|W|I)\b',
@@ -633,11 +706,9 @@ class UserProfileProvider extends ChangeNotifier {
       caseSensitive: false,
     );
 
-    final ongoingKeywordsRegex = RegExp(r'^(ongoing|in\s*progress|enrolled|current|running|n/a|-|--)$', caseSensitive: false);
-    
-    // Explicit Ongoing: CSE 4325 Microprocessors 3.00 Ongoing
-    final spaceExplicitOngoingRegex = RegExp(
-      r'([A-Za-z]{2,5}\s*\d{3,4}[A-Za-z]?)\s+(.+?)\s+([0-9.]+)\s+(ongoing|in\s*progress|enrolled|current|running)\b',
+    // Explicit Ongoing: CSE 4325 Microprocessors 3.00 Ongoing or Running Course
+    final spaceOngoingWithKeywordRegex = RegExp(
+      r'([A-Za-z]{2,5}\s*\d{3,4}[A-Za-z]?)\s+(.+?)\s+([0-9.]+)\s+(?:[-–—]|n/?a|tbd|ip|(?:\(?\s*(?:running(?:\s*course)?|ongoing|in\s*progress|enrolled|registered|current(?:\s*course)?)\s*\)?))\s*$',
       caseSensitive: false,
     );
 
@@ -651,7 +722,18 @@ class UserProfileProvider extends ChangeNotifier {
       final line = rawLine.trim();
       if (line.isEmpty) continue;
 
-      // Check if line contains an explicit or embedded trimester mention
+      // 1. Check for Running / Ongoing Trimester header (e.g. "Running Trimester:", "Current Courses:", "Running Courses:")
+      final isRunningHeader = RegExp(
+        r'^\s*(?:#+\s*)?(?:running|current|ongoing|currently\s+enrolled|enrolled)\s*(?:trimester|semester|term|courses?)?\s*:?\s*$',
+        caseSensitive: false,
+      ).hasMatch(line);
+
+      if (isRunningHeader) {
+        currentTerm = lastGradedTerm != null ? getNextTrimester(lastGradedTerm) : sessionRunningTrimester;
+        continue;
+      }
+
+      // Check if line contains an explicit trimester mention (e.g. "Spring 2024", "Fall 2025")
       final lineTrimester = detectTrimester(line);
       final hasGrade = gradeRegex.hasMatch(line) || spaceCourseRegex.hasMatch(line) || spaceCourseGradePointRegex.hasMatch(line);
       final isHeaderKeyword = RegExp(r'(trimester|semester|term|academic year)', caseSensitive: false).hasMatch(line);
@@ -659,7 +741,6 @@ class UserProfileProvider extends ChangeNotifier {
       // If this line indicates a trimester header, switch currentTerm
       if (lineTrimester != null && (isHeaderKeyword || !hasGrade || line.length < 45)) {
         currentTerm = lineTrimester;
-        // If this line does not contain course columns, move to next line
         if (!hasGrade && !line.contains(',')) {
           continue;
         }
@@ -667,19 +748,26 @@ class UserProfileProvider extends ChangeNotifier {
 
       // 2. CSV / Tab-separated row
       if (line.contains(',') || line.contains('\t')) {
-        final parts = line
+        final rawParts = line
             .split(RegExp(r'[,\t]'))
             .map((s) => s.replaceAll('"', '').trim())
-            .where((s) => s.isNotEmpty)
             .toList();
 
-        if (parts.length >= 2) {
+        if (rawParts.where((s) => s.isNotEmpty).length >= 2) {
           String rowTerm = currentTerm;
 
-          // Check if any column contains a trimester name
+          // Check if any column contains a trimester name or running keyword
           int termColIdx = -1;
-          for (int i = 0; i < parts.length; i++) {
-            final detected = detectTrimester(parts[i]);
+          for (int i = 0; i < rawParts.length; i++) {
+            final p = rawParts[i];
+            if (p.isEmpty) continue;
+            if (RegExp(r'^(?:running|current|ongoing|enrolled)(?:\s*(?:trimester|term))?$', caseSensitive: false).hasMatch(p)) {
+              rowTerm = lastGradedTerm != null ? getNextTrimester(lastGradedTerm) : sessionRunningTrimester;
+              currentTerm = rowTerm;
+              termColIdx = i;
+              break;
+            }
+            final detected = detectTrimester(p);
             if (detected != null) {
               rowTerm = detected;
               currentTerm = detected;
@@ -688,13 +776,14 @@ class UserProfileProvider extends ChangeNotifier {
             }
           }
           if (termColIdx != -1) {
-            parts.removeAt(termColIdx);
+            rawParts.removeAt(termColIdx);
           }
 
-          if (parts.length < 2) continue;
+          final nonEmpties = rawParts.where((s) => s.isNotEmpty).toList();
+          if (nonEmpties.length < 2) continue;
 
           // Skip header rows like "Course Code, Title, Credit, Grade"
-          if (parts[0].toLowerCase().contains('code') || parts[0].toLowerCase().contains('course')) {
+          if (nonEmpties[0].toLowerCase().contains('code') || nonEmpties[0].toLowerCase().contains('course')) {
             continue;
           }
 
@@ -707,55 +796,75 @@ class UserProfileProvider extends ChangeNotifier {
           int gradeIdx = -1;
           int creditIdx = -1;
 
-          for (int i = 0; i < parts.length; i++) {
-            final p = parts[i];
+          for (int i = 0; i < rawParts.length; i++) {
+            final p = rawParts[i];
             if (codeIdx == -1 && codeRegex.hasMatch(p)) {
               codeIdx = i;
-            } else if (gradeIdx == -1 && (gradeRegex.hasMatch(p) || ongoingKeywordsRegex.hasMatch(p))) {
-              gradeIdx = i;
             } else if (creditIdx == -1) {
               final d = double.tryParse(p);
               if (d != null && d > 0 && d <= 9.0) {
                 creditIdx = i;
               }
+            } else if (gradeIdx == -1 && (gradeRegex.hasMatch(p) || isOngoingGrade(p))) {
+              gradeIdx = i;
             }
           }
 
           if (codeIdx != -1) {
-            code = parts[codeIdx].toUpperCase();
-            if (gradeIdx != -1) {
-              final rawGr = parts[gradeIdx].toUpperCase();
-              gr = ongoingKeywordsRegex.hasMatch(rawGr) ? '' : rawGr;
-            }
+            code = rawParts[codeIdx].toUpperCase();
             if (creditIdx != -1) {
-              cr = double.tryParse(parts[creditIdx]) ?? 3.0;
+              cr = double.tryParse(rawParts[creditIdx]) ?? 3.0;
             }
+            if (gradeIdx != -1) {
+              gr = rawParts[gradeIdx].toUpperCase();
+            } else {
+              // Search after credit/code for empty or ongoing indicator column
+              final afterIdx = (creditIdx > codeIdx ? creditIdx : codeIdx);
+              if (rawParts.length > afterIdx + 1) {
+                gr = rawParts[afterIdx + 1].toUpperCase();
+              }
+            }
+
             final titleParts = <String>[];
-            for (int i = 0; i < parts.length; i++) {
+            for (int i = 0; i < rawParts.length; i++) {
               if (i != codeIdx && i != gradeIdx && i != creditIdx) {
-                if (int.tryParse(parts[i]) == null) {
-                  titleParts.add(parts[i]);
+                if (rawParts[i].isNotEmpty && int.tryParse(rawParts[i]) == null) {
+                  titleParts.add(rawParts[i]);
                 }
               }
             }
             title = titleParts.isNotEmpty ? titleParts.join(' ') : code;
           } else {
-            code = parts[0];
-            title = parts.length >= 3 ? parts[1] : code;
-            cr = double.tryParse(parts.length >= 3 ? parts[2] : parts[1]) ?? 3.0;
-            gr = parts.length >= 4 ? parts[3].toUpperCase() : '';
-            if (ongoingKeywordsRegex.hasMatch(gr)) gr = '';
+            code = nonEmpties[0];
+            title = nonEmpties.length >= 3 ? nonEmpties[1] : code;
+            cr = double.tryParse(nonEmpties.length >= 3 ? nonEmpties[2] : nonEmpties[1]) ?? 3.0;
+            gr = nonEmpties.length >= 4 ? nonEmpties[3].toUpperCase() : '';
           }
 
+          final lineHasRunningCourse = RegExp(r'\b(?:running(?:\s*course)?|ongoing|enrolled|registered)\b', caseSensitive: false).hasMatch(line);
+          final isOngoingCourse = isOngoingGrade(gr) || lineHasRunningCourse;
           final isGradeValid = UIUGradingScale.isValidGrade(gr) || gr == 'F' || gr == 'W' || gr == 'I';
-          final isOngoingCourse = gr.isEmpty;
 
           if (code.isNotEmpty && (isGradeValid || isOngoingCourse)) {
             final double? gp = (isOngoingCourse || gr == 'W') ? null : UIUGradingScale.getGradePoint(gr);
-            trimestersMap.putIfAbsent(rowTerm, () => []);
-            trimestersMap[rowTerm]!.add(Course(
+            final cleanTitle = cleanCourseTitle(title);
+
+            // If this is an ongoing/running course, but rowTerm was a past completed trimester:
+            String targetTerm = rowTerm;
+            if (isOngoingCourse) {
+              if (trimestersMap.containsKey(rowTerm) && trimestersMap[rowTerm]!.any((c) => !c.isOngoing)) {
+                targetTerm = getNextTrimester(rowTerm);
+              } else if (lastGradedTerm != null && rowTerm == lastGradedTerm) {
+                targetTerm = getNextTrimester(lastGradedTerm);
+              }
+            } else {
+              lastGradedTerm = rowTerm;
+            }
+
+            trimestersMap.putIfAbsent(targetTerm, () => []);
+            trimestersMap[targetTerm]!.add(Course(
               code: code,
-              title: title,
+              title: cleanTitle.isEmpty ? code : cleanTitle,
               credit: cr,
               grade: isOngoingCourse ? null : gr,
               gradePoint: gp,
@@ -766,19 +875,22 @@ class UserProfileProvider extends ChangeNotifier {
       }
 
       // 3. Space-separated format:
+      final lineHasRunningKeyword = RegExp(r'\b(?:running(?:\s*course)?|ongoing|enrolled|registered)\b', caseSensitive: false).hasMatch(line);
+
       // A) Graded with Grade & Points: CSE 1111 SPL 3.00 4.00 A OR CSE 1111 SPL 3.00 A 4.00
       final sgpMatch = spaceCourseGradePointRegex.firstMatch(line);
-      if (sgpMatch != null) {
+      if (sgpMatch != null && !lineHasRunningKeyword) {
         final code = sgpMatch.group(1)!.trim().toUpperCase();
-        final title = sgpMatch.group(2)!.trim();
+        final title = cleanCourseTitle(sgpMatch.group(2)!.trim());
         final cr = double.tryParse(sgpMatch.group(3)!) ?? 3.0;
         final gr = (sgpMatch.group(4) ?? sgpMatch.group(5) ?? '').toUpperCase();
         final gp = (gr == 'W' || gr.isEmpty) ? null : UIUGradingScale.getGradePoint(gr);
 
+        lastGradedTerm = currentTerm;
         trimestersMap.putIfAbsent(currentTerm, () => []);
         trimestersMap[currentTerm]!.add(Course(
           code: code,
-          title: title,
+          title: title.isEmpty ? code : title,
           credit: cr,
           grade: gr,
           gradePoint: gp,
@@ -788,17 +900,18 @@ class UserProfileProvider extends ChangeNotifier {
 
       // B) Graded: CSE 1111 Structured Programming 3.00 A
       final sMatch = spaceCourseRegex.firstMatch(line);
-      if (sMatch != null) {
+      if (sMatch != null && !lineHasRunningKeyword) {
         final code = sMatch.group(1)!.trim().toUpperCase();
-        final title = sMatch.group(2)!.trim();
+        final title = cleanCourseTitle(sMatch.group(2)!.trim());
         final cr = double.tryParse(sMatch.group(3)!) ?? 3.0;
         final gr = sMatch.group(4)!.toUpperCase();
         final gp = (gr == 'W' || gr.isEmpty) ? null : UIUGradingScale.getGradePoint(gr);
 
+        lastGradedTerm = currentTerm;
         trimestersMap.putIfAbsent(currentTerm, () => []);
         trimestersMap[currentTerm]!.add(Course(
           code: code,
-          title: title,
+          title: title.isEmpty ? code : title,
           credit: cr,
           grade: gr,
           gradePoint: gp,
@@ -806,17 +919,25 @@ class UserProfileProvider extends ChangeNotifier {
         continue;
       }
 
-      // C) Explicit ongoing keyword: CSE 4325 Microprocessors 3.00 Ongoing
-      final sExpMatch = spaceExplicitOngoingRegex.firstMatch(line);
-      if (sExpMatch != null) {
-        final code = sExpMatch.group(1)!.trim().toUpperCase();
-        final title = sExpMatch.group(2)!.trim();
-        final cr = double.tryParse(sExpMatch.group(3)!) ?? 3.0;
+      // C) Explicit ongoing course keyword (e.g. "Running Course", "Ongoing", "Enrolled", "-"):
+      final sExpMatch = spaceOngoingWithKeywordRegex.firstMatch(line);
+      if (sExpMatch != null || (lineHasRunningKeyword && spaceOngoingRegex.firstMatch(line) != null)) {
+        final match = sExpMatch ?? spaceOngoingRegex.firstMatch(line)!;
+        final code = match.group(1)!.trim().toUpperCase();
+        final title = cleanCourseTitle(match.group(2)!.trim());
+        final cr = double.tryParse(match.group(3)!) ?? 3.0;
 
-        trimestersMap.putIfAbsent(currentTerm, () => []);
-        trimestersMap[currentTerm]!.add(Course(
+        String targetTerm = currentTerm;
+        if (trimestersMap.containsKey(currentTerm) && trimestersMap[currentTerm]!.any((c) => !c.isOngoing)) {
+          targetTerm = getNextTrimester(currentTerm);
+        } else if (lastGradedTerm != null && currentTerm == lastGradedTerm) {
+          targetTerm = getNextTrimester(lastGradedTerm);
+        }
+
+        trimestersMap.putIfAbsent(targetTerm, () => []);
+        trimestersMap[targetTerm]!.add(Course(
           code: code,
-          title: title,
+          title: title.isEmpty ? code : title,
           credit: cr,
           grade: null,
           gradePoint: null,
@@ -828,13 +949,20 @@ class UserProfileProvider extends ChangeNotifier {
       final sOngoingMatch = spaceOngoingRegex.firstMatch(line);
       if (sOngoingMatch != null) {
         final code = sOngoingMatch.group(1)!.trim().toUpperCase();
-        final title = sOngoingMatch.group(2)!.trim();
+        final title = cleanCourseTitle(sOngoingMatch.group(2)!.trim());
         final cr = double.tryParse(sOngoingMatch.group(3)!) ?? 3.0;
 
-        trimestersMap.putIfAbsent(currentTerm, () => []);
-        trimestersMap[currentTerm]!.add(Course(
+        String targetTerm = currentTerm;
+        if (trimestersMap.containsKey(currentTerm) && trimestersMap[currentTerm]!.any((c) => !c.isOngoing)) {
+          targetTerm = getNextTrimester(currentTerm);
+        } else if (lastGradedTerm != null && currentTerm == lastGradedTerm) {
+          targetTerm = getNextTrimester(lastGradedTerm);
+        }
+
+        trimestersMap.putIfAbsent(targetTerm, () => []);
+        trimestersMap[targetTerm]!.add(Course(
           code: code,
-          title: title,
+          title: title.isEmpty ? code : title,
           credit: cr,
           grade: null,
           gradePoint: null,

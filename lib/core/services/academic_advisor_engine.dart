@@ -208,13 +208,30 @@ class AcademicAdvisorEngine {
         if (course.credit <= 0) continue;
 
         // Track ongoing / in-progress courses
-        if (course.isOngoing || sem.isOngoing) {
+        final rawGrade = (course.grade ?? '').trim().toUpperCase();
+        final isRunning = course.isOngoing ||
+            sem.isOngoing ||
+            course.grade == null ||
+            rawGrade.isEmpty ||
+            rawGrade == 'RUNNING' ||
+            rawGrade.contains('RUNNING') ||
+            rawGrade == 'CURRENT' ||
+            rawGrade == 'ONGOING' ||
+            rawGrade == 'ENROLLED' ||
+            rawGrade == 'REGISTERED' ||
+            rawGrade == 'IP' ||
+            rawGrade == 'TBD' ||
+            rawGrade == 'N/A' ||
+            rawGrade == '-' ||
+            rawGrade == '--';
+
+        if (isRunning) {
           ongoingCourses.add(course);
           ongoingCredits += course.credit;
           continue; // Ongoing courses must not be recorded as failed or finished with 0 GP!
         }
 
-        final grade = (course.grade ?? '').trim().toUpperCase();
+        final grade = rawGrade;
         if (grade == 'W' || grade.isEmpty) continue; // Withdraw excluded
 
         final gp = course.gradePoint ?? 0.0;
@@ -960,6 +977,16 @@ class AcademicAdvisorEngine {
           '• ⚠️ Important Exclusion Rule: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit scholarship calculation. Maintain at least 9–12 credits of regular fresh courses to protect your waiver eligibility!'
         : null;
 
+    // Strictly filter out any course that matches an ongoing course
+    final safeRecommended = finalRecommended.where((rec) {
+      if (rec.isChoiceOption && rec.optionCodes.isNotEmpty) {
+        return true;
+      }
+      return !ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, rec.course.code, rec.course.title));
+    }).toList();
+
+    final safeCreditLoad = safeRecommended.fold(0.0, (sum, r) => sum + r.course.credit);
+
     final summary = realCompletedCredits == 0
         ? 'Welcome to UIU! As a 1st trimester student, your focus should be on building a strong foundation in Structured Programming and Calculus. Attending all quizzes and securing 26+ out of 30 in midterms will lock in an immediate Dean\'s Honor pace.'
         : 'Based on your completed ${realCompletedCredits.toStringAsFixed(1)} credits and current CGPA of ${realCGPA.toStringAsFixed(2)}, you are maintaining a ${(realCGPA >= 3.75 ? 'Dean\'s Honor' : 'solid academic')} trajectory. To hit your target of ${targetCGPA.toStringAsFixed(2)}, maintain an average SGPA of ${projectedPace.toStringAsFixed(2)} across your remaining ${remainingCredits.toInt()} credits.';
@@ -969,14 +996,14 @@ class AcademicAdvisorEngine {
       currentPaceCGPA: realCGPA,
       projectedFinalCGPA: targetCGPA,
       domainAnalyses: domainAnalyses,
-      recommendedCourses: finalRecommended,
+      recommendedCourses: safeRecommended,
       conflictWarnings: conflicts,
       gpaBoosterTips: [
         'Secure 26+ in Midterms (30% weight) to reduce final exam pressure.',
         'Never skip class attendance and continuous assessment quizzes.',
         'Retake any D/F grade to replace it completely in your cumulative CGPA.',
       ],
-      suggestedCreditLoad: currentAccumulatedCredits,
+      suggestedCreditLoad: safeCreditLoad > 0 ? safeCreditLoad : currentAccumulatedCredits,
       isMeritScholarshipEligible: isMeritScholarshipEligible,
       meritScholarshipNotice: meritScholarshipNotice,
       isEstimatedFromProfileCredits: isEstimatedFromProfileCredits,
@@ -984,6 +1011,8 @@ class AcademicAdvisorEngine {
           ? '⚠️ Estimated Recommendations (Trimester $estimatedTrimester • ${realCompletedCredits.toInt()} Credits): These course recommendations are projected based on your completed credit total. For 100% accurate prerequisite verification, automated retake detection, and clash-free scheduling, please add or import your transcript in the Transcript tab.'
           : null,
       estimatedTrimester: estimatedTrimester,
+      ongoingCourses: ongoingCourses,
+      ongoingCredits: ongoingCredits,
     );
   }
 

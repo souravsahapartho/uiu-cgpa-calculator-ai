@@ -63,7 +63,24 @@ class Course {
 
   bool get isOngoing {
     final g = (grade ?? '').trim().toUpperCase();
-    return g.isEmpty || g == 'ONGOING' || g == 'IN PROGRESS' || g == 'ENROLLED';
+    return g.isEmpty ||
+        g == 'ONGOING' ||
+        g == 'IN PROGRESS' ||
+        g == 'ENROLLED' ||
+        g == 'REGISTERED' ||
+        g == 'RUNNING' ||
+        g == 'CURRENT' ||
+        g.contains('RUNNING') ||
+        g.contains('ONGOING') ||
+        g.contains('ENROLLED') ||
+        g.contains('REGISTERED') ||
+        g.contains('PROGRESS') ||
+        g == 'IP' ||
+        g == 'TBD' ||
+        g == 'N/A' ||
+        g == 'NA' ||
+        g == '-' ||
+        g == '--';
   }
 
   bool get isLab =>

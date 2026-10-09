@@ -5,8 +5,9 @@ class AIPromptConstants {
       'Output columns: Trimester,Course Code,Course Title,Credit,Grade\n\n'
       'Instructions:\n'
       '1. Extract every trimester (e.g., Fall 2023, Spring 2024, etc.).\n'
-      '2. For each course, extract Course Code (e.g., CSE 1111), Title, Credit (e.g., 3.0), and Grade (e.g., A, B+, etc.).\n'
-      '3. Provide ONLY pure CSV text without markdown or conversational commentary so I can save as .csv directly.\n\n'
+      '2. For each completed course, extract Course Code (e.g., CSE 1111), Title, Credit (e.g., 3.0), and Grade (e.g., A, B+, etc.).\n'
+      '3. For currently running/ongoing courses with no final grade yet, leave Grade empty or write Running in Grade.\n'
+      '4. Provide ONLY pure CSV text without markdown or conversational commentary so I can save as .csv directly.\n\n'
       'Here is my UCAM result:';
 }
 

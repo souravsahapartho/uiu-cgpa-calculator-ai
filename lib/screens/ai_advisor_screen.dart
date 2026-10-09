@@ -777,6 +777,101 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                   ),
                 ),
 
+              // ── Currently Enrolled Running Courses Card ──
+              if (report.ongoingCourses.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 6),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: isDark ? 0.12 : 0.07),
+                        borderRadius: AppRadius.borderLg,
+                        border: Border.all(
+                          color: AppColors.accent.withValues(alpha: 0.35),
+                          width: 1.2,
+                        ),
+                        boxShadow: AppShadows.soft,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.accent.withValues(alpha: 0.2),
+                                  borderRadius: AppRadius.borderSm,
+                                ),
+                                child: const Icon(Icons.timelapse_rounded, color: AppColors.accent, size: 16),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Currently Enrolled in Running Trimester',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12.5,
+                                    color: textPri,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: AppColors.accent,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${report.ongoingCourses.length} Courses • ${report.ongoingCredits.toStringAsFixed(1)} Cr',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 5,
+                            children: report.ongoingCourses.map((oc) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: surface,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: borderClr),
+                                ),
+                                child: Text(
+                                  '${oc.code} (${oc.credit.toStringAsFixed(oc.credit % 1 == 0 ? 0 : 1)} Cr)',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: textPri,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'AI has automatically excluded these running courses from next trimester recommendations and unlocked their dependent prerequisites.',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: textSec,
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               // Recommended Next Courses
               SliverToBoxAdapter(
                 child: Padding(
@@ -784,7 +879,9 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                   child: Text(
                     report.isEstimatedFromProfileCredits
                         ? 'AI RECOMMENDED NEXT TRIMESTER COURSES (PROJECTED TRIMESTER ${report.estimatedTrimester})'
-                        : 'AI RECOMMENDED NEXT TRIMESTER COURSES',
+                        : (report.ongoingCourses.isNotEmpty
+                            ? 'AI RECOMMENDED NEXT TRIMESTER COURSES (AFTER RUNNING TRIMESTER)'
+                            : 'AI RECOMMENDED NEXT TRIMESTER COURSES'),
                     style: AppTypography.labelSmall.copyWith(
                       color: textSec,
                       fontWeight: FontWeight.w800,

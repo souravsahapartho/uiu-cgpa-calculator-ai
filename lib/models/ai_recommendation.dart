@@ -138,6 +138,8 @@ class AIAdvisorReport {
   final bool isEstimatedFromProfileCredits;
   final String? profileCreditEstimateNotice;
   final int estimatedTrimester;
+  final List<Course> ongoingCourses;
+  final double ongoingCredits;
 
   const AIAdvisorReport({
     required this.overallSummary,
@@ -153,6 +155,8 @@ class AIAdvisorReport {
     this.isEstimatedFromProfileCredits = false,
     this.profileCreditEstimateNotice,
     this.estimatedTrimester = 1,
+    this.ongoingCourses = const [],
+    this.ongoingCredits = 0.0,
   });
 }
 
