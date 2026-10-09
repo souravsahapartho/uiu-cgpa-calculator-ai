@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
@@ -837,44 +839,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         color: Colors.transparent,
         child: InkWell(
           borderRadius: AppRadius.borderLg,
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const TranscriptImportScreen(),
-              ),
-            );
-            if (!mounted) return;
-            final prov = ProfileProviderScope.of(context);
-            if (prov.semesters.isNotEmpty || prov.profile.completedCredits > 0) {
-              final p = prov.profile;
-              await prov.saveProfile(p.copyWith(
-                name: p.name.isNotEmpty
-                    ? p.name
-                    : (_nameController.text.trim().isNotEmpty
-                        ? _nameController.text.trim()
-                        : 'UIU Student'),
-                studentId: p.studentId.isNotEmpty
-                    ? p.studentId
-                    : (_idController.text.trim().isNotEmpty
-                        ? _idController.text.trim()
-                        : '0110000000'),
-                department: p.department.isNotEmpty
-                    ? p.department
-                    : (_selectedDept ?? 'Computer Science & Engineering'),
-              ));
-              if (!mounted) return;
-              Navigator.pushReplacement(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (c, a1, a2) => const MainNavigationScreen(),
-                  transitionsBuilder: (c, a1, a2, child) =>
-                      FadeTransition(opacity: a1, child: child),
-                  transitionDuration: const Duration(milliseconds: 350),
-                ),
-              );
-            }
-          },
+          onTap: () => _showRestoreOptionsModal(context),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
@@ -928,7 +893,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       ),
                       const SizedBox(height: 2.5),
                       Text(
-                        'Import transcript (PDF, CSV, image, text) to skip setup & restore all data automatically!',
+                        'Import exported backup (.json) or transcript (PDF/CSV/Text) to skip setup & restore all data!',
                         style: TextStyle(
                           color: textSec,
                           fontSize: 11,
@@ -947,6 +912,284 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         ),
       ),
     );
+  }
+
+  void _showRestoreOptionsModal(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final border = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: border),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: AppRadius.borderFull,
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: AppRadius.borderMd,
+                  ),
+                  child: const Icon(Icons.settings_backup_restore_rounded, color: AppColors.primary, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Restore Academic Data',
+                        style: AppTypography.titleMedium.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: textPri,
+                        ),
+                      ),
+                      Text(
+                        'Choose your previously saved backup method',
+                        style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+
+            // Option 1: Import Exported Backup JSON
+            InkWell(
+              borderRadius: AppRadius.borderBase,
+              onTap: () {
+                Navigator.pop(ctx);
+                _handleDirectImportJson();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.borderBase,
+                  border: Border.all(color: border),
+                  color: isDark ? AppColors.darkSurface : AppColors.surface,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                        borderRadius: AppRadius.borderMd,
+                      ),
+                      child: const Icon(Icons.file_present_rounded, color: Color(0xFF10B981), size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Import Exported Backup (.json)',
+                                style: AppTypography.titleSmall.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: textPri,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                  borderRadius: AppRadius.borderFull,
+                                ),
+                                child: const Text(
+                                  'RECOMMENDED',
+                                  style: TextStyle(
+                                    color: Color(0xFF10B981),
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Restore from previously downloaded academic backup file',
+                            style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded, color: textSec, size: 20),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Option 2: Transcript Import (PDF / CSV / OCR / Text)
+            InkWell(
+              borderRadius: AppRadius.borderBase,
+              onTap: () {
+                Navigator.pop(ctx);
+                _openTranscriptImport();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.borderBase,
+                  border: Border.all(color: border),
+                  color: isDark ? AppColors.darkSurface : AppColors.surface,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.borderMd,
+                      ),
+                      child: const Icon(Icons.document_scanner_rounded, color: AppColors.primary, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Import UIU Transcript (PDF / CSV / Image)',
+                            style: AppTypography.titleSmall.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: textPri,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Scan or upload official UIU portal grade sheets',
+                            style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded, color: textSec, size: 20),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleDirectImportJson() async {
+    try {
+      final file = await FilePicker.pickFile(
+        dialogTitle: 'Select Academic Backup JSON',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (file == null) return;
+
+      final bytes = await file.readAsBytes();
+      final content = utf8.decode(bytes);
+
+      if (content.trim().isEmpty) {
+        _showError('Selected JSON backup file is empty.');
+        return;
+      }
+
+      if (!mounted) return;
+      final prov = ProfileProviderScope.of(context);
+      final success = await prov.importBackupJson(content.trim());
+
+      if (success) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Academic backup restored successfully! Welcome back.'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (c, a1, a2) => const MainNavigationScreen(),
+            transitionsBuilder: (c, a1, a2, child) =>
+                FadeTransition(opacity: a1, child: child),
+            transitionDuration: const Duration(milliseconds: 350),
+          ),
+        );
+      } else {
+        _showError('Invalid backup JSON structure. Please select a valid backup file.');
+      }
+    } catch (e) {
+      _showError('Failed to import backup JSON: $e');
+    }
+  }
+
+  Future<void> _openTranscriptImport() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const TranscriptImportScreen(),
+      ),
+    );
+    if (!mounted) return;
+    final prov = ProfileProviderScope.of(context);
+    if (prov.semesters.isNotEmpty || prov.profile.completedCredits > 0) {
+      final p = prov.profile;
+      await prov.saveProfile(p.copyWith(
+        name: p.name.isNotEmpty
+            ? p.name
+            : (_nameController.text.trim().isNotEmpty
+                ? _nameController.text.trim()
+                : 'UIU Student'),
+        studentId: p.studentId.isNotEmpty
+            ? p.studentId
+            : (_idController.text.trim().isNotEmpty
+                ? _idController.text.trim()
+                : '0110000000'),
+        department: p.department.isNotEmpty
+            ? p.department
+            : (_selectedDept ?? 'Computer Science & Engineering'),
+      ));
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (c, a1, a2) => const MainNavigationScreen(),
+          transitionsBuilder: (c, a1, a2, child) =>
+              FadeTransition(opacity: a1, child: child),
+          transitionDuration: const Duration(milliseconds: 350),
+        ),
+      );
+    }
   }
 
   void _showError(String msg) {

@@ -95,7 +95,7 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
 
           // Dynamic & Responsive Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 6, 12, 10),
+            padding: const EdgeInsets.fromLTRB(16, 6, 10, 10),
             child: Row(
               children: [
                 Container(
@@ -113,22 +113,20 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Flexible(
-                            child: Text(
-                              'UIU Notices',
-                              style: AppTypography.titleMedium.copyWith(
-                                color: textPri,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 15.5,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                          Text(
+                            'UIU Notices',
+                            style: AppTypography.titleMedium.copyWith(
+                              color: textPri,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15.5,
                             ),
                           ),
                           const SizedBox(width: 6),
                           if (unreadCount > 0)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
                               decoration: const BoxDecoration(
                                 color: AppColors.danger,
                                 borderRadius: AppRadius.borderFull,
@@ -144,7 +142,7 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                             )
                           else
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
                               decoration: BoxDecoration(
                                 color: Colors.green.withValues(alpha: 0.15),
                                 borderRadius: AppRadius.borderFull,
@@ -167,18 +165,20 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                           color: textSec,
                           fontSize: 10.5,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 // Mark all read button
                 if (unreadCount > 0)
                   InkWell(
                     onTap: () => _service.markAllAsRead(),
                     borderRadius: AppRadius.borderFull,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.5, vertical: 4.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 4.5),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: AppRadius.borderFull,
@@ -190,12 +190,12 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.done_all_rounded, size: 13, color: AppColors.primary),
-                          SizedBox(width: 4),
+                          Icon(Icons.done_all_rounded, size: 12, color: AppColors.primary),
+                          SizedBox(width: 3.5),
                           Text(
                             'Mark read',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w700,
                               color: AppColors.primary,
                             ),
@@ -204,7 +204,6 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                       ),
                     ),
                   ),
-                const SizedBox(width: 2),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
                   icon: Icon(Icons.close_rounded, color: textSec, size: 21),
@@ -304,6 +303,7 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
   }) {
     final isUnread = !notice.isRead;
     final topic = _getNoticeTopic(notice.title, notice.description);
+    final formattedTitle = _formatNoticeTitle(notice.title);
     final coreReason = _extractCoreReason(notice.description, notice.title);
 
     return Container(
@@ -389,9 +389,9 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                 ),
                 const SizedBox(height: 5),
 
-                // Main Title (Max 2 lines, bold)
+                // Main Title (Clean formatted title, Max 2 lines, bold)
                 Text(
-                  notice.title,
+                  formattedTitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -425,14 +425,40 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
     );
   }
 
+  static String _formatNoticeTitle(String title) {
+    var clean = title.trim();
+    // Strip redundant leading prefixes like "NOTICE REGARDING", "NOTICE FOR", "NOTICE:"
+    clean = clean.replaceAll(RegExp(r'^(URGENT\s+)?NOTICE(\s+REGARDING|\s+FOR|\s+ON)?[\s:–—\-]+', caseSensitive: false), '');
+    // If title is ALL CAPS, convert to clean Title Case
+    if (clean.length > 4 && clean == clean.toUpperCase()) {
+      clean = clean.split(' ').map((word) {
+        if (word.isEmpty) return word;
+        // Keep roman numerals or short acronyms intact (e.g., UIU, BSCSE, CSE, II, III)
+        if (word.length <= 3 || RegExp(r'^(UIU|CSE|EEE|BBA|FYDP|GPA|CGPA|COVID|SMS|OTP)$').hasMatch(word)) {
+          return word;
+        }
+        return word[0].toUpperCase() + word.substring(1).toLowerCase();
+      }).join(' ');
+    }
+    return clean.isEmpty ? title : clean;
+  }
+
   static _NoticeTopic _getNoticeTopic(String title, String desc) {
     final text = ('$title $desc').toLowerCase();
-    if (text.contains('exam') || text.contains('mid term') || text.contains('final') || text.contains('routine')) {
+    if (text.contains('transport') ||
+        text.contains('bus') ||
+        text.contains('shuttle') ||
+        text.contains('route') ||
+        text.contains('driver') ||
+        text.contains('pickup') ||
+        text.contains('drop-off')) {
+      return const _NoticeTopic('Transport', Icons.directions_bus_rounded, Color(0xFF0284C7));
+    } else if (text.contains('exam') || text.contains('mid term') || text.contains('final') || text.contains('routine')) {
       return const _NoticeTopic('Exam Schedule', Icons.event_note_rounded, Color(0xFFEF4444));
     } else if (text.contains('withdrawal') || text.contains('withdraw')) {
       return const _NoticeTopic('Course Withdrawal', Icons.warning_amber_rounded, Color(0xFFF59E0B));
     } else if (text.contains('class') || text.contains('makeup') || text.contains('schedule') || text.contains('academic calendar')) {
-      return const _NoticeTopic('Schedule Update', Icons.calendar_month_rounded, Color(0xFF0284C7));
+      return const _NoticeTopic('Schedule Update', Icons.calendar_month_rounded, Color(0xFF0EA5E9));
     } else if (text.contains('library') || text.contains('study room') || text.contains('campus')) {
       return const _NoticeTopic('Campus Facility', Icons.local_library_rounded, Color(0xFF10B981));
     } else if (text.contains('waiver') || text.contains('scholarship') || text.contains('fee') || text.contains('tuition')) {
@@ -448,9 +474,12 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
   static String _extractCoreReason(String desc, String title) {
     if (desc.isEmpty) return '';
     var clean = desc
-        .replaceAll(RegExp(r'^(Attention|ATTENTION|Notice|NOTICE)[\s\w,:\-]*?:', caseSensitive: false), '')
-        .replaceAll(RegExp(r'^(This is to inform that|It is hereby notified that|This is for the information of all students that)[\s,]*', caseSensitive: false), '')
+        .replaceAll(RegExp(r'#\s*Program\s*School\s*List[\s\S]*?(?=\b(?:due to|this is|all students|please|effective)\b|$)', caseSensitive: false), '')
+        .replaceAll(RegExp(r'^(Attention|ATTENTION|Notice|NOTICE)[\s\w,:\-]*?(All Students|Employees|Concerned)[\s\w,:\-]*?:', caseSensitive: false), '')
+        .replaceAll(RegExp(r'^(Attention\s+All\s+Students\s+and\s+Employees\s+of\s+UIU)[\s,:]*', caseSensitive: false), '')
+        .replaceAll(RegExp(r'^(This is to inform all concerned that|This is to inform that|It is hereby notified that|This is for the information of all students that)[\s,]*', caseSensitive: false), '')
         .replaceAll(RegExp(r'^(All students are hereby informed that)[\s,]*', caseSensitive: false), '')
+        .replaceAll(RegExp(r'#+\s*'), '')
         .trim();
 
     if (clean.isNotEmpty) {
