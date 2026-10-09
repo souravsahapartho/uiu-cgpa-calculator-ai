@@ -143,8 +143,8 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     : () {
                         final ongoingCredits = semesters.fold(0.0, (sum, s) => sum + s.courses.where((c) => c.isOngoing).fold(0.0, (ss, c) => ss + c.credit));
                         return ongoingCredits > 0
-                            ? '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Completed (${ongoingCredits.toStringAsFixed(1)} Cr Enrolled)'
-                            : '${semesters.length} Trimesters • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed';
+                            ? '${semesters.length} Terms • ${totalCompletedCredits.toStringAsFixed(1)} Cr (+${ongoingCredits.toStringAsFixed(1)} Enrolled)'
+                            : '${semesters.length} Terms • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed';
                       }(),
                 trailing: IconButton(
                   tooltip: 'Academic Guidelines & Policy',
@@ -224,36 +224,26 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        // Single responsive line for 3 import options
+                        // 2 consolidated options: Import File (PDF/CSV/Image) and Import Text / AI
                         Row(
                           children: [
                             Expanded(
                               child: _buildImportActionBtn(
-                                label: 'Import CSV',
-                                icon: Icons.table_chart_outlined,
-                                color: AppColors.accent,
-                                textPri: textPri,
-                                onTap: () => _showImportCsvModal(context),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: _buildImportActionBtn(
-                                label: 'Import PDF',
-                                icon: Icons.picture_as_pdf_outlined,
-                                color: AppColors.danger,
-                                textPri: textPri,
-                                onTap: () => _showImportPdfModal(context),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: _buildImportActionBtn(
-                                label: 'Import Image',
-                                icon: Icons.image_outlined,
+                                label: 'Import File',
+                                icon: Icons.folder_open_rounded,
                                 color: const Color(0xFF0284C7),
                                 textPri: textPri,
-                                onTap: () => _showImportImageModal(context),
+                                onTap: () => _showUnifiedImportFileModal(context),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildImportActionBtn(
+                                label: 'Import Text / AI',
+                                icon: Icons.auto_awesome_rounded,
+                                color: const Color(0xFF8B5CF6),
+                                textPri: textPri,
+                                onTap: () => _showImportTextModal(context),
                               ),
                             ),
                           ],
@@ -2639,6 +2629,477 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // ── UNIFIED IMPORT FILE MODAL (PDF / CSV / Image) ──
+  void _showUnifiedImportFileModal(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: borderClr),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4.5,
+                decoration: BoxDecoration(
+                  color: borderClr,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.12),
+                    borderRadius: AppRadius.borderMd,
+                  ),
+                  child: const Icon(Icons.folder_open_rounded, color: Color(0xFF0284C7), size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Import Academic File',
+                        style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.w900, color: textPri, fontSize: 17),
+                      ),
+                      Text(
+                        'Select any PDF, CSV spreadsheet, or image screenshot',
+                        style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.close_rounded, color: textSec, size: 20),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            // Primary 1-Tap Auto-Detect Button
+            GestureDetector(
+              onTap: () async {
+                Navigator.pop(ctx);
+                try {
+                  final file = await FilePicker.pickFile(
+                    type: FileType.custom,
+                    allowedExtensions: ['pdf', 'csv', 'txt', 'png', 'jpg', 'jpeg'],
+                  );
+                  if (file != null && context.mounted) {
+                    final ext = file.extension?.toLowerCase() ?? '';
+                    if (ext == 'csv' || ext == 'txt') {
+                      _showModernImportSheet(context: context, mode: 'csv');
+                    } else if (ext == 'pdf') {
+                      _showModernImportSheet(context: context, mode: 'pdf');
+                    } else {
+                      _showModernImportSheet(context: context, mode: 'image');
+                    }
+                  }
+                } catch (e) {
+                  debugPrint('Auto pick error: $e');
+                }
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                  ),
+                  borderRadius: AppRadius.borderLg,
+                  boxShadow: AppShadows.soft,
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.file_open_rounded, color: Colors.white, size: 24),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Choose Any File (Auto-Detect)',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Supports .PDF, .CSV, and Image formats directly',
+                            style: TextStyle(color: Colors.white70, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded, color: Colors.white),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'OR SELECT SPECIFIC FORMAT',
+              style: AppTypography.labelSmall.copyWith(color: textSec, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildFormatOptionCard(
+                    context: context,
+                    icon: Icons.picture_as_pdf_outlined,
+                    label: 'PDF Document',
+                    color: AppColors.danger,
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showImportPdfModal(context);
+                    },
+                    isDark: isDark,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildFormatOptionCard(
+                    context: context,
+                    icon: Icons.table_chart_outlined,
+                    label: 'CSV File',
+                    color: AppColors.accent,
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showImportCsvModal(context);
+                    },
+                    isDark: isDark,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildFormatOptionCard(
+                    context: context,
+                    icon: Icons.image_outlined,
+                    label: 'Screenshot',
+                    color: const Color(0xFF0284C7),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showImportImageModal(context);
+                    },
+                    isDark: isDark,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormatOptionCard({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: isDark ? 0.12 : 0.06),
+          borderRadius: AppRadius.borderMd,
+          border: Border.all(color: borderClr),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: textPri,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── AI TRANSCRIPT TEXT PARSER MODAL ──
+  void _showImportTextModal(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final sectionBg = isDark ? AppColors.darkSection : AppColors.section;
+    final borderClr = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPri = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSec = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final provider = ProfileProviderScope.of(context);
+    final defaultDynamicTerm = _getDynamicTrimester(provider.semesters);
+
+    final textController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalCtx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          final rawText = textController.text.trim();
+          final lineCount = rawText.isEmpty ? 0 : rawText.split('\n').where((l) => l.trim().isNotEmpty).length;
+
+          return Container(
+            decoration: BoxDecoration(
+              color: surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border.all(color: borderClr),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              MediaQuery.of(ctx).viewInsets.bottom + 20,
+            ),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.88,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4.5,
+                    decoration: BoxDecoration(
+                      color: borderClr,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
+                        borderRadius: AppRadius.borderMd,
+                      ),
+                      child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF8B5CF6), size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'AI Transcript Text Parser',
+                            style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.w900, color: textPri, fontSize: 17),
+                          ),
+                          Text(
+                            'Copy & paste your grade records from UCAM portal',
+                            style: AppTypography.bodySmall.copyWith(color: textSec, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded, color: textSec, size: 20),
+                      onPressed: () => Navigator.pop(modalCtx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF8B5CF6),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        backgroundColor: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      icon: const Icon(Icons.content_paste_rounded, size: 16),
+                      label: const Text('Paste from Clipboard', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 11.5)),
+                      onPressed: () async {
+                        final data = await Clipboard.getData(Clipboard.kTextPlain);
+                        if (data != null && data.text != null && data.text!.isNotEmpty) {
+                          setModalState(() {
+                            textController.text = data.text!;
+                          });
+                        }
+                      },
+                    ),
+                    if (textController.text.isNotEmpty)
+                      TextButton(
+                        onPressed: () => setModalState(() => textController.clear()),
+                        child: Text('Clear', style: TextStyle(color: textSec, fontSize: 11.5)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Flexible(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: sectionBg,
+                      borderRadius: AppRadius.borderLg,
+                      border: Border.all(color: borderClr),
+                    ),
+                    child: TextField(
+                      controller: textController,
+                      maxLines: 8,
+                      onChanged: (_) => setModalState(() {}),
+                      style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Paste full copied transcript here, e.g.:\n'
+                            'Summer 2024\n'
+                            'CSE 3711 Computer Networks 3.00 A\n'
+                            'CSE 3712 Computer Networks Lab 1.00 A\n\n'
+                            'Summer 2026\n'
+                            'CSE 4325 Microprocessors 3.00 Ongoing\n'
+                            'CSE 3421 Software Engineering 3.00 Ongoing',
+                        hintStyle: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                          color: textPri.withValues(alpha: 0.35),
+                          height: 1.4,
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
+                    borderRadius: AppRadius.borderSm,
+                    border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.bolt_rounded, size: 14, color: Color(0xFF8B5CF6)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          lineCount > 0
+                              ? '$lineCount line(s) loaded. AI automatically categorizes trimesters, courses, and ongoing subjects.'
+                              : 'AI Auto-Detect handles all UIU UCAM transcript layouts, grades, and ongoing courses.',
+                          style: TextStyle(color: textPri, fontSize: 10.5, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: textPri,
+                          side: BorderSide(color: borderClr),
+                          shape: RoundedRectangleBorder(borderRadius: AppRadius.borderBase),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        onPressed: () => Navigator.pop(modalCtx),
+                        child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8B5CF6),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: AppRadius.borderBase),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 0,
+                        ),
+                        icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+                        label: const Text(
+                          'AI Analyze & Import',
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+                        ),
+                        onPressed: () async {
+                          final raw = textController.text.trim();
+                          if (raw.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please paste transcript or grade text to analyze.'),
+                                backgroundColor: AppColors.danger,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                            return;
+                          }
+
+                          final res = await provider.importMultiTrimesterContent(defaultDynamicTerm, raw);
+                          final count = res['courses'] ?? 0;
+                          final terms = res['trimesters'] ?? 0;
+
+                          if (modalCtx.mounted) Navigator.pop(modalCtx);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  count > 0
+                                      ? 'AI successfully analyzed and imported $count courses across $terms trimester(s)!'
+                                      : 'Could not extract valid courses from text. Please verify the copied text.',
+                                ),
+                                backgroundColor: count > 0 ? AppColors.success : AppColors.danger,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                            if (count > 0) {
+                              _checkAndUpdateProfileCgpa(context, provider);
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

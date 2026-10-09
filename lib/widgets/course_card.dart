@@ -85,7 +85,7 @@ class _CourseCardState extends State<CourseCard> {
             children: [
               // Course Code Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
                   color: catColor.withValues(alpha: isDark ? 0.18 : 0.08),
                   borderRadius: AppRadius.borderMd,
@@ -107,14 +107,14 @@ class _CourseCardState extends State<CourseCard> {
                       '${widget.course.credit.toStringAsFixed(1)} Cr',
                       style: AppTypography.bodySmall.copyWith(
                         color: textTert,
-                        fontSize: 10,
+                        fontSize: 9.5,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: AppSpacing.s12),
+              const SizedBox(width: AppSpacing.s8),
               // Course Title & Category Tag
               Expanded(
                 child: Column(
@@ -149,35 +149,24 @@ class _CourseCardState extends State<CourseCard> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Letter Grade Chip or Ongoing Badge (Compact & Responsive)
+              // Letter Grade Chip or Ongoing Icon Badge (Compact & Responsive)
               if (widget.course.isOngoing)
                 Tooltip(
                   message: 'Ongoing Course (Running Trimester)',
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: isDark ? 0.2 : 0.12),
+                      color: AppColors.accent.withValues(alpha: isDark ? 0.22 : 0.12),
                       borderRadius: AppRadius.borderMd,
-                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.4), width: 1),
+                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.45), width: 1.2),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.timelapse_rounded, size: 14, color: AppColors.accent),
-                        if (MediaQuery.of(context).size.width > 350) ...[
-                          const SizedBox(width: 4),
-                          Text(
-                            'Ongoing',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.accent,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 10.5,
-                            ),
-                          ),
-                        ],
+                        const Icon(Icons.timelapse_rounded, size: 16, color: AppColors.accent),
                         if (widget.onTap != null) ...[
                           const SizedBox(width: 3),
-                          Icon(Icons.edit_outlined, size: 12, color: AppColors.accent.withValues(alpha: 0.7)),
+                          Icon(Icons.edit_outlined, size: 12, color: AppColors.accent.withValues(alpha: 0.8)),
                         ],
                       ],
                     ),

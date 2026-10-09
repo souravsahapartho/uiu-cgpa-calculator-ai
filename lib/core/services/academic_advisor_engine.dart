@@ -118,8 +118,8 @@ class AcademicAdvisorEngine {
     required List<SemesterTranscript> semesters,
   }) {
     // 1. Gather all completed course codes & their best grade point
-    final completedCourseMap = <String, double>{};
-    final ongoingCourseCodes = <String>{};
+    final completedAttempts = <Course>[];
+    final ongoingCourses = <Course>[];
     double ongoingCredits = 0.0;
     final gradesByDomain = <String, List<double>>{
       'Programming & CS': [],
@@ -138,11 +138,10 @@ class AcademicAdvisorEngine {
     for (final sem in semesters) {
       for (final course in sem.courses) {
         if (course.credit <= 0) continue;
-        final key = _normalizeCode(course.code);
 
         // Track ongoing / in-progress courses
         if (course.isOngoing || sem.isOngoing) {
-          ongoingCourseCodes.add(key);
+          ongoingCourses.add(course);
           ongoingCredits += course.credit;
           continue; // Ongoing courses must not be recorded as failed or finished with 0 GP!
         }
@@ -151,29 +150,27 @@ class AcademicAdvisorEngine {
         if (grade == 'W' || grade.isEmpty) continue; // Withdraw excluded
 
         final gp = course.gradePoint ?? 0.0;
-
-        if (!completedCourseMap.containsKey(key) || gp > completedCourseMap[key]!) {
-          completedCourseMap[key] = gp;
-        }
+        completedAttempts.add(course);
 
         // Domain tracking
-        final domain = _findCourseDomain(key);
+        final domain = _findCourseDomain(course.code);
         gradesByDomain.putIfAbsent(domain, () => []).add(gp);
       }
     }
 
-    // Recompute transcript stats
-    for (final entry in completedCourseMap.entries) {
-      final key = entry.key;
-      final gp = entry.value;
-      // find course credit in curriculum or default 3.0
-      double cr = 3.0;
-      for (final c in uiuCurriculum) {
-        if (_normalizeCode(c.code) == key) {
-          cr = c.credit;
-          break;
-        }
+    // Recompute transcript stats using best attempts per unique course
+    final bestAttemptsMap = <String, Course>{};
+    for (final course in completedAttempts) {
+      final key = _cleanCode(course.code);
+      final gp = course.gradePoint ?? 0.0;
+      if (!bestAttemptsMap.containsKey(key) || gp > (bestAttemptsMap[key]!.gradePoint ?? 0.0)) {
+        bestAttemptsMap[key] = course;
       }
+    }
+
+    for (final course in bestAttemptsMap.values) {
+      final gp = course.gradePoint ?? 0.0;
+      final cr = course.credit;
       realPoints += gp * cr;
       realGpaCredits += cr;
       if (gp > 0.0) {
@@ -205,20 +202,24 @@ class AcademicAdvisorEngine {
     final retakeRecommendations = <CourseRecommendation>[];
     int rank = 1;
 
-    completedCourseMap.forEach((code, gp) {
-      // Exclude courses that student is currently taking in ongoing trimester
-      if (ongoingCourseCodes.contains(code)) return;
+    for (final course in bestAttemptsMap.values) {
+      final gp = course.gradePoint ?? 0.0;
+
+      // Exclude courses that student is currently taking in ongoing trimester!
+      if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, course.code, course.title))) {
+        continue;
+      }
 
       if (gp < 2.50) {
-        // find details
+        // find matching curriculum course
         UIUCurriculumCourse? match;
         for (final c in uiuCurriculum) {
-          if (_normalizeCode(c.code) == code) {
+          if (_isCourseMatch(c.code, c.title, course.code, course.title)) {
             match = c;
             break;
           }
         }
-        if (match != null) {
+        if (match != null && !retakeRecommendations.any((r) => _isCourseMatch(r.course.code, r.course.title, match!.code, match.title))) {
           retakeRecommendations.add(CourseRecommendation(
             course: Course(
               code: match.code,
@@ -235,23 +236,24 @@ class AcademicAdvisorEngine {
           ));
         }
       }
-    });
+    }
 
     // 3. Find eligible next curriculum courses based on completed prerequisites
     final eligibleCourses = <UIUCurriculumCourse>[];
 
     for (final c in uiuCurriculum) {
-      final codeNorm = _normalizeCode(c.code);
-
-      // EXCLUDE courses already enrolled in ongoing trimester!
-      if (ongoingCourseCodes.contains(codeNorm)) {
+      // EXCLUDE courses already enrolled in ongoing trimester (matching by equivalent code or title)!
+      if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) {
         continue;
       }
 
-      // Skip if already passed with gp >= 2.50
-      if (completedCourseMap.containsKey(codeNorm) && completedCourseMap[codeNorm]! >= 2.50) {
+      // Skip if already passed with gp >= 2.50 (matching by equivalent code or title)!
+      if (bestAttemptsMap.values.any((comp) =>
+          (comp.gradePoint ?? 0.0) >= 2.50 &&
+          _isCourseMatch(comp.code, comp.title, c.code, c.title))) {
         continue;
       }
+
       // Check prerequisites
       bool prereqMet = false;
       if (c.prerequisite == 'X') {
@@ -259,10 +261,14 @@ class AcademicAdvisorEngine {
       } else if (c.prerequisite == 'CREDITS_85') {
         prereqMet = (realCompletedCredits + ongoingCredits) >= 85.0;
       } else {
-        final reqs = c.prerequisite.split(',').map((s) => _normalizeCode(s.trim())).toList();
-        prereqMet = reqs.every((r) =>
-            (completedCourseMap.containsKey(r) && completedCourseMap[r]! > 0.0) ||
-            ongoingCourseCodes.contains(r));
+        final reqs = c.prerequisite.split(',').map((s) => s.trim()).toList();
+        prereqMet = reqs.every((r) {
+          final isComp = bestAttemptsMap.values.any((comp) =>
+              (comp.gradePoint ?? 0.0) > 0.0 &&
+              _isCourseMatch(comp.code, comp.title, r, ''));
+          final isOng = ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, r, ''));
+          return isComp || isOng;
+        });
       }
 
       if (prereqMet) {
@@ -288,10 +294,12 @@ class AcademicAdvisorEngine {
     final selectedSlots = <String, String>{}; // "Day 1" -> "T1"
 
     for (final c in eligibleCourses) {
+      if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) continue;
+      if (bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title))) continue;
       if (currentAccumulatedCredits + c.credit > maxCreditCap) continue;
       if (currentAccumulatedCredits >= (maxCreditCap - 2.0) && currentAccumulatedCredits >= 11.0) break;
       if (c.isLab && labCredits >= 2.0) continue;
-      if (recommended.any((r) => _normalizeCode(r.course.code) == _normalizeCode(c.code))) continue;
+      if (recommended.any((r) => _isCourseMatch(r.course.code, r.course.title, c.code, c.title))) continue;
 
       // Check exam clash
       if (c.examDay != 'N/A' && selectedSlots.containsKey(c.examDay) && selectedSlots[c.examDay] == c.examSlot) {
@@ -335,7 +343,9 @@ class AcademicAdvisorEngine {
     // If still empty (e.g. fresh 1st trimester student), give next curriculum defaults (excluding ongoing courses)
     if (recommended.isEmpty) {
       final eligibleFallbacks = uiuCurriculum
-          .where((c) => !ongoingCourseCodes.contains(_normalizeCode(c.code)) && !completedCourseMap.containsKey(_normalizeCode(c.code)))
+          .where((c) =>
+              !ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title)) &&
+              !bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title)))
           .toList();
       eligibleFallbacks.sort((a, b) => a.trimester.compareTo(b.trimester));
 
@@ -456,16 +466,97 @@ class AcademicAdvisorEngine {
     return code.replaceAll(RegExp(r'\s+'), ' ').trim().toUpperCase();
   }
 
+  static String _cleanCode(String code) {
+    return code.replaceAll(RegExp(r'[^A-Za-z0-9]'), '').toUpperCase();
+  }
+
+  static String _cleanTitle(String title) {
+    return title
+        .toLowerCase()
+        .replaceAll('laboratory', 'lab')
+        .replaceAll('engineering', 'eng')
+        .replaceAll('fundamental', 'fund')
+        .replaceAll('&', 'and')
+        .replaceAll(RegExp(r'[^a-z0-9]'), '')
+        .trim();
+  }
+
+  /// Known UIU Course Code Equivalences across old and new catalog curricula
+  static final Map<String, Set<String>> _uiuEquivalents = {
+    'CSE3711': {'CSE3711', 'CSE4531'}, // Computer Networks
+    'CSE4531': {'CSE3711', 'CSE4531'},
+    'CSE3712': {'CSE3712', 'CSE4532', 'CSE3714'}, // Computer Networks Lab
+    'CSE4532': {'CSE3712', 'CSE4532', 'CSE3714'},
+    'CSE3714': {'CSE3712', 'CSE4532', 'CSE3714'},
+
+    'CSE4325': {'CSE4325', 'CSE3825'}, // Microprocessors
+    'CSE3825': {'CSE4325', 'CSE3825'},
+    'CSE4326': {'CSE4326', 'CSE3826'}, // Microprocessors Lab
+    'CSE3826': {'CSE4326', 'CSE3826'},
+
+    'CSE3421': {'CSE3421', 'CSE4121'}, // Software Engineering
+    'CSE4121': {'CSE3421', 'CSE4121'},
+    'CSE3422': {'CSE3422', 'CSE4122'}, // Software Engineering Lab
+    'CSE4122': {'CSE3422', 'CSE4122'},
+
+    'CSE4329': {'CSE4329', 'CSE3715', 'CSE3729'}, // Operating Systems
+    'CSE3715': {'CSE4329', 'CSE3715', 'CSE3729'},
+    'CSE3729': {'CSE4329', 'CSE3715', 'CSE3729'},
+    'CSE4330': {'CSE4330', 'CSE3716', 'CSE3730'}, // Operating Systems Lab
+    'CSE3716': {'CSE4330', 'CSE3716', 'CSE3730'},
+    'CSE3730': {'CSE4330', 'CSE3716', 'CSE3730'},
+
+    'PMG4101': {'PMG4101', 'CSE4101'}, // Project Management
+    'CSE4101': {'PMG4101', 'CSE4101'},
+  };
+
+  static bool _areCodesEquivalent(String codeA, String codeB) {
+    final cleanA = _cleanCode(codeA);
+    final cleanB = _cleanCode(codeB);
+    if (cleanA.isEmpty || cleanB.isEmpty) return false;
+    if (cleanA == cleanB) return true;
+    if (_uiuEquivalents.containsKey(cleanA) && _uiuEquivalents[cleanA]!.contains(cleanB)) {
+      return true;
+    }
+    return false;
+  }
+
+  static bool isCourseMatch(String codeA, String titleA, String codeB, String titleB) {
+    return _isCourseMatch(codeA, titleA, codeB, titleB);
+  }
+
+  static bool _isCourseMatch(String codeA, String titleA, String codeB, String titleB) {
+    // 1. Direct or catalogue equivalent code match
+    if (_areCodesEquivalent(codeA, codeB)) return true;
+
+    // 2. Title matching
+    final tA = _cleanTitle(titleA);
+    final tB = _cleanTitle(titleB);
+    if (tA.isNotEmpty && tB.isNotEmpty) {
+      if (tA == tB) return true;
+      if (tA.contains(tB) || tB.contains(tA)) {
+        final cleanA = _cleanCode(codeA);
+        final cleanB = _cleanCode(codeB);
+        final isLabA = tA.contains('lab') || cleanA.endsWith('2') || cleanA.endsWith('4') || cleanA.endsWith('6') || cleanA.endsWith('8');
+        final isLabB = tB.contains('lab') || cleanB.endsWith('2') || cleanB.endsWith('4') || cleanB.endsWith('6') || cleanB.endsWith('8');
+        if (isLabA == isLabB) return true;
+      }
+    }
+
+    return false;
+  }
+
   static String _findCourseDomain(String code) {
     for (final c in uiuCurriculum) {
-      if (_normalizeCode(c.code) == code) {
+      if (_areCodesEquivalent(c.code, code)) {
         return c.domain;
       }
     }
-    if (code.startsWith('MATH')) return 'Mathematics';
-    if (code.startsWith('CSE')) return 'Programming & CS';
-    if (code.startsWith('EEE')) return 'Hardware & Architecture';
-    if (code.startsWith('ENG') || code.startsWith('BDS') || code.startsWith('SOC') || code.startsWith('GED')) return 'General Education';
+    final clean = _cleanCode(code);
+    if (clean.startsWith('MATH')) return 'Mathematics';
+    if (clean.startsWith('CSE')) return 'Programming & CS';
+    if (clean.startsWith('EEE')) return 'Hardware & Architecture';
+    if (clean.startsWith('ENG') || clean.startsWith('BDS') || clean.startsWith('SOC') || clean.startsWith('GED')) return 'General Education';
     return 'Programming & CS';
   }
 }

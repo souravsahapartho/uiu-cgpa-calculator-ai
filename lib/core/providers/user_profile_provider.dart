@@ -618,16 +618,32 @@ class UserProfileProvider extends ChangeNotifier {
     String currentTerm = detectTrimester(defaultTerm) ?? (defaultTerm.trim().isEmpty ? 'Spring 2024' : defaultTerm.trim());
 
     final lines = content.split(RegExp(r'\r?\n'));
-    final codeRegex = RegExp(r'^[A-Za-z]{2,5}\s*[-]?\s*\d{3,4}$', caseSensitive: false);
+    final codeRegex = RegExp(r'^[A-Za-z]{2,5}\s*[-]?\s*\d{3,4}[A-Za-z]?$', caseSensitive: false);
     final gradeRegex = RegExp(r'^(A|A-|B\+|B|B-|C\+|C|C-|D\+|D|F|W|I)$', caseSensitive: false);
+    
+    // Graded: CSE 1111 Structured Programming 3.00 A (or W, I)
     final spaceCourseRegex = RegExp(
-      r'([A-Za-z]{2,5}\s*\d{3,4})\s+(.+?)\s+([0-9.]+)\s+([A-D][+-]?|F)\b',
+      r'([A-Za-z]{2,5}\s*\d{3,4}[A-Za-z]?)\s+(.+?)\s+([0-9.]+)\s+([A-D][+-]?|F|W|I)\b',
+      caseSensitive: false,
+    );
+
+    // Graded with points after or before: e.g. CSE 1111 SPL 3.00 4.00 A  OR  CSE 1111 SPL 3.00 A 4.00
+    final spaceCourseGradePointRegex = RegExp(
+      r'([A-Za-z]{2,5}\s*\d{3,4}[A-Za-z]?)\s+(.+?)\s+([0-9.]+)\s+(?:([A-D][+-]?|F|W|I)\s+[0-9.]+|[0-9.]+\s+([A-D][+-]?|F|W|I))\b',
       caseSensitive: false,
     );
 
     final ongoingKeywordsRegex = RegExp(r'^(ongoing|in\s*progress|enrolled|current|running|n/a|-|--)$', caseSensitive: false);
+    
+    // Explicit Ongoing: CSE 4325 Microprocessors 3.00 Ongoing
+    final spaceExplicitOngoingRegex = RegExp(
+      r'([A-Za-z]{2,5}\s*\d{3,4}[A-Za-z]?)\s+(.+?)\s+([0-9.]+)\s+(ongoing|in\s*progress|enrolled|current|running)\b',
+      caseSensitive: false,
+    );
+
+    // Ongoing course without grade at end of line: CSE 1111 Structured Programming 3.00
     final spaceOngoingRegex = RegExp(
-      r'([A-Za-z]{2,5}\s*\d{3,4})\s+(.+?)\s+([0-9.]+)\s*$',
+      r'([A-Za-z]{2,5}\s*\d{3,4}[A-Za-z]?)\s+(.+?)\s+([0-9.]+)\s*$',
       caseSensitive: false,
     );
 
@@ -637,7 +653,7 @@ class UserProfileProvider extends ChangeNotifier {
 
       // Check if line contains an explicit or embedded trimester mention
       final lineTrimester = detectTrimester(line);
-      final hasGrade = gradeRegex.hasMatch(line) || spaceCourseRegex.hasMatch(line);
+      final hasGrade = gradeRegex.hasMatch(line) || spaceCourseRegex.hasMatch(line) || spaceCourseGradePointRegex.hasMatch(line);
       final isHeaderKeyword = RegExp(r'(trimester|semester|term|academic year)', caseSensitive: false).hasMatch(line);
 
       // If this line indicates a trimester header, switch currentTerm
@@ -735,7 +751,7 @@ class UserProfileProvider extends ChangeNotifier {
           final isOngoingCourse = gr.isEmpty;
 
           if (code.isNotEmpty && (isGradeValid || isOngoingCourse)) {
-            final double? gp = isOngoingCourse ? null : UIUGradingScale.getGradePoint(gr);
+            final double? gp = (isOngoingCourse || gr == 'W') ? null : UIUGradingScale.getGradePoint(gr);
             trimestersMap.putIfAbsent(rowTerm, () => []);
             trimestersMap[rowTerm]!.add(Course(
               code: code,
@@ -750,14 +766,14 @@ class UserProfileProvider extends ChangeNotifier {
       }
 
       // 3. Space-separated format:
-      // A) Graded: CSE 1111 Structured Programming 3.00 A
-      final sMatch = spaceCourseRegex.firstMatch(line);
-      if (sMatch != null) {
-        final code = sMatch.group(1)!.trim().toUpperCase();
-        final title = sMatch.group(2)!.trim();
-        final cr = double.tryParse(sMatch.group(3)!) ?? 3.0;
-        final gr = sMatch.group(4)!.toUpperCase();
-        final gp = UIUGradingScale.getGradePoint(gr);
+      // A) Graded with Grade & Points: CSE 1111 SPL 3.00 4.00 A OR CSE 1111 SPL 3.00 A 4.00
+      final sgpMatch = spaceCourseGradePointRegex.firstMatch(line);
+      if (sgpMatch != null) {
+        final code = sgpMatch.group(1)!.trim().toUpperCase();
+        final title = sgpMatch.group(2)!.trim();
+        final cr = double.tryParse(sgpMatch.group(3)!) ?? 3.0;
+        final gr = (sgpMatch.group(4) ?? sgpMatch.group(5) ?? '').toUpperCase();
+        final gp = (gr == 'W' || gr.isEmpty) ? null : UIUGradingScale.getGradePoint(gr);
 
         trimestersMap.putIfAbsent(currentTerm, () => []);
         trimestersMap[currentTerm]!.add(Course(
@@ -770,7 +786,45 @@ class UserProfileProvider extends ChangeNotifier {
         continue;
       }
 
-      // B) Ongoing course without grade: CSE 1111 Structured Programming 3.00
+      // B) Graded: CSE 1111 Structured Programming 3.00 A
+      final sMatch = spaceCourseRegex.firstMatch(line);
+      if (sMatch != null) {
+        final code = sMatch.group(1)!.trim().toUpperCase();
+        final title = sMatch.group(2)!.trim();
+        final cr = double.tryParse(sMatch.group(3)!) ?? 3.0;
+        final gr = sMatch.group(4)!.toUpperCase();
+        final gp = (gr == 'W' || gr.isEmpty) ? null : UIUGradingScale.getGradePoint(gr);
+
+        trimestersMap.putIfAbsent(currentTerm, () => []);
+        trimestersMap[currentTerm]!.add(Course(
+          code: code,
+          title: title,
+          credit: cr,
+          grade: gr,
+          gradePoint: gp,
+        ));
+        continue;
+      }
+
+      // C) Explicit ongoing keyword: CSE 4325 Microprocessors 3.00 Ongoing
+      final sExpMatch = spaceExplicitOngoingRegex.firstMatch(line);
+      if (sExpMatch != null) {
+        final code = sExpMatch.group(1)!.trim().toUpperCase();
+        final title = sExpMatch.group(2)!.trim();
+        final cr = double.tryParse(sExpMatch.group(3)!) ?? 3.0;
+
+        trimestersMap.putIfAbsent(currentTerm, () => []);
+        trimestersMap[currentTerm]!.add(Course(
+          code: code,
+          title: title,
+          credit: cr,
+          grade: null,
+          gradePoint: null,
+        ));
+        continue;
+      }
+
+      // D) Ongoing course without grade at end of line: CSE 1111 Structured Programming 3.00
       final sOngoingMatch = spaceOngoingRegex.firstMatch(line);
       if (sOngoingMatch != null) {
         final code = sOngoingMatch.group(1)!.trim().toUpperCase();

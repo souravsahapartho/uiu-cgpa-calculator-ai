@@ -92,12 +92,12 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                     ? 'Strong Academic Standing'
                     : 'Target Improvement Track';
 
-    // Identify ongoing course keys across all semesters
-    final ongoingCourseKeys = <String>{};
+    // Identify ongoing courses across all semesters
+    final ongoingCourses = <Course>[];
     for (final sem in provider.semesters) {
       for (final course in sem.courses) {
         if (course.isOngoing || sem.isOngoing) {
-          ongoingCourseKeys.add(UserProfileProvider.getCourseKey(course));
+          ongoingCourses.add(course);
         }
       }
     }
@@ -116,11 +116,11 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
     }
 
     final candidateRetakes = <Course>[];
-    for (final entry in latestBestAttempts.entries) {
-      final key = entry.key;
-      final course = entry.value;
-      // Skip if course is currently enrolled in ongoing trimester
-      if (ongoingCourseKeys.contains(key)) continue;
+    for (final course in latestBestAttempts.values) {
+      // Skip if course is currently enrolled in ongoing trimester (matching by code or title)
+      if (ongoingCourses.any((o) => AcademicAdvisorEngine.isCourseMatch(o.code, o.title, course.code, course.title))) {
+        continue;
+      }
 
       final gp = course.gradePoint ?? (course.grade != null ? UIUGradingScale.getGradePoint(course.grade!) : 0.0);
       final grade = (course.grade ?? '').toUpperCase().trim();
