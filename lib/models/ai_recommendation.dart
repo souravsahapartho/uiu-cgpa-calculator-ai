@@ -21,13 +21,43 @@ class CourseRecommendation {
   final String reason;
   final String unlockRationale;
   final int priorityRank; // 1 = highest
+  final String examDay; // e.g. 'Day 1', 'N/A'
+  final String examSlot; // e.g. 'T1', 'T2', 'N/A'
+  final bool hasSameDayExam;
+  final String? sameDayWithCourse;
 
   const CourseRecommendation({
     required this.course,
     required this.reason,
     required this.unlockRationale,
     required this.priorityRank,
+    this.examDay = 'N/A',
+    this.examSlot = 'N/A',
+    this.hasSameDayExam = false,
+    this.sameDayWithCourse,
   });
+
+  CourseRecommendation copyWith({
+    Course? course,
+    String? reason,
+    String? unlockRationale,
+    int? priorityRank,
+    String? examDay,
+    String? examSlot,
+    bool? hasSameDayExam,
+    String? sameDayWithCourse,
+  }) {
+    return CourseRecommendation(
+      course: course ?? this.course,
+      reason: reason ?? this.reason,
+      unlockRationale: unlockRationale ?? this.unlockRationale,
+      priorityRank: priorityRank ?? this.priorityRank,
+      examDay: examDay ?? this.examDay,
+      examSlot: examSlot ?? this.examSlot,
+      hasSameDayExam: hasSameDayExam ?? this.hasSameDayExam,
+      sameDayWithCourse: sameDayWithCourse ?? this.sameDayWithCourse,
+    );
+  }
 }
 
 class CourseConflictWarning {

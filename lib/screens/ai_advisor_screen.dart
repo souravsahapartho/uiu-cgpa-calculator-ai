@@ -618,7 +618,100 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                                       color: textPri,
                                     ),
                                   ),
-                                  const SizedBox(height: 3),
+                                  const SizedBox(height: 5),
+                                  // Exam schedule badge & same-day alert
+                                  if (rec.hasSameDayExam) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF332008) : const Color(0xFFFFF7ED),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.5)),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.warning_amber_rounded, size: 12, color: Color(0xFFEA580C)),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '${rec.examDay} • Slot ${rec.examSlot} (2 Exams on this Day!)',
+                                                style: const TextStyle(
+                                                  color: Color(0xFFEA580C),
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          if (rec.sameDayWithCourse != null) ...[
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Shares date with: ${rec.sameDayWithCourse}',
+                                              style: TextStyle(
+                                                color: isDark ? const Color(0xFFFDBA74) : const Color(0xFFC2410C),
+                                                fontSize: 9.5,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                  ] else if (rec.examDay != 'N/A' && rec.examDay != '----') ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(alpha: 0.08),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.event_available_rounded, size: 11, color: AppColors.primary),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Exam: ${rec.examDay} • Slot ${rec.examSlot}',
+                                            style: const TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 9.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                  ] else if (rec.course.isLab) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.secondary.withValues(alpha: 0.08),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.science_outlined, size: 11, color: AppColors.secondary),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'Lab Assessment (No Written Exam)',
+                                            style: TextStyle(
+                                              color: AppColors.secondaryDark,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 9.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                  ],
                                   Text(
                                     rec.reason,
                                     style: AppTypography.bodySmall.copyWith(
@@ -639,51 +732,103 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                 ),
               ),
 
-              // Course Conflict Warning Section (Only shown if conflicts exist)
+              // Course Conflict & Exam Schedule Warning Section
               if (report.conflictWarnings.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF2D1616) : AppColors.dangerLight,
-                        borderRadius: AppRadius.borderLg,
-                        border: Border.all(color: AppColors.danger.withValues(alpha: isDark ? 0.4 : 0.2)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    child: Column(
+                      children: report.conflictWarnings.map((warning) {
+                        final isCritical = warning.severity == 'Critical';
+                        final isHigh = warning.severity == 'High';
+                        
+                        final cardBg = isCritical
+                            ? (isDark ? const Color(0xFF2D1616) : AppColors.dangerLight)
+                            : (isHigh
+                                ? (isDark ? const Color(0xFF2E1C0A) : const Color(0xFFFFF7ED))
+                                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)));
+
+                        final alertBorderClr = isCritical
+                            ? AppColors.danger.withValues(alpha: isDark ? 0.4 : 0.3)
+                            : (isHigh
+                                ? const Color(0xFFF97316).withValues(alpha: isDark ? 0.4 : 0.3)
+                                : borderClr);
+
+                        final iconClr = isCritical
+                            ? AppColors.danger
+                            : (isHigh ? const Color(0xFFEA580C) : AppColors.primary);
+
+                        final titleClr = isCritical
+                            ? (isDark ? const Color(0xFFFCA5A5) : AppColors.dangerDark)
+                            : (isHigh
+                                ? (isDark ? const Color(0xFFFDBA74) : const Color(0xFFC2410C))
+                                : textPri);
+
+                        final textClr = isCritical
+                            ? (isDark ? const Color(0xFFFCA5A5).withValues(alpha: 0.9) : AppColors.dangerDark)
+                            : (isHigh
+                                ? (isDark ? const Color(0xFFFED7AA) : const Color(0xFF9A3412))
+                                : textSec);
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(13),
+                          decoration: BoxDecoration(
+                            color: cardBg,
+                            borderRadius: AppRadius.borderLg,
+                            border: Border.all(color: alertBorderClr),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Courses to Avoid Taking Together',
-                                  style: AppTypography.titleMedium.copyWith(
-                                    color: isDark ? const Color(0xFFFCA5A5) : AppColors.dangerDark,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 13,
+                              Row(
+                                children: [
+                                  Icon(
+                                    isCritical
+                                        ? Icons.block_rounded
+                                        : (isHigh ? Icons.warning_amber_rounded : Icons.info_outline_rounded),
+                                    color: iconClr,
+                                    size: 19,
                                   ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      warning.title,
+                                      style: AppTypography.titleMedium.copyWith(
+                                        color: titleClr,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 12.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                warning.explanation,
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: textClr,
+                                  fontSize: 11,
+                                  height: 1.4,
                                 ),
                               ),
+                              if (warning.recommendation.isNotEmpty) ...[
+                                const SizedBox(height: 5),
+                                Text(
+                                  '💡 Advisor Advice: ${warning.recommendation}',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: textClr,
+                                    fontSize: 10.5,
+                                    fontStyle: FontStyle.italic,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          ...report.conflictWarnings.map((warning) => Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: Text(
-                              '• ${warning.conflictingCourses.join(" + ")}: ${warning.explanation}',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: isDark ? const Color(0xFFFCA5A5).withValues(alpha: 0.9) : AppColors.dangerDark,
-                                fontSize: 11,
-                                height: 1.4,
-                              ),
-                            ),
-                          )),
-                        ],
-                      ),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
