@@ -95,7 +95,7 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
 
           // Dynamic & Responsive Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 6, 10, 10),
+            padding: const EdgeInsets.fromLTRB(16, 6, 8, 10),
             child: Row(
               children: [
                 Container(
@@ -115,12 +115,15 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            'UIU Notices',
-                            style: AppTypography.titleMedium.copyWith(
-                              color: textPri,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15.5,
+                          Flexible(
+                            child: Text(
+                              'UIU Notices',
+                              style: AppTypography.titleMedium.copyWith(
+                                color: textPri,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                              ),
+                              overflow: TextOverflow.visible,
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -160,13 +163,12 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                       ),
                       const SizedBox(height: 1.5),
                       Text(
-                        'Live announcements • uiu.ac.bd/notice',
+                        'Latest Notices',
                         style: AppTypography.bodySmall.copyWith(
                           color: textSec,
-                          fontSize: 10.5,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -178,7 +180,7 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                     onTap: () => _service.markAllAsRead(),
                     borderRadius: AppRadius.borderFull,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 4.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: AppRadius.borderFull,
@@ -191,7 +193,7 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.done_all_rounded, size: 12, color: AppColors.primary),
-                          SizedBox(width: 3.5),
+                          SizedBox(width: 3),
                           Text(
                             'Mark read',
                             style: TextStyle(

@@ -69,10 +69,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   double get _requiredSGPA {
     final provider = ProfileProviderScope.of(context);
     final p = provider.profile;
-    final remaining = p.remainingCredits;
+    final totalDegree = p.totalDegreeCredits > 0 ? p.totalDegreeCredits : 141.0;
+    final remaining = (totalDegree - p.completedCredits).clamp(0.0, totalDegree);
     if (remaining <= 0) return 0.0;
-    final total = p.completedCredits + remaining;
-    final req = (p.targetCGPA * total) - (p.currentCGPA * p.completedCredits);
+    final target = p.targetCGPA > 0 ? p.targetCGPA : 3.75;
+    final req = (target * totalDegree) - (p.currentCGPA * p.completedCredits);
     return (req / remaining).clamp(0.0, 9.99);
   }
 
@@ -768,6 +769,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required Color textPri,
     required Color textSec,
   }) {
+    final double totalCredits = student.totalDegreeCredits > 0 ? student.totalDegreeCredits : 141.0;
+    final double effectiveProgress = totalCredits > 0
+        ? (student.completedCredits / totalCredits).clamp(0.0, 1.0)
+        : 0.0;
+    final int displayPct = (effectiveProgress * 100).toInt();
+    final double remaining = (totalCredits - student.completedCredits).clamp(0.0, totalCredits);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Container(
@@ -796,7 +804,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: AppColors.success.withValues(alpha: 0.1),
                     borderRadius: AppRadius.borderFull,
                   ),
-                  child: Text('$progressPct% Done',
+                  child: Text('$displayPct% Done',
                       style: AppTypography.labelSmall.copyWith(
                           color: AppColors.success,
                           fontWeight: FontWeight.w800,
@@ -808,7 +816,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ClipRRect(
               borderRadius: AppRadius.borderFull,
               child: TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: student.progressPercentage),
+                tween: Tween(begin: 0, end: effectiveProgress),
                 duration: const Duration(milliseconds: 1200),
                 curve: Curves.easeOutCubic,
                 builder: (context, val, _) => LinearProgressIndicator(
@@ -827,8 +835,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _progressLabel('Completed', '${student.completedCredits.toInt()} cr', AppColors.primary, textSec),
-                _progressLabel('Remaining', '${student.remainingCredits.toInt()} cr', AppColors.accent, textSec),
-                _progressLabel('Total', '${student.totalDegreeCredits.toInt()} cr', textSec, textSec),
+                _progressLabel('Remaining', '${remaining.toInt()} cr', AppColors.accent, textSec),
+                _progressLabel('Total', '${totalCredits.toInt()} cr', textSec, textSec),
               ],
             ),
             const SizedBox(height: 12),
@@ -889,7 +897,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required Color textSec,
     required Color sectionClr,
   }) {
-    final bool degreeDone = student.remainingCredits <= 0;
+    final double totalDegree = student.totalDegreeCredits > 0 ? student.totalDegreeCredits : 141.0;
+    final double remainingCredits = (totalDegree - student.completedCredits).clamp(0.0, totalDegree);
+    final bool degreeDone = remainingCredits <= 0;
     final (labelColor, label, statusIcon) = degreeDone
         ? (AppColors.success, 'Degree Completed', Icons.celebration_rounded)
         : requiredSGPA <= 3.30
@@ -950,10 +960,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // Row 2: Unbroken Goal CGPA display
             Row(
               children: [
-                const Icon(Icons.flag_outlined, size: 13, color: AppColors.primary),
+                Icon(
+                  degreeDone ? Icons.verified_rounded : Icons.flag_outlined,
+                  size: 13,
+                  color: degreeDone ? AppColors.success : AppColors.primary,
+                ),
                 const SizedBox(width: 4),
                 Text(
-                  'Goal Target: ${student.targetCGPA.toStringAsFixed(2)} CGPA',
+                  degreeDone
+                      ? 'Goal: ${student.targetCGPA > 0 ? student.targetCGPA.toStringAsFixed(2) : student.currentCGPA.toStringAsFixed(2)} CGPA'
+                      : 'Goal Target: ${student.targetCGPA.toStringAsFixed(2)} CGPA',
                   style: TextStyle(
                     color: textPri,
                     fontWeight: FontWeight.w800,
@@ -963,13 +979,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    '• ${student.remainingCredits.toStringAsFixed(1)} credits left',
+                    degreeDone
+                        ? '• All degree requirements completed'
+                        : '• ${remainingCredits.toStringAsFixed(1)} credits left',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: textSec,
+                      color: degreeDone ? AppColors.success : textSec,
                       fontSize: 11,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: degreeDone ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -981,13 +999,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: sectionClr,
+                color: degreeDone
+                    ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.3) : const Color(0xFFECFDF5))
+                    : sectionClr,
                 borderRadius: AppRadius.borderLg,
-                border: Border.all(color: borderColor),
+                border: Border.all(
+                  color: degreeDone
+                      ? AppColors.success.withValues(alpha: 0.4)
+                      : borderColor,
+                  width: degreeDone ? 1.2 : 1.0,
+                ),
               ),
               child: Row(
                 children: [
-                  // Required GPA
+                  // Required GPA / Term
                   Expanded(
                     flex: 5,
                     child: Column(
@@ -996,26 +1021,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Text(
                           'Required GPA / Term',
                           style: TextStyle(
-                            color: textSec,
-                            fontWeight: FontWeight.w600,
+                            color: degreeDone ? AppColors.success : textSec,
+                            fontWeight: FontWeight.w700,
                             fontSize: 11.5,
                           ),
                         ),
                         const SizedBox(height: 3),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              degreeDone ? 'Done' : requiredSGPA.toStringAsFixed(2),
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w900,
-                                color: labelColor,
-                                letterSpacing: -0.5,
+                        if (degreeDone)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: AppColors.success.withValues(alpha: 0.15),
+                                  borderRadius: AppRadius.borderFull,
+                                  border: Border.all(color: AppColors.success.withValues(alpha: 0.35)),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.check_circle_rounded, color: AppColors.success, size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Done 🎓',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.success,
+                                        letterSpacing: -0.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            if (!degreeDone) ...[
+                            ],
+                          )
+                        else
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                requiredSGPA.toStringAsFixed(2),
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w900,
+                                  color: labelColor,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 '/ 4.00',
@@ -1026,13 +1081,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 ),
                               ),
                             ],
-                          ],
-                        ),
+                          ),
                       ],
                     ),
                   ),
 
-                  Container(width: 1, height: 38, color: borderColor),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: degreeDone ? AppColors.success.withValues(alpha: 0.25) : borderColor,
+                  ),
                   const SizedBox(width: 12),
 
                   // Quick Metrics Column
@@ -1055,11 +1113,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Remaining Cr:', style: TextStyle(color: textSec, fontSize: 11)),
+                            Text(degreeDone ? 'Status:' : 'Remaining Cr:', style: TextStyle(color: textSec, fontSize: 11)),
                             Text(
-                              '${student.remainingCredits.toStringAsFixed(1)} Cr',
-                              style: const TextStyle(
-                                color: AppColors.primary,
+                              degreeDone ? 'Completed' : '${remainingCredits.toStringAsFixed(1)} Cr',
+                              style: TextStyle(
+                                color: degreeDone ? AppColors.success : AppColors.primary,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 11.5,
                               ),

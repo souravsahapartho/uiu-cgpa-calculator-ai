@@ -14,26 +14,32 @@ import 'transcript_import_screen.dart';
 
 /// Departments available at UIU
 const _departments = [
-  'Computer Science & Engineering',
-  'Electrical & Electronic Engineering',
+  'Computer Science and Engineering (CSE)',
+  'Electrical and Electronic Engineering (EEE)',
   'Civil Engineering',
-  'Business Administration',
+  'Data Science',
   'English',
-  'Law',
+  'Environment Studies',
   'Pharmacy',
-  'Architecture',
+  'Biotechnology & Genetic Engineering',
+  'Economics',
+  'Business Administration',
+  'Law',
   'Other',
 ];
 
 const _programs = {
-  'Computer Science & Engineering': 'B.Sc. in CSE',
-  'Electrical & Electronic Engineering': 'B.Sc. in EEE',
+  'Computer Science and Engineering (CSE)': 'B.Sc. in CSE',
+  'Electrical and Electronic Engineering (EEE)': 'B.Sc. in EEE',
   'Civil Engineering': 'B.Sc. in CE',
-  'Business Administration': 'BBA',
+  'Data Science': 'B.Sc. in Data Science',
   'English': 'B.A. in English',
-  'Law': 'LL.B.',
+  'Environment Studies': 'B.Sc. in Environment Studies',
   'Pharmacy': 'B.Pharm',
-  'Architecture': 'B.Arch',
+  'Biotechnology & Genetic Engineering': 'B.Sc. in Biotechnology',
+  'Economics': 'B.S.S. in Economics',
+  'Business Administration': 'BBA',
+  'Law': 'LL.B.',
   'Other': 'B.Sc.',
 };
 
@@ -118,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Future<void> _finish() async {
     final provider = ProfileProviderScope.of(context);
-    final dept = _selectedDept ?? 'Computer Science & Engineering';
+    final dept = _selectedDept ?? 'Computer Science and Engineering (CSE)';
     final totalReqText = _totalRequiredCreditsController.text.trim();
     final totalCredits = totalReqText.isNotEmpty
         ? (double.tryParse(totalReqText) ?? 141.0)
@@ -1177,7 +1183,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 : '0110000000'),
         department: p.department.isNotEmpty
             ? p.department
-            : (_selectedDept ?? 'Computer Science & Engineering'),
+            : (_selectedDept ?? 'Computer Science and Engineering (CSE)'),
       ));
       if (!mounted) return;
       Navigator.pushReplacement(

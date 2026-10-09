@@ -2411,6 +2411,9 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
   void _showModernImportSheet({
     required BuildContext context,
     required String mode, // 'csv', 'pdf', 'image'
+    String? initialFileName,
+    String? initialFileSize,
+    String? initialContent,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? AppColors.darkSurface : AppColors.surface;
@@ -2446,10 +2449,10 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     final provider = ProfileProviderScope.of(context);
     final defaultDynamicTerm = _getDynamicTrimester(provider.semesters);
 
-    final contentController = TextEditingController();
+    final contentController = TextEditingController(text: initialContent ?? '');
 
-    String? pickedFileName;
-    String? pickedFileSize;
+    String? pickedFileName = initialFileName;
+    String? pickedFileSize = initialFileSize;
 
     showModalBottomSheet(
       context: context,
@@ -2867,13 +2870,39 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     allowedExtensions: ['pdf', 'csv', 'txt', 'png', 'jpg', 'jpeg'],
                   );
                   if (file != null && context.mounted) {
+                    final bytes = await file.readAsBytes();
                     final ext = file.extension?.toLowerCase() ?? '';
+                    final sizeStr = '${(bytes.length / 1024).toStringAsFixed(1)} KB';
+                    String? textContent;
+                    if (ext == 'csv' || ext == 'txt' || ext == 'pdf') {
+                      try {
+                        textContent = utf8.decode(bytes, allowMalformed: true);
+                      } catch (_) {}
+                    }
+                    if (!context.mounted) return;
                     if (ext == 'csv' || ext == 'txt') {
-                      _showModernImportSheet(context: context, mode: 'csv');
+                      _showModernImportSheet(
+                        context: context,
+                        mode: 'csv',
+                        initialFileName: file.name,
+                        initialFileSize: sizeStr,
+                        initialContent: textContent,
+                      );
                     } else if (ext == 'pdf') {
-                      _showModernImportSheet(context: context, mode: 'pdf');
+                      _showModernImportSheet(
+                        context: context,
+                        mode: 'pdf',
+                        initialFileName: file.name,
+                        initialFileSize: sizeStr,
+                        initialContent: textContent,
+                      );
                     } else {
-                      _showModernImportSheet(context: context, mode: 'image');
+                      _showModernImportSheet(
+                        context: context,
+                        mode: 'image',
+                        initialFileName: file.name,
+                        initialFileSize: sizeStr,
+                      );
                     }
                   }
                 } catch (e) {
