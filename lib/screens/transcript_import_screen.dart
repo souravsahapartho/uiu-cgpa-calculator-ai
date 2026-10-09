@@ -37,17 +37,14 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
   }
 
   Future<void> _loadBannerDismissedState() async {
-    final prefs = await SharedPreferences.getInstance();
     if (mounted) {
       setState(() {
-        _bannerDismissed = prefs.getBool(_keyDismissedAIPromptBanner) ?? false;
+        _bannerDismissed = false;
       });
     }
   }
 
   Future<void> _dismissBanner() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_keyDismissedAIPromptBanner, true);
     if (mounted) {
       setState(() {
         _bannerDismissed = true;

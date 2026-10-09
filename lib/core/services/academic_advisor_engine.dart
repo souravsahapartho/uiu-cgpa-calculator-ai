@@ -254,6 +254,12 @@ class AcademicAdvisorEngine {
         ? realEarnedCredits
         : (profile.completedCredits > 0 ? profile.completedCredits : 0.0);
 
+    final bool hasTranscriptHistory = completedAttempts.isNotEmpty || ongoingCourses.isNotEmpty;
+    final bool isEstimatedFromProfileCredits = !hasTranscriptHistory && realCompletedCredits > 0;
+    final int estimatedTrimester = isEstimatedFromProfileCredits
+        ? ((realCompletedCredits / 11.5).floor() + 1).clamp(1, 12)
+        : 1;
+
     final double targetCGPA = profile.targetCGPA > 0 ? profile.targetCGPA : 3.75;
     final double totalCredits = profile.totalDegreeCredits > 0 ? profile.totalDegreeCredits : 138.0;
     final double remainingCredits = (totalCredits - realCompletedCredits).clamp(0.0, totalCredits);
@@ -345,13 +351,18 @@ class AcademicAdvisorEngine {
     final int maxTrackScore = [aiTrackCount, seTrackCount, secTrackCount, hwTrackCount].reduce((a, b) => a > b ? a : b);
 
     // Prerequisite satisfaction helper
-    bool isPrereqSatisfied(String prerequisite) {
+    bool isPrereqSatisfied(String prerequisite, [int courseTrimester = 1]) {
       if (prerequisite == 'X') return true;
       if (prerequisite == 'CREDITS_85' || prerequisite.contains('85')) {
         return (realCompletedCredits + ongoingCredits) >= 85.0;
       }
       if (prerequisite == 'CREDITS_70' || prerequisite.contains('70')) {
         return (realCompletedCredits + ongoingCredits) >= 70.0;
+      }
+      // If student has entered completed credits without transcript,
+      // all prerequisites from earlier trimesters are assumed satisfied!
+      if (isEstimatedFromProfileCredits && courseTrimester <= estimatedTrimester) {
+        return true;
       }
       final reqs = prerequisite
           .replaceAll('&', ',')
@@ -369,14 +380,16 @@ class AcademicAdvisorEngine {
     }
 
     // Determine student's earliest incomplete core trimester milestone
-    int earliestIncompleteCoreTrimester = 12;
-    for (final c in uiuCurriculum) {
-      if (!c.isElective && !c.isGedOptional) {
-        final isDone = bestAttemptsMap.values.any((comp) =>
-            (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
-        final isOngoing = ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title));
-        if (!isDone && !isOngoing && c.trimester < earliestIncompleteCoreTrimester) {
-          earliestIncompleteCoreTrimester = c.trimester;
+    int earliestIncompleteCoreTrimester = isEstimatedFromProfileCredits ? estimatedTrimester : 12;
+    if (!isEstimatedFromProfileCredits) {
+      for (final c in uiuCurriculum) {
+        if (!c.isElective && !c.isGedOptional) {
+          final isDone = bestAttemptsMap.values.any((comp) =>
+              (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
+          final isOngoing = ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title));
+          if (!isDone && !isOngoing && c.trimester < earliestIncompleteCoreTrimester) {
+            earliestIncompleteCoreTrimester = c.trimester;
+          }
         }
       }
     }
@@ -564,8 +577,14 @@ class AcademicAdvisorEngine {
         continue;
       }
 
+      // If estimated from profile credits without transcript:
+      // Skip courses strictly before estimatedTrimester because they are already assumed completed!
+      if (isEstimatedFromProfileCredits && c.trimester < estimatedTrimester) {
+        continue;
+      }
+
       // Check prerequisites
-      if (isPrereqSatisfied(c.prerequisite)) {
+      if (isPrereqSatisfied(c.prerequisite, c.trimester)) {
         eligibleCourses.add(c);
       }
     }
@@ -604,7 +623,7 @@ class AcademicAdvisorEngine {
     // Check if eligible to inject GED Choice
     final bool canInjectGed = gedChoiceRec != null &&
         completedGedOptionalCount < 3 &&
-        (realCompletedCredits + ongoingCredits >= 50.0 || earliestIncompleteCoreTrimester >= 8) &&
+        (realCompletedCredits + ongoingCredits >= 50.0 || earliestIncompleteCoreTrimester >= 8 || estimatedTrimester >= 8) &&
         (currentAccumulatedCredits + 3.0 <= maxCreditCap);
 
     if (canInjectGed) {
@@ -617,7 +636,7 @@ class AcademicAdvisorEngine {
     // Check if eligible to inject Specialization Elective Choice
     final bool canInjectElective = electiveChoiceRec != null &&
         completedElectiveCount < 5 &&
-        (realCompletedCredits + ongoingCredits >= 70.0 || earliestIncompleteCoreTrimester >= 9) &&
+        (realCompletedCredits + ongoingCredits >= 70.0 || earliestIncompleteCoreTrimester >= 9 || estimatedTrimester >= 10) &&
         (currentAccumulatedCredits + 3.0 <= maxCreditCap);
 
     if (canInjectElective) {
@@ -628,6 +647,21 @@ class AcademicAdvisorEngine {
     }
 
     String getCourseReason(UIUCurriculumCourse c) {
+      if (isEstimatedFromProfileCredits) {
+        if (c.isProject && !c.isLab) {
+          return 'Estimated Capstone Project for Trimester ${c.trimester} based on your completed ${realCompletedCredits.toInt()} credits.';
+        } else if (c.isProject && c.isLab) {
+          return 'Estimated Term Project Lab for Trimester ${c.trimester} based on your completed ${realCompletedCredits.toInt()} credits.';
+        } else if (c.isLab) {
+          return 'Estimated Practical Lab for Trimester ${c.trimester} based on your completed ${realCompletedCredits.toInt()} credits.';
+        } else if (c.isGedOptional) {
+          return 'General Education (GED) Optional requirement towards degree completion.';
+        } else if (c.isElective) {
+          return 'Specialized Elective course fulfilling degree track focus area.';
+        } else {
+          return 'Estimated Core degree course for Trimester ${c.trimester} based on your completed ${realCompletedCredits.toInt()} credits.';
+        }
+      }
       if (c.isProject && !c.isLab) {
         return 'Final Year Design Project (FYDP). Continuous supervisor assessment & milestone defense with no written final exam.';
       } else if (c.isProject && c.isLab) {
@@ -767,7 +801,8 @@ class AcademicAdvisorEngine {
       final eligibleFallbacks = uiuCurriculum
           .where((c) =>
               !ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title)) &&
-              !bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title)))
+              !bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title)) &&
+              (!isEstimatedFromProfileCredits || c.trimester >= estimatedTrimester))
           .toList();
       eligibleFallbacks.sort((a, b) => a.trimester.compareTo(b.trimester));
 
@@ -944,6 +979,11 @@ class AcademicAdvisorEngine {
       suggestedCreditLoad: currentAccumulatedCredits,
       isMeritScholarshipEligible: isMeritScholarshipEligible,
       meritScholarshipNotice: meritScholarshipNotice,
+      isEstimatedFromProfileCredits: isEstimatedFromProfileCredits,
+      profileCreditEstimateNotice: isEstimatedFromProfileCredits
+          ? '⚠️ Estimated Recommendations (Trimester $estimatedTrimester • ${realCompletedCredits.toInt()} Credits): These course recommendations are projected based on your completed credit total. For 100% accurate prerequisite verification, automated retake detection, and clash-free scheduling, please add or import your transcript in the Transcript tab.'
+          : null,
+      estimatedTrimester: estimatedTrimester,
     );
   }
 

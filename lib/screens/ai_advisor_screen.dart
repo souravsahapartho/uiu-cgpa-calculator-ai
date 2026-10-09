@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../main.dart';
 import '../models/course.dart';
 import '../models/ai_recommendation.dart';
 import '../core/constants/uiu_grading_scale.dart';
 import '../core/providers/user_profile_provider.dart';
 import '../core/services/academic_advisor_engine.dart';
+import '../core/utils/ai_prompt_constants.dart';
+import 'main_navigation_screen.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';
@@ -528,12 +531,260 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                 ),
 
 
+              // ── Estimated Recommendations Alert (When based on profile credits without transcript) ──
+              if (!hasTranscript && report.isEstimatedFromProfileCredits)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 6),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF332008) : const Color(0xFFFFF7ED),
+                        borderRadius: AppRadius.borderLg,
+                        border: Border.all(
+                          color: const Color(0xFFF97316).withValues(alpha: 0.6),
+                          width: 1.2,
+                        ),
+                        boxShadow: AppShadows.soft,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEA580C),
+                                  borderRadius: AppRadius.borderSm,
+                                ),
+                                child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 16),
+                              ),
+                              const SizedBox(width: 9),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Estimated Course Recommendations',
+                                      style: AppTypography.titleSmall.copyWith(
+                                        fontWeight: FontWeight.w900,
+                                        color: isDark ? const Color(0xFFFED7AA) : const Color(0xFF9A3412),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Projected for Trimester ${report.estimatedTrimester} • Based on ${completedCredits.toInt()} Completed Credits',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 10.5,
+                                        color: isDark ? const Color(0xFFFDBA74) : const Color(0xFFC2410C),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 9),
+                          Text(
+                            'You have entered ${completedCredits.toInt()} completed credits in your profile without importing course history. These courses are projected for Trimester ${report.estimatedTrimester}. To get 100% accurate prerequisite verification, automated retake detection, and clash-free scheduling, please add your transcript in the Transcript tab.',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              height: 1.4,
+                              color: isDark ? const Color(0xFFFDBA74) : const Color(0xFF9A3412),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () => MainNavigationScreen.switchTab(context, 2),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFEA580C),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                              ),
+                              icon: const Icon(Icons.upload_file_rounded, size: 15),
+                              label: const Text(
+                                'Add Transcript for 100% Exact Advising',
+                                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              // ── AI Prompt Helper for New Users (shown when no transcript courses added) ──
+              if (!hasTranscript)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.s16, 4, AppSpacing.s16, 8),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: isDark ? 0.12 : 0.06),
+                        borderRadius: AppRadius.borderLg,
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 1.2),
+                        boxShadow: AppShadows.soft,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: AppRadius.borderSm,
+                                ),
+                                child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 16),
+                              ),
+                              const SizedBox(width: 9),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'AI Prompt: Convert UCAM Result in Seconds',
+                                      style: AppTypography.titleSmall.copyWith(
+                                        fontWeight: FontWeight.w900,
+                                        color: textPri,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Use AI to generate your CSV transcript instantly!',
+                                      style: TextStyle(
+                                        color: isDark ? const Color(0xFFFDBA74) : const Color(0xFFC2410C),
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 10.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '1. Copy text or take a screenshot of Grade History from UIU UCAM.\n'
+                            '2. Copy prompt below and paste into ChatGPT or Claude with your result.\n'
+                            '3. Import the output CSV or text in the Transcript tab!',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: textSec,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(9),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.black.withValues(alpha: 0.35) : Colors.white,
+                              borderRadius: AppRadius.borderMd,
+                              border: Border.all(color: borderClr),
+                            ),
+                            child: const Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    AIPromptConstants.ucamToCsvPrompt,
+                                    style: TextStyle(
+                                      fontFamily: 'monospace',
+                                      fontSize: 10,
+                                      height: 1.3,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    Clipboard.setData(const ClipboardData(text: AIPromptConstants.ucamToCsvPrompt));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Row(
+                                          children: [
+                                            Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                                            SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                'AI Prompt copied! Paste into ChatGPT / Claude with your UCAM result.',
+                                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        backgroundColor: AppColors.success,
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        duration: const Duration(seconds: 3),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+                                    shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                                  ),
+                                  icon: const Icon(Icons.copy_rounded, size: 15),
+                                  label: const Text(
+                                    'Copy AI Prompt',
+                                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => MainNavigationScreen.switchTab(context, 2),
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
+                                    padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+                                    shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+                                  ),
+                                  icon: const Icon(Icons.arrow_forward_rounded, size: 15, color: AppColors.primary),
+                                  label: const Text(
+                                    'Transcript Tab',
+                                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               // Recommended Next Courses
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, AppSpacing.s4),
                   child: Text(
-                    'AI RECOMMENDED NEXT TRIMESTER COURSES',
+                    report.isEstimatedFromProfileCredits
+                        ? 'AI RECOMMENDED NEXT TRIMESTER COURSES (PROJECTED TRIMESTER ${report.estimatedTrimester})'
+                        : 'AI RECOMMENDED NEXT TRIMESTER COURSES',
                     style: AppTypography.labelSmall.copyWith(
                       color: textSec,
                       fontWeight: FontWeight.w800,

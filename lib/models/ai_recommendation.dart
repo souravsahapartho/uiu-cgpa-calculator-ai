@@ -135,6 +135,9 @@ class AIAdvisorReport {
   final double suggestedCreditLoad;
   final bool isMeritScholarshipEligible;
   final String? meritScholarshipNotice;
+  final bool isEstimatedFromProfileCredits;
+  final String? profileCreditEstimateNotice;
+  final int estimatedTrimester;
 
   const AIAdvisorReport({
     required this.overallSummary,
@@ -147,6 +150,9 @@ class AIAdvisorReport {
     required this.suggestedCreditLoad,
     this.isMeritScholarshipEligible = false,
     this.meritScholarshipNotice,
+    this.isEstimatedFromProfileCredits = false,
+    this.profileCreditEstimateNotice,
+    this.estimatedTrimester = 1,
   });
 }
 
