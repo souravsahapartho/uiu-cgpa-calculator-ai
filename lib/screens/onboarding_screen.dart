@@ -8,6 +8,7 @@ import '../theme/app_shadows.dart';
 import '../core/providers/user_profile_provider.dart';
 import '../main.dart';
 import 'main_navigation_screen.dart';
+import 'transcript_import_screen.dart';
 
 /// Departments available at UIU
 const _departments = [
@@ -396,39 +397,37 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 4, bottom: 18),
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.32),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.asset(
-                  'assets/logo.png',
-                  width: 76,
-                  height: 76,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-          ),
+          const SizedBox(height: 10),
           Text('👋 Welcome!',
               style: AppTypography.displayMedium.copyWith(
                   fontSize: 26, fontWeight: FontWeight.w900, color: textPri)),
           const SizedBox(height: 4),
-          Text('Tell us a bit about yourself.',
+          Text('Tell us a bit about yourself or restore an existing transcript.',
               style: AppTypography.bodyMedium.copyWith(color: textSec)),
-          const SizedBox(height: 28),
+          const SizedBox(height: 20),
+
+          // Fast Track Import Banner for Returning Users
+          _buildFastTrackImportBanner(surface, border, textPri, textSec),
+
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: Divider(color: border)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Text('OR SET UP MANUALLY',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: textSec.withValues(alpha: 0.7),
+                      letterSpacing: 0.8,
+                    )),
+              ),
+              Expanded(child: Divider(color: border)),
+            ],
+          ),
+          const SizedBox(height: 20),
+
           _fieldLabel('Full Name', textSec),
           _buildTextField(
             controller: _nameController,
@@ -808,6 +807,143 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           prefixIcon: Icon(icon, color: AppColors.primary, size: 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFastTrackImportBanner(
+      Color surface, Color border, Color textPri, Color textSec) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.primary.withValues(alpha: 0.12)
+            : const Color(0xFFFFF7ED),
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: AppRadius.borderLg,
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const TranscriptImportScreen(),
+              ),
+            );
+            if (!mounted) return;
+            final prov = ProfileProviderScope.of(context);
+            if (prov.semesters.isNotEmpty || prov.profile.completedCredits > 0) {
+              final p = prov.profile;
+              await prov.saveProfile(p.copyWith(
+                name: p.name.isNotEmpty
+                    ? p.name
+                    : (_nameController.text.trim().isNotEmpty
+                        ? _nameController.text.trim()
+                        : 'UIU Student'),
+                studentId: p.studentId.isNotEmpty
+                    ? p.studentId
+                    : (_idController.text.trim().isNotEmpty
+                        ? _idController.text.trim()
+                        : '0110000000'),
+                department: p.department.isNotEmpty
+                    ? p.department
+                    : (_selectedDept ?? 'Computer Science & Engineering'),
+              ));
+              if (!mounted) return;
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (c, a1, a2) => const MainNavigationScreen(),
+                  transitionsBuilder: (c, a1, a2, child) =>
+                      FadeTransition(opacity: a1, child: child),
+                  transitionDuration: const Duration(milliseconds: 350),
+                ),
+              );
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: AppRadius.borderMd,
+                  ),
+                  child: const Icon(Icons.cloud_download_rounded,
+                      color: AppColors.primary, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Returning Student?',
+                              style: TextStyle(
+                                color: textPri,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1.5),
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: AppRadius.borderFull,
+                            ),
+                            child: const Text(
+                              'RESTORE DATA',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2.5),
+                      Text(
+                        'Import transcript (PDF, CSV, image, text) to skip setup & restore all data automatically!',
+                        style: TextStyle(
+                          color: textSec,
+                          fontSize: 11,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(Icons.arrow_forward_ios_rounded,
+                    color: AppColors.primary, size: 13),
+              ],
+            ),
+          ),
         ),
       ),
     );

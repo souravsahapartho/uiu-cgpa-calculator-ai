@@ -54,14 +54,14 @@ class AcademicAdvisorEngine {
     // Trimester 3
     UIUCurriculumCourse(trimester: 3, sl: 1, code: 'MATH 2183', title: 'Calculus and Linear Algebra', credit: 3.0, prerequisite: 'MATH 1151', examDay: 'Day 1', examSlot: 'T3', isLab: false, domain: 'Mathematics'),
     UIUCurriculumCourse(trimester: 3, sl: 2, code: 'PHY 2105', title: 'Physics', credit: 3.0, prerequisite: 'X', examDay: 'Day 7', examSlot: 'T3', isLab: false, domain: 'Sciences'),
-    UIUCurriculumCourse(trimester: 3, sl: 3, code: 'PHY 2106', title: 'Physics Lab', credit: 1.0, prerequisite: 'X', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Sciences'),
+    UIUCurriculumCourse(trimester: 3, sl: 3, code: 'PHY 2106', title: 'Physics Lab', credit: 1.0, prerequisite: 'PHY 2105', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Sciences'),
     UIUCurriculumCourse(trimester: 3, sl: 4, code: 'CSE 2215', title: 'Data Structure and Algorithms I', credit: 3.0, prerequisite: 'CSE 1111', examDay: 'Day 4', examSlot: 'T2', isLab: false, domain: 'Programming & CS'),
     UIUCurriculumCourse(trimester: 3, sl: 5, code: 'CSE 2216', title: 'Data Structure and Algorithms I Laboratory', credit: 1.0, prerequisite: 'CSE 1112', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Programming & CS'),
 
     // Trimester 4
     UIUCurriculumCourse(trimester: 4, sl: 1, code: 'MATH 2201', title: 'Coordinate Geometry and Vector Analysis', credit: 3.0, prerequisite: 'MATH 1151', examDay: 'Day 5', examSlot: 'T1', isLab: false, domain: 'Mathematics'),
     UIUCurriculumCourse(trimester: 4, sl: 2, code: 'CSE 1325', title: 'Digital Logic Design', credit: 3.0, prerequisite: 'X', examDay: 'Day 3', examSlot: 'T3', isLab: false, domain: 'Hardware & Architecture'),
-    UIUCurriculumCourse(trimester: 4, sl: 3, code: 'CSE 1326', title: 'Digital Logic Design Lab', credit: 1.0, prerequisite: 'X', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Hardware & Architecture'),
+    UIUCurriculumCourse(trimester: 4, sl: 3, code: 'CSE 1326', title: 'Digital Logic Design Lab', credit: 1.0, prerequisite: 'CSE 1325', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Hardware & Architecture'),
     UIUCurriculumCourse(trimester: 4, sl: 4, code: 'CSE 1115', title: 'Object Oriented Programming', credit: 3.0, prerequisite: 'CSE 2215', examDay: 'Day 6', examSlot: 'T2', isLab: false, domain: 'Programming & CS'),
     UIUCurriculumCourse(trimester: 4, sl: 5, code: 'CSE 1116', title: 'Object Oriented Programming Lab', credit: 1.0, prerequisite: 'CSE 2216', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Programming & CS'),
 
@@ -76,7 +76,7 @@ class AcademicAdvisorEngine {
     UIUCurriculumCourse(trimester: 6, sl: 1, code: 'CSE 3521', title: 'Database Management Systems', credit: 3.0, prerequisite: 'CSE 2215', examDay: 'Day 2', examSlot: 'T1', isLab: false, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 6, sl: 2, code: 'CSE 3522', title: 'Database Management Systems Lab', credit: 1.0, prerequisite: 'CSE 2216', examDay: 'N/A', examSlot: 'N/A', isLab: true, isProject: true, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 6, sl: 3, code: 'EEE 2123', title: 'Electronics', credit: 3.0, prerequisite: 'EEE 2113', examDay: 'Day 6', examSlot: 'T3', isLab: false, domain: 'Hardware & Architecture'),
-    UIUCurriculumCourse(trimester: 6, sl: 4, code: 'EEE 2124', title: 'Electronics Lab', credit: 1.0, prerequisite: 'X', examDay: 'N/A', examSlot: 'N/A', isLab: true, isProject: true, domain: 'Hardware & Architecture'),
+    UIUCurriculumCourse(trimester: 6, sl: 4, code: 'EEE 2124', title: 'Electronics Lab', credit: 1.0, prerequisite: 'EEE 2123', examDay: 'N/A', examSlot: 'N/A', isLab: true, isProject: true, domain: 'Hardware & Architecture'),
     UIUCurriculumCourse(trimester: 6, sl: 5, code: 'CSE 4165', title: 'Web Programming', credit: 3.0, prerequisite: 'CSE 1115, CSE 1116', examDay: 'Day 7', examSlot: 'T1', isLab: false, domain: 'Programming & CS'),
 
     // Trimester 7
@@ -99,7 +99,7 @@ class AcademicAdvisorEngine {
     UIUCurriculumCourse(trimester: 9, sl: 2, code: 'GED 1005', title: 'AI Literacy and Prompt Engineering', credit: 3.0, prerequisite: 'X', examDay: 'Day 1', examSlot: 'T1', isLab: false, isGedOptional: true, domain: 'General Education'),
     UIUCurriculumCourse(trimester: 9, sl: 3, code: 'PMG 4101', title: 'Project Management', credit: 3.0, prerequisite: 'CSE 3411', examDay: 'Day 3', examSlot: 'T2', isLab: false, domain: 'Software & Systems'),
     UIUCurriculumCourse(trimester: 9, sl: 4, code: 'CSE 3711', title: 'Computer Networks', credit: 3.0, prerequisite: 'CSE 2217', examDay: 'Day 4', examSlot: 'T3', isLab: false, domain: 'Software & Systems'),
-    UIUCurriculumCourse(trimester: 9, sl: 5, code: 'CSE 3712', title: 'Computer Networks Lab', credit: 1.0, prerequisite: 'X', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Software & Systems'),
+    UIUCurriculumCourse(trimester: 9, sl: 5, code: 'CSE 3712', title: 'Computer Networks Lab', credit: 1.0, prerequisite: 'CSE 3711', examDay: 'N/A', examSlot: 'N/A', isLab: true, domain: 'Software & Systems'),
 
     // Trimester 10
     UIUCurriculumCourse(trimester: 10, sl: 1, code: 'ECO 4101', title: 'Economics', credit: 3.0, prerequisite: 'X', examDay: 'Day 6', examSlot: 'T1', isLab: false, isGedOptional: true, domain: 'General Education'),
@@ -616,11 +616,18 @@ class AcademicAdvisorEngine {
 
     // 6. Find eligible core curriculum courses based on completed prerequisites
     // (GED Optionals & Electives are handled via our smart choice recommenders above)
+    final bool isBrandNewStudent = realCompletedCredits == 0.0 && completedAttempts.isEmpty && ongoingCourses.isEmpty;
     final eligibleCourses = <UIUCurriculumCourse>[];
 
     for (final c in uiuCurriculum) {
       if (c.isGedOptional || c.isElective) {
         continue; // Handled intelligently above
+      }
+
+      // BRAND NEW STUDENT STRICT RULE:
+      // A brand new student taking admission into UIU CSE must ONLY be recommended the 4 foundational Trimester 1 courses!
+      if (isBrandNewStudent && c.trimester != 1) {
+        continue;
       }
 
       // EXCLUDE courses already enrolled in ongoing trimester!
@@ -641,6 +648,12 @@ class AcademicAdvisorEngine {
         continue;
       }
 
+      // Curriculum milestone bound:
+      // Prevent jumping forward more than 1 trimester beyond earliest incomplete core milestone!
+      if (!isEstimatedFromProfileCredits && !isBrandNewStudent && c.trimester > (earliestIncompleteCoreTrimester + 1)) {
+        continue;
+      }
+
       // Check prerequisites
       if (isPrereqSatisfied(c.prerequisite, c.trimester)) {
         eligibleCourses.add(c);
@@ -651,10 +664,13 @@ class AcademicAdvisorEngine {
     eligibleCourses.sort((a, b) => a.trimester.compareTo(b.trimester));
 
     // 7. Select balanced set of courses adhering to UIU Credit Capacity policy
-    // (3.00-4.00: 16 Cr, 2.50-3.00: 14 Cr, 2.00-2.49: 12 Cr, <2.00: 10 Cr)
-    final double maxCreditCap = realCGPA >= 3.00
-        ? 16.0
-        : (realCGPA >= 2.50 ? 14.0 : (realCGPA >= 2.00 ? 12.0 : 10.0));
+    // For brand new students: strictly 9.0 Credits (UIU Standard Trimester 1 load)
+    // Otherwise: (3.00-4.00: 16 Cr, 2.50-3.00: 14 Cr, 2.00-2.49: 12 Cr, <2.00: 10 Cr)
+    final double maxCreditCap = isBrandNewStudent
+        ? 9.0
+        : (realCGPA >= 3.00
+            ? 16.0
+            : (realCGPA >= 2.50 ? 14.0 : (realCGPA >= 2.00 ? 12.0 : 10.0)));
 
     final recommended = <CourseRecommendation>[...retakeRecommendations];
     double currentAccumulatedCredits = recommended.fold(0.0, (sum, r) => sum + r.course.credit);
