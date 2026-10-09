@@ -212,8 +212,6 @@ class WorkloadIndicator extends StatelessWidget {
               ],
             ),
           ),
-            ],
-          ),
         ],
       ),
     );
