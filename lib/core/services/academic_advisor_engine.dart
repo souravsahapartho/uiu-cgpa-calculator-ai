@@ -148,36 +148,50 @@ class AcademicAdvisorEngine {
     UIUCurriculumCourse(trimester: 11, sl: 1, code: 'ACT 2111', title: 'Financial and Managerial Accounting', credit: 3.0, prerequisite: 'X', examDay: 'Day 2', examSlot: 'T3', isLab: false, isGedOptional: true, domain: 'General Education'),
   ];
 
-  /// Specialization Tracks Course Mappings
+  /// Official UIU BSCSE Major / Specialization Tracks
+  // 1. AI and Data Science
   static const List<String> trackAiDataCodes = [
     'CSE 4889', // Machine Learning (Gateway)
-    'CSE 4813', // Deep Learning
-    'CSE 4811', // Natural Language Processing
     'CSE 4891', // Data Mining
-    'CSE 4883', // Digital Image Processing
     'CSE 4817', // Big Data Analytics
+    'CSE 4883', // Digital Image Processing
+    'CSE 4811', // Natural Language Processing
+    'CSE 4813', // Deep Learning
     'CSE 4893', // Introduction to Bioinformatics
   ];
 
-  static const List<String> trackSoftwareCodes = [
-    'CSE 4181', // Mobile Application Development (Gateway)
-    'CSE 4435', // Software Architecture (Gateway)
-    'CSE 4945', // UI: Concepts and Design (Gateway)
-    'CSE 4495', // Software Testing and Quality Assurance
-    'CSE 4133', // Business Intelligence
-    'CSE 4451', // Human Computer Interaction
-  ];
-
+  // 2. Network and Cyber Security
   static const List<String> trackSecurityCodes = [
     'CSE 4777', // Network Security (Gateway)
     'CSE 4125', // Ethical Hacking and Network Defense
-    'CSE 4587', // Cloud Computing
   ];
 
+  // 3. Software Engineering
+  static const List<String> trackSoftwareCodes = [
+    'CSE 4435', // Software Architecture (Gateway)
+    'CSE 4587', // Cloud Computing
+    'CSE 4611', // Compiler Design
+    'CSE 4621', // Computer Graphics
+    'CSE 4451', // Human Computer Interaction
+    'CSE 4181', // Mobile Application Development
+    'CSE 4945', // UI: Concepts and Design
+    'CSE 4495', // Software Testing and Quality Assurance
+  ];
+
+  // 4. Embedded System and Robotics / Hardware
   static const List<String> trackHardwareCodes = [
     'CSE 4327', // VLSI Design (Gateway)
     'CSE 4399', // Embedded Machine Learning
     'EEE 4261', // Green Computing
+  ];
+
+  // 5. Business System Engineering
+  static const List<String> trackBusinessCodes = [
+    'CSE 4133', // Business Intelligence (Gateway)
+    'CSE 4451', // Human Computer Interaction
+    'CSE 4891', // Data Mining
+    'CSE 4817', // Big Data Analytics
+    'CSE 4945', // UI: Concepts and Design
   ];
 
   /// Generates a personalized AI advisor report based on official UIU course sequences
@@ -365,7 +379,8 @@ class AcademicAdvisorEngine {
     final int seTrackCount = countTrackEnrollments(trackSoftwareCodes);
     final int secTrackCount = countTrackEnrollments(trackSecurityCodes);
     final int hwTrackCount = countTrackEnrollments(trackHardwareCodes);
-    final int maxTrackScore = [aiTrackCount, seTrackCount, secTrackCount, hwTrackCount].reduce((a, b) => a > b ? a : b);
+    final int bseTrackCount = countTrackEnrollments(trackBusinessCodes);
+    final int maxTrackScore = [aiTrackCount, seTrackCount, secTrackCount, hwTrackCount, bseTrackCount].reduce((a, b) => a > b ? a : b);
 
     // Prerequisite satisfaction helper
     bool isPrereqSatisfied(String prerequisite, [int courseTrimester = 1]) {
@@ -462,8 +477,8 @@ class AcademicAdvisorEngine {
     CourseRecommendation? electiveChoiceRec;
     if (completedElectiveCount < 5) {
       if (maxTrackScore == 0) {
-        // Gateway choice across multiple tracks
-        final gatewayCodes = ['CSE 4889', 'CSE 4181', 'CSE 4435', 'CSE 4777'];
+        // Introductory Gateway choice representing distinct official UIU major tracks
+        final gatewayCodes = ['CSE 4889', 'CSE 4777', 'CSE 4435', 'CSE 4327', 'CSE 4133'];
         final eligibleGateways = <UIUCurriculumCourse>[];
         for (final code in gatewayCodes) {
           final c = uiuCurriculum.firstWhere((x) => _isCourseMatch(x.code, x.title, code, ''));
@@ -496,13 +511,13 @@ class AcademicAdvisorEngine {
               gradePoint: 4.0,
             ),
             priorityRank: rank++,
-            reason: 'Specialization Track Gateway. You have not initiated a major track yet. Choose an introductory gateway course to declare your focus area (AI & Data Science, Software Eng, or Cybersecurity).',
+            reason: 'Official UIU Major Tracks: You need 5 electives total. Choose an introductory gateway course to declare your major track (AI & Data Science, Network & Cyber Security, Software Engineering, etc.).',
             unlockRationale: 'Prerequisites verified. Selecting one gateway sets your major specialization track.',
             examDay: choices.map((c) => c.examDay).toSet().join(' / '),
             examSlot: choices.map((c) => c.examSlot).toSet().join(' / '),
             isElective: true,
             isChoiceOption: choices.length > 1,
-            trackName: 'Major Track Gateway Choice',
+            trackName: 'Major Elective Gateway Choice ($completedElectiveCount/5 Done)',
             optionCodes: choices.map((c) => c.code).toList(),
             choiceDetails: choiceDetails,
           );
@@ -514,15 +529,18 @@ class AcademicAdvisorEngine {
         if (aiTrackCount == maxTrackScore) {
           activeTrackName = 'AI & Data Science';
           activeTrackCodes = trackAiDataCodes;
+        } else if (secTrackCount == maxTrackScore) {
+          activeTrackName = 'Network & Cyber Security';
+          activeTrackCodes = trackSecurityCodes;
         } else if (seTrackCount == maxTrackScore) {
           activeTrackName = 'Software Engineering';
           activeTrackCodes = trackSoftwareCodes;
-        } else if (secTrackCount == maxTrackScore) {
-          activeTrackName = 'Cybersecurity & Networks';
-          activeTrackCodes = trackSecurityCodes;
-        } else {
-          activeTrackName = 'Hardware & Embedded';
+        } else if (hwTrackCount == maxTrackScore) {
+          activeTrackName = 'Embedded System & Robotics';
           activeTrackCodes = trackHardwareCodes;
+        } else {
+          activeTrackName = 'Business System Engineering';
+          activeTrackCodes = trackBusinessCodes;
         }
 
         final eligibleTrackCourses = <UIUCurriculumCourse>[];
@@ -535,6 +553,27 @@ class AcademicAdvisorEngine {
           final isOng = ongoingCourses.any((ong) => _isCourseMatch(ong.code, ong.title, c.code, c.title));
           if (!isDone && !isOng && isPrereqSatisfied(c.prerequisite)) {
             eligibleTrackCourses.add(c);
+          }
+        }
+
+        // Fallback: If no courses remaining in declared major, allow electives from other major tracks as per UIU policy
+        bool fromOtherTracks = false;
+        if (eligibleTrackCourses.isEmpty) {
+          fromOtherTracks = true;
+          for (final otherTrack in [trackAiDataCodes, trackSecurityCodes, trackSoftwareCodes, trackHardwareCodes, trackBusinessCodes]) {
+            if (otherTrack == activeTrackCodes) continue;
+            for (final code in otherTrack) {
+              if (eligibleTrackCourses.length >= 3) break;
+              final match = uiuCurriculum.where((x) => _isCourseMatch(x.code, x.title, code, ''));
+              if (match.isEmpty) continue;
+              final c = match.first;
+              final isDone = bestAttemptsMap.values.any((comp) =>
+                  (comp.gradePoint ?? 0.0) >= 2.0 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
+              final isOng = ongoingCourses.any((ong) => _isCourseMatch(ong.code, ong.title, c.code, c.title));
+              if (!isDone && !isOng && isPrereqSatisfied(c.prerequisite) && !eligibleTrackCourses.any((ec) => ec.code == c.code)) {
+                eligibleTrackCourses.add(c);
+              }
+            }
           }
         }
 
@@ -559,13 +598,15 @@ class AcademicAdvisorEngine {
               gradePoint: 4.0,
             ),
             priorityRank: rank++,
-            reason: 'Active Specialization Track: You have initiated $activeTrackName. Choose an advanced follow-up course aligned with your specialization.',
-            unlockRationale: 'Prerequisites verified under UIU specialization guidelines.',
+            reason: fromOtherTracks
+                ? 'Under UIU guidelines, you can fulfill remaining electives ($completedElectiveCount/5 completed) from other major sections when courses in your declared major ($activeTrackName) are exhausted or restricted.'
+                : 'Active Specialization Major: You are enrolled in $activeTrackName. Choose an advanced elective course to progress toward your 5 elective quota ($completedElectiveCount/5 completed).',
+            unlockRationale: 'Prerequisites verified under UIU BSCSE degree requirements.',
             examDay: choices.map((c) => c.examDay).toSet().join(' / '),
             examSlot: choices.map((c) => c.examSlot).toSet().join(' / '),
             isElective: true,
             isChoiceOption: choices.length > 1,
-            trackName: '$activeTrackName Track Follow-up',
+            trackName: fromOtherTracks ? 'Elective Choice ($completedElectiveCount/5 Completed)' : '$activeTrackName Elective ($completedElectiveCount/5 Completed)',
             optionCodes: choices.map((c) => c.code).toList(),
             choiceDetails: choiceDetails,
           );

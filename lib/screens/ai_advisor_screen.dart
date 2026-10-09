@@ -353,184 +353,6 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                 ),
               ),
 
-              // Subject Domain Strength Breakdown
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, AppSpacing.s4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'DOMAIN STRENGTH & APTITUDE',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: textSec,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      if (report.domainAnalyses.isNotEmpty)
-                        Text(
-                          '${report.domainAnalyses.length} Domains Evaluated',
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-
-              if (report.domainAnalyses.isEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 4),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: surface,
-                        borderRadius: AppRadius.borderLg,
-                        border: Border.all(color: borderClr),
-                        boxShadow: AppShadows.soft,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.12),
-                              borderRadius: AppRadius.borderMd,
-                            ),
-                            child: const Icon(Icons.analytics_outlined, color: AppColors.primary, size: 20),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Awaiting Course Grade History',
-                                  style: AppTypography.titleSmall.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 12.5,
-                                    color: textPri,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  'No completed courses found in your transcript yet. Once you add or import your courses in the Transcript tab, your real domain strengths (Programming, Mathematics, Hardware & Systems) will dynamically generate here without any dummy data.',
-                                  style: AppTypography.bodySmall.copyWith(
-                                    fontSize: 11,
-                                    color: textSec,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              else
-                // Domain Cards
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final domain = report.domainAnalyses[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: surface,
-                            borderRadius: AppRadius.borderLg,
-                            border: Border.all(color: borderClr),
-                            boxShadow: AppShadows.soft,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          domain.isStrength ? Icons.check_circle_rounded : Icons.info_rounded,
-                                          size: 16,
-                                          color: domain.isStrength ? AppColors.success : AppColors.accent,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            domain.domain,
-                                            style: AppTypography.titleMedium.copyWith(
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 12.5,
-                                              color: textPri,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                                    decoration: BoxDecoration(
-                                      color: (domain.isStrength ? AppColors.success : AppColors.accent).withValues(alpha: 0.12),
-                                      borderRadius: AppRadius.borderFull,
-                                    ),
-                                    child: Text(
-                                      domain.status,
-                                      style: AppTypography.labelSmall.copyWith(
-                                        color: domain.isStrength ? AppColors.successDark : AppColors.accentDark,
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: AppRadius.borderFull,
-                                child: LinearProgressIndicator(
-                                  value: domain.scorePercent / 100.0,
-                                  minHeight: 6,
-                                  backgroundColor: sectionBg,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    domain.isStrength ? AppColors.primary : AppColors.accent,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                domain.insight,
-                                style: AppTypography.bodySmall.copyWith(
-                                  fontSize: 11,
-                                  color: textSec,
-                                  height: 1.35,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      childCount: report.domainAnalyses.length,
-                    ),
-                  ),
-                ),
-
-
               // ── Estimated Recommendations Alert (When based on profile credits without transcript) ──
               if (!hasTranscript && report.isEstimatedFromProfileCredits)
                 SliverToBoxAdapter(
@@ -777,101 +599,6 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                   ),
                 ),
 
-              // ── Currently Enrolled Running Courses Card ──
-              if (report.ongoingCourses.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 6),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: isDark ? 0.12 : 0.07),
-                        borderRadius: AppRadius.borderLg,
-                        border: Border.all(
-                          color: AppColors.accent.withValues(alpha: 0.35),
-                          width: 1.2,
-                        ),
-                        boxShadow: AppShadows.soft,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent.withValues(alpha: 0.2),
-                                  borderRadius: AppRadius.borderSm,
-                                ),
-                                child: const Icon(Icons.timelapse_rounded, color: AppColors.accent, size: 16),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Currently Enrolled in Running Trimester',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 12.5,
-                                    color: textPri,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '${report.ongoingCourses.length} Courses • ${report.ongoingCredits.toStringAsFixed(1)} Cr',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 5,
-                            children: report.ongoingCourses.map((oc) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: surface,
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: borderClr),
-                                ),
-                                child: Text(
-                                  '${oc.code} (${oc.credit.toStringAsFixed(oc.credit % 1 == 0 ? 0 : 1)} Cr)',
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: textPri,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'AI has automatically excluded these running courses from next trimester recommendations and unlocked their dependent prerequisites.',
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              color: textSec,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
               // Recommended Next Courses
               SliverToBoxAdapter(
                 child: Padding(
@@ -879,9 +606,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                   child: Text(
                     report.isEstimatedFromProfileCredits
                         ? 'AI RECOMMENDED NEXT TRIMESTER COURSES (PROJECTED TRIMESTER ${report.estimatedTrimester})'
-                        : (report.ongoingCourses.isNotEmpty
-                            ? 'AI RECOMMENDED NEXT TRIMESTER COURSES (AFTER RUNNING TRIMESTER)'
-                            : 'AI RECOMMENDED NEXT TRIMESTER COURSES'),
+                        : 'AI RECOMMENDED NEXT TRIMESTER COURSES',
                     style: AppTypography.labelSmall.copyWith(
                       color: textSec,
                       fontWeight: FontWeight.w800,
@@ -1152,7 +877,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                  ] else if (rec.hasSameDayExam) ...[
+                                  ] else if (!rec.isChoiceOption && rec.hasSameDayExam) ...[
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
                                       decoration: BoxDecoration(
@@ -1193,7 +918,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                  ] else if (rec.examDay != 'N/A' && rec.examDay != '----') ...[
+                                  ] else if (!rec.isChoiceOption && rec.examDay != 'N/A' && rec.examDay != '----') ...[
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
                                       decoration: BoxDecoration(
@@ -1361,6 +1086,183 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                           ),
                         );
                       }).toList(),
+                    ),
+                  ),
+                ),
+
+              // Subject Domain Strength Breakdown
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, AppSpacing.s4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'DOMAIN STRENGTH & APTITUDE',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: textSec,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      if (report.domainAnalyses.isNotEmpty)
+                        Text(
+                          '${report.domainAnalyses.length} Domains Evaluated',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+
+              if (report.domainAnalyses.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 4),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: surface,
+                        borderRadius: AppRadius.borderLg,
+                        border: Border.all(color: borderClr),
+                        boxShadow: AppShadows.soft,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.12),
+                              borderRadius: AppRadius.borderMd,
+                            ),
+                            child: const Icon(Icons.analytics_outlined, color: AppColors.primary, size: 20),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Awaiting Course Grade History',
+                                  style: AppTypography.titleSmall.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12.5,
+                                    color: textPri,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  'No completed courses found in your transcript yet. Once you add or import your courses in the Transcript tab, your real domain strengths (Programming, Mathematics, Hardware & Systems) will dynamically generate here without any dummy data.',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    fontSize: 11,
+                                    color: textSec,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                // Domain Cards
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final domain = report.domainAnalyses[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: surface,
+                            borderRadius: AppRadius.borderLg,
+                            border: Border.all(color: borderClr),
+                            boxShadow: AppShadows.soft,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          domain.isStrength ? Icons.check_circle_rounded : Icons.info_rounded,
+                                          size: 16,
+                                          color: domain.isStrength ? AppColors.success : AppColors.accent,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            domain.domain,
+                                            style: AppTypography.titleMedium.copyWith(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 12.5,
+                                              color: textPri,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                    decoration: BoxDecoration(
+                                      color: (domain.isStrength ? AppColors.success : AppColors.accent).withValues(alpha: 0.12),
+                                      borderRadius: AppRadius.borderFull,
+                                    ),
+                                    child: Text(
+                                      domain.status,
+                                      style: AppTypography.labelSmall.copyWith(
+                                        color: domain.isStrength ? AppColors.successDark : AppColors.accentDark,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: AppRadius.borderFull,
+                                child: LinearProgressIndicator(
+                                  value: domain.scorePercent / 100.0,
+                                  minHeight: 6,
+                                  backgroundColor: sectionBg,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    domain.isStrength ? AppColors.primary : AppColors.accent,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                domain.insight,
+                                style: AppTypography.bodySmall.copyWith(
+                                  fontSize: 11,
+                                  color: textSec,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      childCount: report.domainAnalyses.length,
                     ),
                   ),
                 ),

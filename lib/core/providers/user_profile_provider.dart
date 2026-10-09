@@ -722,6 +722,13 @@ class UserProfileProvider extends ChangeNotifier {
       final line = rawLine.trim();
       if (line.isEmpty) continue;
 
+      // Filter out AI prompt helper instruction lines accidentally copied
+      final isPromptInstructionLine = RegExp(
+        r'^(?:instructions?|output\s+columns?|here\s+is\s+my|convert\s+my|\d+\.\s*(?:extract|provide|for\s+each|take\s+a\s+screenshot)|note:|step\s*\d+)',
+        caseSensitive: false,
+      ).hasMatch(line);
+      if (isPromptInstructionLine) continue;
+
       // 1. Check for Running / Ongoing Trimester header (e.g. "Running Trimester:", "Current Courses:", "Running Courses:")
       final isRunningHeader = RegExp(
         r'^\s*(?:#+\s*)?(?:running|current|ongoing|currently\s+enrolled|enrolled)\s*(?:trimester|semester|term|courses?)?\s*:?\s*$',

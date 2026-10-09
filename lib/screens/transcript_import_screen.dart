@@ -746,7 +746,18 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                   children: [
-                    // ── UIU Trimester Merit Scholarship Status & Policy Card ──
+                    // 1. AI Prompt Helper: Convert UCAM Result to CSV (First at top)
+                    _buildAIPromptHelperCard(
+                      context: context,
+                      isDark: isDark,
+                      borderClr: borderClr,
+                      surface: surface,
+                      textPri: textPri,
+                      textSec: textSec,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // 2. UIU Trimester Merit Scholarship Status & Policy Card
                     _buildMeritScholarshipCard(
                       isDark: isDark,
                       surface: surface,
@@ -756,14 +767,16 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                       currentCGPA: currentCGPA,
                       earnedCredits: earnedCredits,
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
 
-                    // ── AI Prompt Helper: Convert UCAM Result to CSV ──
-                    _buildAIPromptHelperCard(
-                      context: context,
+                    // 3. Incomplete ('I') vs Course Withdrawal ('W') Policy
+                    _policyCard(
+                      icon: Icons.assignment_late_rounded,
+                      iconColor: const Color(0xFF0D9488),
+                      title: "Incomplete ('I') vs Course Withdrawal ('W') Policy",
+                      desc: "• Incomplete ('I') Grade: If a student cannot appear in the Midterm or Final Exam due to serious illness or unavoidable emergency, they can apply for an 'I' grade with medical certificates and supporting documents within the deadline. If approved by the Department/Dean, the student is allowed to sit for a Make-up Exam in the following trimester without any grade penalty.\n\n• Course Withdrawal ('W'): A student may voluntarily withdraw from an enrolled course by applying through UCAM before the announced deadline (usually within the first few weeks or before midterm). 'W' grade does not affect GPA, but tuition fees are non-refundable according to UIU policy.",
                       isDark: isDark,
                       borderClr: borderClr,
-                      surface: surface,
                       textPri: textPri,
                       textSec: textSec,
                     ),
@@ -851,23 +864,14 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
     required double earnedCredits,
   }) {
     final bool isEligiblePace = currentCGPA >= 3.50;
+    const Color cardColor = Color(0xFFD97706);
 
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF2C2007), const Color(0xFF1E1705)]
-              : [const Color(0xFFFFFBEB), const Color(0xFFFEF3C7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: cardColor.withValues(alpha: isDark ? 0.12 : 0.06),
         borderRadius: AppRadius.borderLg,
-        border: Border.all(
-          color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.45 : 0.6),
-          width: 1.2,
-        ),
-        boxShadow: AppShadows.soft,
+        border: Border.all(color: cardColor.withValues(alpha: isDark ? 0.35 : 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -877,10 +881,10 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
               Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD97706).withValues(alpha: 0.18),
+                  color: cardColor.withValues(alpha: 0.15),
                   borderRadius: AppRadius.borderMd,
                 ),
-                child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFD97706), size: 22),
+                child: const Icon(Icons.workspace_premium_rounded, color: cardColor, size: 20),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -890,16 +894,16 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                     Text(
                       'UIU Trimester Merit Scholarship Status',
                       style: TextStyle(
-                        color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13.5,
+                        color: textPri,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
                       ),
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Official Performance-Based Tuition Waiver',
+                      'Performance-Based Tuition Fee Waivers',
                       style: TextStyle(
-                        color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309),
+                        color: textSec,
                         fontSize: 10.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -908,23 +912,17 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: isEligiblePace
-                      ? const Color(0xFF10B981).withValues(alpha: 0.18)
-                      : const Color(0xFFD97706).withValues(alpha: 0.15),
+                      ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                      : cardColor.withValues(alpha: 0.15),
                   borderRadius: AppRadius.borderFull,
-                  border: Border.all(
-                    color: isEligiblePace ? const Color(0xFF10B981) : const Color(0xFFD97706),
-                    width: 0.8,
-                  ),
                 ),
                 child: Text(
                   isEligiblePace ? 'Top 10% Pace' : 'CGPA < 3.50',
                   style: TextStyle(
-                    color: isEligiblePace
-                        ? (isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857))
-                        : const Color(0xFFD97706),
+                    color: isEligiblePace ? const Color(0xFF10B981) : cardColor,
                     fontWeight: FontWeight.w800,
                     fontSize: 10,
                   ),
@@ -932,21 +930,21 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           // Student Live Status pill
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
-              color: isDark ? Colors.black.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.65),
+              color: surface,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+              border: Border.all(color: borderClr),
             ),
             child: Row(
               children: [
                 Icon(
                   isEligiblePace ? Icons.check_circle_rounded : Icons.info_outline_rounded,
-                  size: 15,
-                  color: isEligiblePace ? const Color(0xFF10B981) : const Color(0xFFD97706),
+                  size: 14,
+                  color: isEligiblePace ? const Color(0xFF10B981) : cardColor,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -955,7 +953,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                         ? 'Your Cumulative CGPA is ${currentCGPA.toStringAsFixed(2)}. You are maintaining the academic standing required for UIU merit scholarship consideration!'
                         : 'Your Cumulative CGPA is ${currentCGPA > 0 ? currentCGPA.toStringAsFixed(2) : '0.00'}. Secure ≥ 3.50 SGPA with 9+ regular credits in upcoming trimesters to qualify for waivers.',
                     style: TextStyle(
-                      color: isDark ? const Color(0xFFFEF3C7) : const Color(0xFF78350F),
+                      color: textPri,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       height: 1.35,
@@ -965,7 +963,7 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
             '🏆 Trimester Merit Scholarship Tiers (Top 10% Performers):\n'
             '• Top 2%: 100% Tuition Fee Waiver\n'
@@ -975,9 +973,9 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
             '• Minimum 3.50 GPA / CGPA and regular credit completion required.\n'
             '• ⚠️ Crucial Exclusion Rule: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit scholarship calculation. You must take at least 9–12 credits of regular fresh courses to protect waiver eligibility.',
             style: TextStyle(
-              color: isDark ? const Color(0xFFFDE68A).withValues(alpha: 0.95) : const Color(0xFF78350F),
+              color: textSec,
               fontSize: 11.5,
-              height: 1.45,
+              height: 1.4,
               fontWeight: FontWeight.w500,
             ),
           ),
