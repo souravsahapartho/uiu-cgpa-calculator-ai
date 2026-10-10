@@ -446,7 +446,11 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
   }
 
   static _NoticeTopic _getNoticeTopic(String title, String desc) {
-    final text = ('$title $desc').toLowerCase();
+    final t = title.toLowerCase();
+    final d = desc.toLowerCase();
+    final text = '$t $d';
+
+    // 1. Transport (Buses, shuttles, routes)
     if (text.contains('transport') ||
         text.contains('bus') ||
         text.contains('shuttle') ||
@@ -455,26 +459,71 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
         text.contains('pickup') ||
         text.contains('drop-off')) {
       return const _NoticeTopic('Transport', Icons.directions_bus_rounded, Color(0xFF0284C7));
-    } else if (text.contains('exam') || text.contains('mid term') || text.contains('final') || text.contains('routine')) {
+    }
+
+    // 2. Course Withdrawal (Must be checked BEFORE exams/schedules)
+    if (t.contains('withdrawal') || t.contains('withdraw') || text.contains('course withdrawal') || text.contains('w grade')) {
+      return const _NoticeTopic('Course Withdrawal', Icons.assignment_return_rounded, Color(0xFFF59E0B));
+    }
+
+    // 3. Course Registration & Advising
+    if (text.contains('registration') ||
+        text.contains('advising') ||
+        text.contains('pre-advising') ||
+        text.contains('add/drop') ||
+        text.contains('course add') ||
+        text.contains('course drop')) {
+      return const _NoticeTopic('Registration', Icons.how_to_reg_rounded, Color(0xFF10B981));
+    }
+
+    // 4. Class Schedule & Timetable (Classes to be held, makeup classes)
+    if (t.contains('class') ||
+        t.contains('classes to be held') ||
+        t.contains('makeup class') ||
+        t.contains('make-up class') ||
+        t.contains('class schedule') ||
+        t.contains('change of schedule') ||
+        t.contains('academic calendar')) {
+      return const _NoticeTopic('Schedule', Icons.calendar_month_rounded, Color(0xFF0EA5E9));
+    }
+
+    // 5. Exam Schedules (Strict matching for actual exam routines)
+    if (t.contains('exam') ||
+        t.contains('examination') ||
+        t.contains('routine') ||
+        t.contains('mid term') ||
+        t.contains('midterm') ||
+        text.contains('exam schedule') ||
+        text.contains('exam routine') ||
+        text.contains('examination routine') ||
+        text.contains('final exam')) {
       return const _NoticeTopic('Exam Schedule', Icons.event_note_rounded, Color(0xFFEF4444));
-    } else if (text.contains('withdrawal') || text.contains('withdraw')) {
-      return const _NoticeTopic('Course Withdrawal', Icons.warning_amber_rounded, Color(0xFFF59E0B));
-    } else if (text.contains('class') || text.contains('makeup') || text.contains('schedule') || text.contains('academic calendar')) {
-      return const _NoticeTopic('Schedule Update', Icons.calendar_month_rounded, Color(0xFF0EA5E9));
-    } else if (text.contains('library') || text.contains('study room') || text.contains('campus')) {
+    }
+
+    // 6. Campus Facilities & Study Rooms
+    if (text.contains('library') || text.contains('study room') || text.contains('campus') || text.contains('lab facility')) {
       return const _NoticeTopic('Campus Facility', Icons.local_library_rounded, Color(0xFF10B981));
-    } else if (text.contains('waiver') || text.contains('scholarship') || text.contains('fee') || text.contains('tuition')) {
+    }
+
+    // 7. Waiver, Scholarship & Fees
+    if (text.contains('waiver') || text.contains('scholarship') || text.contains('tuition') || text.contains('installment')) {
       return const _NoticeTopic('Waiver & Fees', Icons.monetization_on_rounded, Color(0xFFEAB308));
-    } else if (text.contains('holiday') || text.contains('vacation') || text.contains('closed')) {
+    }
+
+    // 8. Holidays & Closures
+    if (text.contains('holiday') || text.contains('vacation') || text.contains('closed') || text.contains('eid') || text.contains('puja')) {
       return const _NoticeTopic('Holiday', Icons.beach_access_rounded, Color(0xFF8B5CF6));
-    } else if (text.contains('admission') || text.contains('orientation')) {
+    }
+
+    // 9. Admissions & Orientations
+    if (text.contains('admission') || text.contains('orientation')) {
       return const _NoticeTopic('Admission', Icons.school_rounded, Color(0xFF6366F1));
     }
+
     return const _NoticeTopic('UIU Official', Icons.campaign_rounded, AppColors.primary);
   }
 
   static String _extractCoreReason(String desc, String title) {
-    if (desc.isEmpty) return '';
     var clean = desc
         .replaceAll(RegExp(r'#\s*Program\s*School\s*List[\s\S]*?(?=\b(?:due to|this is|all students|please|effective)\b|$)', caseSensitive: false), '')
         .replaceAll(RegExp(r'^(Attention|ATTENTION|Notice|NOTICE)[\s\w,:\-]*?(All Students|Employees|Concerned)[\s\w,:\-]*?:', caseSensitive: false), '')
@@ -488,9 +537,28 @@ class _UIUNoticeModalState extends State<UIUNoticeModal> {
       clean = clean[0].toUpperCase() + clean.substring(1);
     }
 
-    if (clean.toLowerCase() == title.toLowerCase() || clean.isEmpty) {
-      return '';
+    // If description is empty or repeats the title (common in WordPress PDF attachment notices),
+    // provide a smart, informative fallback based on the notice headline:
+    final cleanT = title.toLowerCase();
+    if (clean.isEmpty || clean.toLowerCase() == cleanT) {
+      if (cleanT.contains('final exam')) {
+        return 'Detailed final examination routine, slot timings, room allocations and guidelines published for UIU students.';
+      } else if (cleanT.contains('mid term') || cleanT.contains('midterm')) {
+        return 'Official mid term examination routine, slot allocations and code-wise schedule published on UIU portal.';
+      } else if (cleanT.contains('exam') || cleanT.contains('routine')) {
+        return 'Official examination timetable, exam slots and instructions published for all enrolled students.';
+      } else if (cleanT.contains('withdrawal') || cleanT.contains('withdraw')) {
+        return 'Official guidelines and deadline for submitting course withdrawal (W grade) requests without GPA penalty.';
+      } else if (cleanT.contains('class') || cleanT.contains('schedule')) {
+        return 'Academic notice regarding scheduled lecture timings, room allocations and departmental class arrangements.';
+      } else if (cleanT.contains('library') || cleanT.contains('study room')) {
+        return 'Operational hours and facility schedules for Shaheed Irfan Library and campus study rooms.';
+      } else if (cleanT.contains('holiday')) {
+        return 'University closure and official holiday announcement for students, faculty, and administrative staff.';
+      }
+      return 'Official university announcement and instructional guidelines published on the UIU portal.';
     }
+
     return clean;
   }
 }

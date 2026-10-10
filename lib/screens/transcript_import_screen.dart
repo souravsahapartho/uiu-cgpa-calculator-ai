@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import '../core/providers/user_profile_provider.dart';
 import '../models/course.dart';
@@ -27,7 +26,6 @@ class TranscriptImportScreen extends StatefulWidget {
 
 class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
   String _selectedTrimesterFilter = 'All Trimesters';
-  static const _keyDismissedAIPromptBanner = 'dismissed_ai_prompt_banner';
   bool _bannerDismissed = false;
 
   @override

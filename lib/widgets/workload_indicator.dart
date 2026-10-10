@@ -53,7 +53,9 @@ class WorkloadIndicator extends StatelessWidget {
     final cap = maxAllowedCap;
     if (effectiveTotalCredits > cap) return 'Exceeds UIU Cap (Approval Needed)';
     if (effectiveTotalCredits == cap) return 'Maximum Capacity Utilized';
-    if (effectiveTotalCredits >= cap - 2.5) return 'Balanced Load';
+    if (effectiveTotalCredits >= 12.0 && (cgpa ?? 0.0) >= 3.50) return 'Optimal Scholarship Load';
+    if (effectiveTotalCredits >= 12.0) return 'Regular Full Load';
+    if (effectiveTotalCredits >= 10.0) return 'Balanced Load';
     if (effectiveTotalCredits >= 7.0) return 'Moderate Load';
     return 'Light Workload';
   }
@@ -62,7 +64,8 @@ class WorkloadIndicator extends StatelessWidget {
     final cap = maxAllowedCap;
     if (effectiveTotalCredits > cap) return AppColors.danger;
     if (effectiveTotalCredits == cap) return const Color(0xFF0284C7);
-    if (effectiveTotalCredits >= cap - 2.5) return AppColors.success;
+    if (effectiveTotalCredits >= 12.0 && (cgpa ?? 0.0) >= 3.50) return const Color(0xFF10B981);
+    if (effectiveTotalCredits >= 10.0) return AppColors.success;
     if (effectiveTotalCredits >= 7.0) return AppColors.warning;
     return AppColors.info;
   }
@@ -164,7 +167,7 @@ class WorkloadIndicator extends StatelessWidget {
               Flexible(
                 child: Text(
                   theoryCredits != null && labCredits != null
-                      ? '${theoryCredits!.toInt()} Theory Cr + ${labCredits!.toInt()} Lab Cr'
+                      ? '${theoryCredits!.toStringAsFixed(theoryCredits! % 1 == 0 ? 0 : 1)} Theory Cr + ${labCredits!.toStringAsFixed(labCredits! % 1 == 0 ? 0 : 1)} Lab Cr'
                       : '${courseCount ?? 4} Courses (${labCount ?? 1} Labs)',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

@@ -648,6 +648,11 @@ class AcademicAdvisorEngine {
         continue;
       }
 
+      // Final Year Design Project is handled via dedicated priority injector below
+      if (c.code.startsWith('CSE 4000')) {
+        continue;
+      }
+
       // Curriculum milestone bound:
       // Prevent jumping forward more than 1 trimester beyond earliest incomplete core milestone!
       if (!isEstimatedFromProfileCredits && !isBrandNewStudent && c.trimester > (earliestIncompleteCoreTrimester + 1)) {
@@ -671,6 +676,13 @@ class AcademicAdvisorEngine {
         : (realCGPA >= 3.00
             ? 16.0
             : (realCGPA >= 2.50 ? 14.0 : (realCGPA >= 2.00 ? 12.0 : 10.0)));
+
+    // Target Load based on CGPA & Standing:
+    // UIU Policy: Students with CGPA >= 3.50 (Honors & Merit Scholarship Track) take regular full load (12.0 - 14.0 Cr).
+    // Regular students take 11.0 - 12.5 Cr. Brand new 1st trimester students take standard 9.0 Cr.
+    final double targetRecommendedLoad = isBrandNewStudent
+        ? 9.0
+        : (realCGPA >= 3.50 ? 13.0 : (realCGPA >= 2.50 ? 12.0 : 10.0));
 
     final recommended = <CourseRecommendation>[...retakeRecommendations];
     double currentAccumulatedCredits = recommended.fold(0.0, (sum, r) => sum + r.course.credit);
@@ -720,6 +732,50 @@ class AcademicAdvisorEngine {
       recommendedElectiveCount++;
     }
 
+    // Final Year Design Project (FYDP) Ingestion for 4th Year / 9+ Trimesters Completed:
+    final bool isFinalYearStudent = (realCompletedCredits + ongoingCredits >= 85.0) ||
+        (estimatedTrimester >= 10);
+
+    if (isFinalYearStudent) {
+      final hasFydp1 = bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) > 0.0 && _isCourseMatch(comp.code, comp.title, 'CSE 4000A', '')) ||
+          ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, 'CSE 4000A', ''));
+      final hasFydp2 = bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) > 0.0 && _isCourseMatch(comp.code, comp.title, 'CSE 4000B', '')) ||
+          ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, 'CSE 4000B', ''));
+      final hasFydp3 = bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) > 0.0 && _isCourseMatch(comp.code, comp.title, 'CSE 4000C', '')) ||
+          ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, 'CSE 4000C', ''));
+
+      UIUCurriculumCourse? nextFydp;
+      if (!hasFydp1) {
+        nextFydp = uiuCurriculum.firstWhere((c) => c.code == 'CSE 4000A');
+      } else if (!hasFydp2) {
+        nextFydp = uiuCurriculum.firstWhere((c) => c.code == 'CSE 4000B');
+      } else if (!hasFydp3) {
+        nextFydp = uiuCurriculum.firstWhere((c) => c.code == 'CSE 4000C');
+      }
+
+      if (nextFydp != null && (currentAccumulatedCredits + nextFydp.credit <= maxCreditCap)) {
+        if (!recommended.any((r) => r.course.code == nextFydp!.code)) {
+          recommended.add(CourseRecommendation(
+            course: Course(
+              code: nextFydp.code,
+              title: nextFydp.title,
+              credit: nextFydp.credit,
+              grade: 'A',
+              gradePoint: 4.0,
+            ),
+            priorityRank: rank++,
+            reason: 'Final Year Design Project (FYDP). Mandatory 4th-year capstone milestone with continuous supervisor evaluation & defense (no written final exam).',
+            unlockRationale: 'Eligible for 4th-year capstone after completing 85+ credits / 9 trimesters under UIU curriculum guidelines.',
+            examDay: 'N/A',
+            examSlot: 'N/A',
+            isProject: true,
+            isLab: false,
+          ));
+          currentAccumulatedCredits += nextFydp.credit;
+        }
+      }
+    }
+
     String getCourseReason(UIUCurriculumCourse c) {
       if (isEstimatedFromProfileCredits) {
         if (c.isProject && !c.isLab) {
@@ -759,7 +815,7 @@ class AcademicAdvisorEngine {
       if (c.isGedOptional && (completedGedOptionalCount + recommendedGedCount >= 3)) continue;
       if (c.isElective && (completedElectiveCount + recommendedElectiveCount >= 5)) continue;
       if (currentAccumulatedCredits + c.credit > maxCreditCap) continue;
-      if (currentAccumulatedCredits >= (maxCreditCap - 2.0) && currentAccumulatedCredits >= 11.0) break;
+      if (currentAccumulatedCredits >= targetRecommendedLoad) break;
       if (c.isLab && labCredits >= 2.0) continue;
 
       final hasExam = c.examDay != 'N/A' && c.examDay != '----' && !c.isLab && !c.isProject;
@@ -809,8 +865,8 @@ class AcademicAdvisorEngine {
       }
     }
 
-    // PASS 2: EMERGENCY FALLBACK (Absolute Worst-Case Only: if student load < 11.0 credits)
-    if (currentAccumulatedCredits < 11.0) {
+    // PASS 2: EMERGENCY FALLBACK (Absolute Worst-Case Only: if student load < targetRecommendedLoad)
+    if (currentAccumulatedCredits < targetRecommendedLoad) {
       for (final c in eligibleCourses) {
         if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) continue;
         if (bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title))) continue;
@@ -818,7 +874,7 @@ class AcademicAdvisorEngine {
         if (c.isGedOptional && (completedGedOptionalCount + recommendedGedCount >= 3)) continue;
         if (c.isElective && (completedElectiveCount + recommendedElectiveCount >= 5)) continue;
         if (currentAccumulatedCredits + c.credit > maxCreditCap) continue;
-        if (currentAccumulatedCredits >= 11.0) break;
+        if (currentAccumulatedCredits >= targetRecommendedLoad) break;
         if (c.isLab && labCredits >= 2.0) continue;
 
         final hasExam = c.examDay != 'N/A' && c.examDay != '----' && !c.isLab && !c.isProject;

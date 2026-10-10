@@ -1273,9 +1273,9 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                   padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s4, AppSpacing.s16, 40),
                   child: WorkloadIndicator(
                     cgpa: displayCGPA,
-                    theoryCredits: theoryCredits > 0 ? theoryCredits : 8.0,
-                    labCredits: labCredits > 0 ? labCredits : 2.0,
-                    totalCredits: report.suggestedCreditLoad > 0 ? report.suggestedCreditLoad : (theoryCredits + labCredits),
+                    theoryCredits: theoryCredits,
+                    labCredits: labCredits,
+                    totalCredits: theoryCredits + labCredits,
                   ),
                 ),
               ),
@@ -1566,13 +1566,86 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
   }) {
     final items = <Widget>[];
 
-    // Card 1: Target Goal & Mathematical Pathway (Personalized for every student)
+    final bool isFinalYear = completedCredits >= 85.0 ||
+        report.estimatedTrimester >= 10;
+    final bool isHighCGPA = displayCGPA >= 3.50;
+    final bool isProbationRisk = !isNewStudent && displayCGPA < 2.20;
+
+    // 1. RETAKE ROADMAP (Prioritized if candidate retakes exist)
+    if (candidateRetakes.isNotEmpty && !isNewStudent) {
+      final retakeLines = candidateRetakes.take(4).map((c) {
+        final gp = c.gradePoint ?? 0.0;
+        final grade = c.grade ?? 'D';
+        return '• **${c.code}** (${c.title}): Current Grade **$grade** (${gp.toStringAsFixed(2)} GP). Retaking and scoring A (3.67) adds **+${((3.67 - gp) * c.credit).toStringAsFixed(2)} net points**!';
+      }).join('\n');
+
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.replay_circle_filled_rounded,
+        accentColor: const Color(0xFFDC2626),
+        question: 'Should I retake any course? (${candidateRetakes.length} High-Impact Candidates Detected)',
+        summary: 'Yes! Retaking ${candidateRetakes.first.code} (${candidateRetakes.first.grade ?? 'low grade'}) will immediately boost your cumulative CGPA.',
+        detailedAnswer:
+            'UIU Academic Advisor Retake Analysis:\n\n'
+            'We analyzed your transcript and detected **${candidateRetakes.length} course(s)** with grades below B- (2.67 GP):\n\n'
+            '$retakeLines\n\n'
+            '• **Why Retake Now**: Under UIU cumulative CGPA policy, your highest grade completely replaces the previous grade in the calculation. Retaking provides the fastest mathematical leap in CGPA.\n'
+            '• **50% Tuition Discount**: You qualify for a **50% tuition reduction** on credit fees for your 1st retake attempt.',
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+      items.add(const SizedBox(height: 8));
+    }
+
+    // 2. FINAL YEAR DESIGN PROJECT (FYDP) CARD (Dedicated for 4th Year / 9+ Trimesters Completed)
+    if (isFinalYear) {
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.rocket_launch_rounded,
+        accentColor: const Color(0xFF8B5CF6),
+        question: 'When & How do I complete my Final Year Design Project (FYDP)?',
+        summary: 'Compulsory 3-part capstone (CSE 4000A, 4000B, 4000C) spread across Trimesters 10, 11 & 12.',
+        detailedAnswer:
+            'Final Year Design Project (FYDP) Pathway:\n\n'
+            '• **Eligibility**: You have completed 85+ credits / 9 trimesters and are in your final year! Enrolling in **CSE 4000A (FYDP-1)** is now mandatory.\n'
+            '• **Group Formation**: Form an approved group of 3–4 members with complementary development or research skillsets.\n'
+            '• **Faculty Supervisor**: Consult faculty members in week 1 to finalize your supervisor and project proposal defense.\n'
+            '• **Zero Written Final Exam**: FYDP grading is entirely based on continuous milestone reviews, progress presentations, and external defense with no conflicting written final exam.\n'
+            '• **⚠️ Scholarship Rule**: Project & thesis courses (FYDP) are excluded from the Top 10% merit tuition waiver calculation, so maintain at least 9–12 credits of regular fresh theory courses.',
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+      items.add(const SizedBox(height: 8));
+
+      // Graduation Degree Clearance
+      items.add(_buildAdvisorExpandableCard(
+        icon: Icons.school_rounded,
+        accentColor: const Color(0xFF059669),
+        question: 'Degree Completion & Graduation Clearance: Am I on track to graduate?',
+        summary: '${completedCredits.toInt()} credits completed; only ${remainingCredits.toInt()} credits remaining to graduate.',
+        detailedAnswer:
+            'UIU Degree Clearance Checklist:\n\n'
+            '• **Total Degree Requirement**: Minimum ${totalCredits.toInt()} credits required for graduation with CGPA ≥ 2.00.\n'
+            '• **5 Specialized Electives**: Ensure you fulfill your 5 elective courses (15 credits) across your chosen major track or open departmental electives.\n'
+            '• **3 GED Optional Courses**: Confirm at least 3 GED optional courses (Economics, IPE, AI Literacy, Entrepreneurship) are completed.\n'
+            '• **Provisional Clearance**: Submit your graduation clearance request to the Controller of Examinations after defending FYDP-3.',
+        surface: surface,
+        borderClr: borderClr,
+        textPri: textPri,
+        textSec: textSec,
+      ));
+      items.add(const SizedBox(height: 8));
+    }
+
+    // 3. TARGET GOAL & MATHEMATICAL PACE
     if (isNewStudent) {
       items.add(_buildAdvisorExpandableCard(
         icon: Icons.trending_up_rounded,
         accentColor: const Color(0xFF0284C7),
         question: 'How do I secure an immediate 3.80+ CGPA starting from Trimester 1?',
-        summary: 'Focus on continuous assessment: scoring 26+ in Midterms locks your course pace.',
+        summary: 'Focus on continuous assessments: scoring 26+ in Midterms locks your course pace.',
         detailedAnswer:
             'Welcome to UIU! As a 1st trimester student:\n\n'
             '• **Continuous Marks are King**: 30% Midterm + 30% Class Tests/Quizzes/Assignments = 60% of your total grade is finalized before the Final Exam (40%).\n'
@@ -1584,6 +1657,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
         textPri: textPri,
         textSec: textSec,
       ));
+      items.add(const SizedBox(height: 8));
     } else {
       final achievable = requiredPace <= 4.0;
       final pointsEarned = completedCredits * displayCGPA;
@@ -1611,71 +1685,54 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
         textPri: textPri,
         textSec: textSec,
       ));
+      items.add(const SizedBox(height: 8));
     }
 
-    items.add(const SizedBox(height: 8));
-
-    // Card 2: Deeply Personalized Retake Advice
-    if (isNewStudent) {
+    // 4. MERIT SCHOLARSHIPS & DEAN'S LIST (Highlighted for High CGPA or Freshmen)
+    if (isHighCGPA || isNewStudent) {
       items.add(_buildAdvisorExpandableCard(
-        icon: Icons.replay_rounded,
-        accentColor: const Color(0xFF10B981),
-        question: 'How does UIU handle retakes, and do I need to worry about retakes now?',
-        summary: 'As a new student, you have 0 retakes! Focus on passing all courses on your first attempt.',
+        icon: Icons.military_tech_rounded,
+        accentColor: const Color(0xFFEAB308),
+        question: 'UIU Trimester Merit Scholarship & Tuition Waiver: How do I qualify?',
+        summary: 'Top 10% students receive tuition waivers each trimester (100%, 50%, 25%). Minimum 3.50 SGPA required.',
         detailedAnswer:
-            'UIU Retake Policy Overview for New Students:\n\n'
-            '• **Current Status**: You are in your 1st Trimester with no previous grades on your transcript. No retakes needed!\n'
-            '• **50% Retake Tuition Discount**: UIU offers a 50% flat credit tuition reduction if a student ever needs to retake an attempted course for the first time.\n'
-            '• **Grade Replacement Rule**: UIU completely replaces lower grades with the highest achieved grade in your cumulative CGPA. However, clearing all subjects with A/A- on your first try saves both time and tuition costs!',
+            'Official UIU Trimester Merit Scholarship Policy:\n\n'
+            '• **Waiver Tiers (Top 10% in Program)**:\n'
+            '  - **Top 2%**: 100% Tuition Waiver\n'
+            '  - **Next 4%**: 50% Tuition Waiver\n'
+            '  - **Next 4%**: 25% Tuition Waiver\n'
+            '• **Key Requirements**: Minimum **3.50 SGPA** and regular credit completion (12+ credits in undergraduate).\n'
+            '• **⚠️ Exclusion Rule**: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit calculation. Maintain at least 9–12 credits of regular fresh courses to preserve waiver eligibility!\n'
+            '• **Convocation Honors**:\n'
+            '  - **Summa Cum Laude**: CGPA 3.90 – 4.00\n'
+            '  - **Magna Cum Laude**: CGPA 3.80 – 3.89\n'
+            '  - **Cum Laude**: CGPA 3.65 – 3.79',
         surface: surface,
         borderClr: borderClr,
         textPri: textPri,
         textSec: textSec,
       ));
-    } else if (candidateRetakes.isNotEmpty) {
-      final retakeLines = candidateRetakes.take(4).map((c) {
-        final gp = c.gradePoint ?? 0.0;
-        final grade = c.grade ?? 'D';
-        return '• **${c.code}** (${c.title}): Current Grade **$grade** (${gp.toStringAsFixed(2)} GP). Retaking and scoring A (3.67) adds **+${((3.67 - gp) * c.credit).toStringAsFixed(2)} net points**!';
-      }).join('\n');
-
+      items.add(const SizedBox(height: 8));
+    } else if (isProbationRisk) {
       items.add(_buildAdvisorExpandableCard(
-        icon: Icons.warning_amber_rounded,
-        accentColor: const Color(0xFFDC2626),
-        question: 'Should I retake any course? (Recommended: ${candidateRetakes.length} Courses Found)',
-        summary: 'Yes! Retaking ${candidateRetakes.first.code} (${candidateRetakes.first.grade ?? 'low grade'}) will immediately boost your CGPA.',
+        icon: Icons.shield_rounded,
+        accentColor: const Color(0xFFE65100),
+        question: 'How do I avoid academic probation and rebuild my standing?',
+        summary: 'Keep cumulative CGPA strictly above 2.00 to avoid probation; balance course load to 9-10 credits.',
         detailedAnswer:
-            'UIU Academic Advisor Retake Analysis:\n\n'
-            'We analyzed your transcript and detected **${candidateRetakes.length} course(s)** with low grades (below B- / 2.67 GP):\n\n'
-            '$retakeLines\n\n'
-            '• **Why Retake Now**: In UIU cumulative CGPA, your highest grade completely replaces the previous grade. Retaking these gives you the fastest mathematical boost to your CGPA.\n'
-            '• **Tuition Benefit**: You qualify for a **50% tuition reduction** on credit rates for your 1st retake attempt.',
+            'UIU Academic Standing Rules:\n\n'
+            '• **Academic Probation Warning**: At UIU, if a student\'s CGPA falls below **2.00**, they are placed on Academic Probation. You must bring it back above 2.00 within two trimesters.\n'
+            '• **Key Recovery Strategy**: Balance your schedule by registering for 9–10 credits including at least 1 manageable General Education course to guarantee high term GPAs and rebuild your standing.\n'
+            '• **Target Retakes**: Prioritize retaking F and D grades to completely replace lower marks with high grade points.',
         surface: surface,
         borderClr: borderClr,
         textPri: textPri,
         textSec: textSec,
       ));
-    } else {
-      items.add(_buildAdvisorExpandableCard(
-        icon: Icons.check_circle_outline_rounded,
-        accentColor: const Color(0xFF10B981),
-        question: 'Should I retake any course? (Transcript Status: Clean)',
-        summary: 'No retakes required! All your completed courses maintain high academic standing (≥ B-).',
-        detailedAnswer:
-            'Excellent academic record:\n\n'
-            '• **No Low Grades Detected**: None of your completed courses have D or F grades. Your entire transcript is clean with solid passing grades.\n'
-            '• **Advisor Recommendation**: Do NOT spend credits or tuition on retakes. Focus 100% of your energy on enrolling in regular curriculum progression and higher-level electives.\n'
-            '• **UIU Policy Note**: If you ever choose to improve a B- grade in the future, remember that UIU allows retakes with a 50% discount on credit tuition, but given your current trajectory, advancing forward is the best choice.',
-        surface: surface,
-        borderClr: borderClr,
-        textPri: textPri,
-        textSec: textSec,
-      ));
+      items.add(const SizedBox(height: 8));
     }
 
-    items.add(const SizedBox(height: 8));
-
-    // Card 3: Workload & Theory vs Lab Coupling
+    // 5. WORKLOAD & 2-LAB RULE
     items.add(_buildAdvisorExpandableCard(
       icon: Icons.device_hub_rounded,
       accentColor: const Color(0xFF7C3AED),
@@ -1683,62 +1740,21 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
       summary: 'Take maximum 1-2 heavy labs per trimester paired with balanced theory subjects.',
       detailedAnswer:
           'To protect your trimester GPA from excessive assignment and project burnout:\n\n'
-          '• **The 2-Lab Golden Rule**: Never take more than two heavy 1.0-credit laboratory courses (such as OS Lab, Microprocessors Lab, or Computer Networks Lab) in the same trimester.\n'
-          '• **Recommended Course Structure**: Take **2 Heavy Core Theory** courses + **1 Heavy/Medium Lab** + **1 General Education (GED) / Math** course. This maintains 10 to 13 credits without exhausting your weekly submission deadlines.\n'
+          '• **The 2-Lab Golden Rule**: Never take more than two heavy laboratory courses in the same trimester.\n'
+          '• **Recommended Course Structure**: Take **3 Theory** courses + **1-2 Labs** (or FYDP for 4th year). This maintains 11 to 14 credits without exhausting your weekly submission deadlines.\n'
           '• **Prerequisite Sequence Integrity**: Always clear prerequisites (e.g. SPL before DSA, DSA before OOP & Algorithms II) so you never get blocked from registering higher-level major courses.',
       surface: surface,
       borderClr: borderClr,
       textPri: textPri,
       textSec: textSec,
     ));
-
     items.add(const SizedBox(height: 8));
 
-    // Card 4: Honors, Dean\'s List & Scholarships (Dynamic by student CGPA)
-    if (displayCGPA >= 3.50 || isNewStudent) {
-      items.add(_buildAdvisorExpandableCard(
-        icon: Icons.military_tech_rounded,
-        accentColor: const Color(0xFFEAB308),
-        question: 'What are the criteria for Dean\'s List, Distinction & Tuition Waivers?',
-        summary: 'Minimum 9 completed credits in trimester + SGPA ≥ 3.50 with no incomplete or F grades.',
-        detailedAnswer:
-            'Official UIU Academic Distinction & Honor requirements:\n\n'
-            '• **Dean\'s List Eligibility**: Requires completing at least 9 regular credits in the trimester with an SGPA of **3.50 or higher**, with no grade below B- and no Incomplete (I) or Fail (F).\n'
-            '• **Academic Distinction at Convocation**:\n'
-            '  - **Summa Cum Laude** (Highest Distinction): CGPA **3.90 – 4.00**\n'
-            '  - **Magna Cum Laude** (High Distinction): CGPA **3.80 – 3.89**\n'
-            '  - **Cum Laude** (Distinction): CGPA **3.65 – 3.79**\n'
-            '• **Trimester Merit Scholarships / Tuition Waivers**: UIU awards performance waivers to the top 10% students each trimester (Top 2% get 100%, next 4% get 50%, next 4% get 25%) with minimum 3.50 SGPA, regular credits, and zero retakes.',
-        surface: surface,
-        borderClr: borderClr,
-        textPri: textPri,
-        textSec: textSec,
-      ));
-    } else {
-      items.add(_buildAdvisorExpandableCard(
-        icon: Icons.shield_rounded,
-        accentColor: const Color(0xFFE65100),
-        question: 'How do I avoid academic probation and qualify for Dean\'s List?',
-        summary: 'Keep cumulative CGPA strictly above 2.00 to avoid probation; aim for SGPA ≥ 3.50 for honors.',
-        detailedAnswer:
-            'UIU Academic Standing Rules:\n\n'
-            '• **Academic Probation Warning**: At UIU, if a student\'s CGPA falls below **2.00**, they are placed on Academic Probation. You must bring it back above 2.00 within two trimesters.\n'
-            '• **Dean\'s List Recovery Pathway**: To qualify for Dean\'s List in upcoming trimesters, you need at least 9 registered credits with an SGPA of **3.50 or higher** and zero F/I grades.\n'
-            '• **Key Recovery Strategy**: Balance your schedule by registering for 9–10 credits including at least 1 manageable General Education course to guarantee high term GPAs and rebuild your standing.',
-        surface: surface,
-        borderClr: borderClr,
-        textPri: textPri,
-        textSec: textSec,
-      ));
-    }
-
-    items.add(const SizedBox(height: 8));
-
-    // Card 5: Withdrawal (W) vs Incomplete (I) Deadlines
+    // 6. EMERGENCY WITHDRAWAL (W) vs INCOMPLETE (I)
     items.add(_buildAdvisorExpandableCard(
       icon: Icons.warning_amber_rounded,
       accentColor: const Color(0xFFD97706),
-      question: 'What if an emergency happens? Withdrawal (W) vs Incomplete (I)',
+      question: 'What if an emergency happens? Course Withdrawal (W) vs Incomplete (I)',
       summary: 'Withdraw before Week 10 with zero GPA impact. Avoid unapproved Incompletes.',
       detailedAnswer:
           'Understanding the safety mechanisms when emergencies or illness occur:\n\n'

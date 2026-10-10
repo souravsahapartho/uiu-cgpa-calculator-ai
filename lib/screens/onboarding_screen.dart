@@ -24,7 +24,6 @@ const _departments = [
   'Biotechnology & Genetic Engineering',
   'Economics',
   'Business Administration',
-  'Law',
   'Other',
 ];
 
@@ -39,7 +38,6 @@ const _programs = {
   'Biotechnology & Genetic Engineering': 'B.Sc. in Biotechnology',
   'Economics': 'B.S.S. in Economics',
   'Business Administration': 'BBA',
-  'Law': 'LL.B.',
   'Other': 'B.Sc.',
 };
 
@@ -57,7 +55,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   int _currentPage = 0;
 
   // Academic System
-  String _academicSystem = 'trimester'; // 'trimester' or 'semester'
+  // Academic System (Must be actively chosen by user: Trimester or Semester)
+  String? _academicSystem; // null by default, user must select!
 
   // Page 1 – personal info
   final _nameController = TextEditingController();
@@ -108,11 +107,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     super.dispose();
   }
 
-  bool get _page1Valid =>
-      _nameController.text.trim().isNotEmpty &&
-      _idController.text.trim().isNotEmpty &&
-      _selectedDept != null;
-
   bool get _page2Valid {
     final cgpa = double.tryParse(_cgpaController.text) ?? -1;
     final credits = double.tryParse(_creditsController.text) ?? -1;
@@ -145,7 +139,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     // Save academic system preference locally for tuition fees & app
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('uiu_tuition_system', _academicSystem);
+      await prefs.setString('uiu_tuition_system', _academicSystem ?? 'trimester');
     } catch (_) {}
 
     if (!mounted) return;
@@ -313,8 +307,20 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     child: ElevatedButton(
                       onPressed: () {
                         if (_currentPage == 0) {
-                          if (!_page1Valid) {
-                            _showError('Please enter your name and student ID.');
+                          if (_nameController.text.trim().isEmpty) {
+                            _showError('Please enter your full name.');
+                            return;
+                          }
+                          if (_idController.text.trim().isEmpty) {
+                            _showError('Please enter your UIU student ID.');
+                            return;
+                          }
+                          if (_selectedDept == null) {
+                            _showError('Please select your academic department.');
+                            return;
+                          }
+                          if (_academicSystem == null) {
+                            _showError('Please select your academic calendar (Trimester or Semester).');
                             return;
                           }
                           _pageController.nextPage(
@@ -899,7 +905,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       ),
                       const SizedBox(height: 2.5),
                       Text(
-                        'Import exported backup (.json) or transcript (PDF/CSV/Text) to skip setup & restore all data!',
+                        'Import exported backup (.json) to restore all trimesters, courses and CGPA history instantly!',
                         style: TextStyle(
                           color: textSec,
                           fontSize: 11,
@@ -1015,18 +1021,21 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 6,
+                            runSpacing: 4,
                             children: [
                               Text(
                                 'Import Exported Backup (.json)',
                                 style: AppTypography.titleSmall.copyWith(
                                   fontWeight: FontWeight.w800,
                                   color: textPri,
+                                  fontSize: 13,
                                 ),
                               ),
-                              const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF10B981).withValues(alpha: 0.15),
                                   borderRadius: AppRadius.borderFull,
@@ -1035,8 +1044,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                   'RECOMMENDED',
                                   style: TextStyle(
                                     color: Color(0xFF10B981),
-                                    fontSize: 8.5,
+                                    fontSize: 8,
                                     fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.3,
                                   ),
                                 ),
                               ),
@@ -1170,29 +1180,41 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     final prov = ProfileProviderScope.of(context);
     if (prov.semesters.isNotEmpty || prov.profile.completedCredits > 0) {
       final p = prov.profile;
-      await prov.saveProfile(p.copyWith(
-        name: p.name.isNotEmpty
-            ? p.name
-            : (_nameController.text.trim().isNotEmpty
-                ? _nameController.text.trim()
-                : 'UIU Student'),
-        studentId: p.studentId.isNotEmpty
-            ? p.studentId
-            : (_idController.text.trim().isNotEmpty
-                ? _idController.text.trim()
-                : '0110000000'),
-        department: p.department.isNotEmpty
-            ? p.department
-            : (_selectedDept ?? 'Computer Science and Engineering (CSE)'),
-      ));
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (c, a1, a2) => const MainNavigationScreen(),
-          transitionsBuilder: (c, a1, a2, child) =>
-              FadeTransition(opacity: a1, child: child),
-          transitionDuration: const Duration(milliseconds: 350),
+      setState(() {
+        if (p.name.isNotEmpty && p.name != 'UIU Student') {
+          _nameController.text = p.name;
+        }
+        if (p.studentId.isNotEmpty && p.studentId != '0110000000') {
+          _idController.text = p.studentId;
+        }
+        if (p.department.isNotEmpty && _departments.contains(p.department)) {
+          _selectedDept = p.department;
+        }
+        if (p.completedCredits > 0) {
+          _creditsController.text = p.completedCredits.toStringAsFixed(1);
+        }
+        if (p.currentCGPA > 0) {
+          _cgpaController.text = p.currentCGPA.toStringAsFixed(2);
+        }
+        if (p.targetCGPA > 0) {
+          _targetController.text = p.targetCGPA.toStringAsFixed(2);
+        } else {
+          _targetController.text = '3.80';
+        }
+        if (p.totalDegreeCredits > 0) {
+          _totalRequiredCreditsController.text = p.totalDegreeCredits.toInt().toString();
+        } else {
+          _totalRequiredCreditsController.text = '141';
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Transcript imported! Please confirm your Name, ID, Department, Required Credits & Target CGPA to complete setup.'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.borderBase),
         ),
       );
     }
