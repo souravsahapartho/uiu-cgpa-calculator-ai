@@ -655,9 +655,10 @@ class AcademicAdvisorEngine {
       }
 
       // Curriculum milestone bound:
-      // Strictly prevent jumping ahead beyond earliest incomplete core milestone!
-      // Student must take their backlog / remaining lower trimester courses first.
-      if (!isEstimatedFromProfileCredits && !isBrandNewStudent && c.trimester > (earliestIncompleteCoreTrimester + 1)) {
+      // Allow progression up to 2 trimesters beyond earliest incomplete core milestone
+      // as long as official prerequisites are fully satisfied. This ensures a rich
+      // 150% - 160% course pool from which students can pick their preferred schedule!
+      if (!isEstimatedFromProfileCredits && !isBrandNewStudent && c.trimester > (earliestIncompleteCoreTrimester + 2)) {
         continue;
       }
 
@@ -688,13 +689,15 @@ class AcademicAdvisorEngine {
             : (realCGPA >= 2.50 ? 12.0 : (realCGPA >= 2.00 ? 10.0 : 9.0)));
 
     // Recommendation Pool Target:
-    // Suggest 160% of the student's credit capacity
-    // (e.g. for a 10 Cr limit student, suggest 16 Cr; for 16 Cr student, suggest ~25-26 Cr)
-    // so the student can select their desired courses for registration!
-    // For brand new 1st trimester students: strictly 9.0 Credits.
+    // Suggest 150% - 160% of the student's credit capacity
+    // - For 16 Cr capacity: Suggest ~24 to 26 Credits of options
+    // - For 12 Cr capacity: Suggest ~18 to 20 Credits of options
+    // - For 10 Cr capacity: Suggest ~15 to 16 Credits of options
+    // Even if Major Elective/GED choices contain multiple options, each choice counts as 1 course (3.0 Cr).
+    // The student chooses their preferred courses up to their official limit!
     final double targetPoolCredits = isBrandNewStudent
         ? 9.0
-        : (maxCreditCap * 1.60).roundToDouble().clamp(14.0, 26.0);
+        : (maxCreditCap * 1.60).roundToDouble().clamp(15.0, 26.0);
 
     final recommended = <CourseRecommendation>[...retakeRecommendations];
     double currentAccumulatedCredits = recommended.fold(0.0, (sum, r) => sum + r.course.credit);

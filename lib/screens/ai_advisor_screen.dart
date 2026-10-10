@@ -599,19 +599,54 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
                   ),
                 ),
 
-              // Recommended Next Courses
+              // Recommended Next Courses Header & Advisory Tip
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, AppSpacing.s4),
-                  child: Text(
-                    report.isEstimatedFromProfileCredits
-                        ? 'AI RECOMMENDED NEXT TRIMESTER COURSES (PROJECTED TRIMESTER ${report.estimatedTrimester})'
-                        : 'AI RECOMMENDED NEXT TRIMESTER COURSES',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: textSec,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, AppSpacing.s8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            report.isEstimatedFromProfileCredits
+                                ? 'AI RECOMMENDED NEXT TRIMESTER COURSES (PROJECTED TRIMESTER ${report.estimatedTrimester})'
+                                : 'AI RECOMMENDED NEXT TRIMESTER COURSES',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: textSec,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '${report.suggestedCreditLoad.toInt()} Cr Pool',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '💡 Curated 150–160% Course Menu: Choose your preferred courses from the options below up to your official UIU credit capacity (${displayCGPA >= 3.0 ? "16.0" : displayCGPA >= 2.5 ? "12.0" : "10.0"} Cr max).',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: textSec.withValues(alpha: 0.85),
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

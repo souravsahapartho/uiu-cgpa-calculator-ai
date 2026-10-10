@@ -51,10 +51,10 @@ class WorkloadIndicator extends StatelessWidget {
   String get workloadLevel {
     if (workloadIndex != null) return workloadIndex!;
     final cap = maxAllowedCap;
-    // When effectiveTotalCredits is the recommended course pool (~160% of cap),
+    // When effectiveTotalCredits is an expanded recommendation pool (> cap),
     // label it as the Curated Recommendation Pool with balanced distribution.
     if (effectiveTotalCredits > cap) {
-      return 'Balanced Selection Pool (${effectiveTotalCredits.toInt()} Cr Options)';
+      return 'Recommendation Pool (${effectiveTotalCredits.toInt()} Cr Options)';
     }
     if (effectiveTotalCredits == cap) return 'Maximum Capacity Utilized';
     if (effectiveTotalCredits >= 12.0 && (cgpa ?? 0.0) >= 3.50) return 'Optimal Scholarship Load';
@@ -75,9 +75,11 @@ class WorkloadIndicator extends StatelessWidget {
   }
 
   double get progressRatio {
-    // Fill nicely proportional to the 160% capacity pool
-    final poolCap = maxAllowedCap * 1.60;
-    return (effectiveTotalCredits / poolCap).clamp(0.0, 1.0);
+    // If effectiveTotalCredits exceeds cap (as in the 150-160% pool),
+    // show 100% full capacity utilized so the bar doesn't overflow or glitch.
+    // If below cap (e.g. 12 Cr on a 16 Cr cap), fill accurately at 12/16 = 75%!
+    if (effectiveTotalCredits >= maxAllowedCap) return 1.0;
+    return (effectiveTotalCredits / maxAllowedCap).clamp(0.0, 1.0);
   }
 
   @override
