@@ -478,46 +478,47 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
           ),
         ),
 
-        // Calculate result card
-        Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 2),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: AppRadius.borderLg,
-            boxShadow: AppShadows.primary,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Trimester GPA',
-                      style: AppTypography.labelSmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 2),
-                  Text(_trimesterGPA.toStringAsFixed(2),
-                      style: AppTypography.displayLarge.copyWith(
-                          color: Colors.white, fontWeight: FontWeight.w900, fontSize: 28)),
-                ],
-              ),
-              if (_completedCredits > 0 && _currentCGPA > 0) ...[
-                Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.3)),
+        // Calculate result card (dynamically hidden when keyboard is open so typing isn't obscured)
+        if (MediaQuery.of(context).viewInsets.bottom <= 60)
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 2),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: AppRadius.borderLg,
+              boxShadow: AppShadows.primary,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('New CGPA',
+                    Text('Trimester GPA',
                         style: AppTypography.labelSmall.copyWith(
                             color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w700)),
                     const SizedBox(height: 2),
-                    Text(_newCGPA.toStringAsFixed(2),
+                    Text(_trimesterGPA.toStringAsFixed(2),
                         style: AppTypography.displayLarge.copyWith(
                             color: Colors.white, fontWeight: FontWeight.w900, fontSize: 28)),
                   ],
                 ),
-              ] else
-                Text('CALCULATE',
+                if (_completedCredits > 0 && _currentCGPA > 0) ...[
+                  Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.3)),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text('New CGPA',
+                          style: AppTypography.labelSmall.copyWith(
+                              color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 2),
+                      Text(_newCGPA.toStringAsFixed(2),
+                          style: AppTypography.displayLarge.copyWith(
+                              color: Colors.white, fontWeight: FontWeight.w900, fontSize: 28)),
+                    ],
+                  ),
+                ] else
+                  Text('CALCULATE',
                     style: AppTypography.titleLarge.copyWith(
                         color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
             ],
@@ -576,6 +577,7 @@ class _TrimesterGPAScreenState extends State<TrimesterGPAScreen>
                   flex: 2,
                   child: TextFormField(
                     initialValue: course.name,
+                    scrollPadding: const EdgeInsets.only(bottom: 120),
                     style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,

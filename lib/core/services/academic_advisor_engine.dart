@@ -668,21 +668,27 @@ class AcademicAdvisorEngine {
     // Sort eligible core courses: prioritize earliest trimesters
     eligibleCourses.sort((a, b) => a.trimester.compareTo(b.trimester));
 
-    // 7. Select balanced set of courses adhering to UIU Credit Capacity policy
+    // 7. Select balanced set of courses adhering to UIU Credit Capacity policy:
+    // UIU Official Credit Limits:
+    // - 3.00 to 4.00: 16.0 Credits max
+    // - 2.50 to 2.99: 12.0 Credits max
+    // - 2.00 to 2.49: 10.0 Credits max
+    // - Below 2.00 (Academic Probation): 6.0 to 9.0 Credits (advisor approval)
     // For brand new students: strictly 9.0 Credits (UIU Standard Trimester 1 load)
-    // Otherwise: (3.00-4.00: 16 Cr, 2.50-3.00: 14 Cr, 2.00-2.49: 12 Cr, <2.00: 10 Cr)
     final double maxCreditCap = isBrandNewStudent
         ? 9.0
         : (realCGPA >= 3.00
             ? 16.0
-            : (realCGPA >= 2.50 ? 14.0 : (realCGPA >= 2.00 ? 12.0 : 10.0)));
+            : (realCGPA >= 2.50 ? 12.0 : (realCGPA >= 2.00 ? 10.0 : 9.0)));
 
-    // Target Load based on CGPA & Standing:
-    // UIU Policy: Students with CGPA >= 3.50 (Honors & Merit Scholarship Track) take regular full load (12.0 - 14.0 Cr).
-    // Regular students take 11.0 - 12.5 Cr. Brand new 1st trimester students take standard 9.0 Cr.
-    final double targetRecommendedLoad = isBrandNewStudent
+    // Recommendation Pool Target:
+    // We suggest an expanded pool of ~175% of the student's credit capacity
+    // (e.g. for a 16 Cr student, we generate ~22-26 Credits of valid courses across Core, GED, FYDP and Electives)
+    // so the student can select their preferred courses for registration!
+    // For brand new 1st trimester students: strictly 9.0 Credits.
+    final double targetPoolCredits = isBrandNewStudent
         ? 9.0
-        : (realCGPA >= 3.50 ? 13.0 : (realCGPA >= 2.50 ? 12.0 : 10.0));
+        : (maxCreditCap * 1.75).clamp(12.0, 26.0);
 
     final recommended = <CourseRecommendation>[...retakeRecommendations];
     double currentAccumulatedCredits = recommended.fold(0.0, (sum, r) => sum + r.course.credit);
@@ -814,9 +820,9 @@ class AcademicAdvisorEngine {
       if (recommended.any((r) => _isCourseMatch(r.course.code, r.course.title, c.code, c.title))) continue;
       if (c.isGedOptional && (completedGedOptionalCount + recommendedGedCount >= 3)) continue;
       if (c.isElective && (completedElectiveCount + recommendedElectiveCount >= 5)) continue;
-      if (currentAccumulatedCredits + c.credit > maxCreditCap) continue;
-      if (currentAccumulatedCredits >= targetRecommendedLoad) break;
-      if (c.isLab && labCredits >= 2.0) continue;
+      if (currentAccumulatedCredits + c.credit > targetPoolCredits) continue;
+      if (currentAccumulatedCredits >= targetPoolCredits) break;
+      if (c.isLab && labCredits >= 3.0) continue;
 
       final hasExam = c.examDay != 'N/A' && c.examDay != '----' && !c.isLab && !c.isProject;
 
@@ -865,17 +871,17 @@ class AcademicAdvisorEngine {
       }
     }
 
-    // PASS 2: EMERGENCY FALLBACK (Absolute Worst-Case Only: if student load < targetRecommendedLoad)
-    if (currentAccumulatedCredits < targetRecommendedLoad) {
+    // PASS 2: EMERGENCY FALLBACK (if course pool < targetPoolCredits, relaxed day check but strict slot check)
+    if (currentAccumulatedCredits < targetPoolCredits) {
       for (final c in eligibleCourses) {
         if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) continue;
         if (bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title))) continue;
         if (recommended.any((r) => _isCourseMatch(r.course.code, r.course.title, c.code, c.title))) continue;
         if (c.isGedOptional && (completedGedOptionalCount + recommendedGedCount >= 3)) continue;
         if (c.isElective && (completedElectiveCount + recommendedElectiveCount >= 5)) continue;
-        if (currentAccumulatedCredits + c.credit > maxCreditCap) continue;
-        if (currentAccumulatedCredits >= targetRecommendedLoad) break;
-        if (c.isLab && labCredits >= 2.0) continue;
+        if (currentAccumulatedCredits + c.credit > targetPoolCredits) continue;
+        if (currentAccumulatedCredits >= targetPoolCredits) break;
+        if (c.isLab && labCredits >= 3.0) continue;
 
         final hasExam = c.examDay != 'N/A' && c.examDay != '----' && !c.isLab && !c.isProject;
         final slotKey = hasExam && c.examSlot != 'N/A' && c.examSlot != '----' ? '${c.examDay}_${c.examSlot}' : null;
@@ -1084,10 +1090,11 @@ class AcademicAdvisorEngine {
 
     final bool isMeritScholarshipEligible = realCGPA >= 3.50;
     final String? meritScholarshipNotice = isMeritScholarshipEligible
-        ? '🏆 UIU Trimester Merit Scholarship Track (Top 10% Waiver Pace):\n'
-          '• Top 2%: 100% Tuition Waiver | Next 4%: 50% Waiver | Next 4%: 25% Waiver\n'
-          '• Official Policy: Minimum 3.50 GPA and regular credit completion required.\n'
-          '• ⚠️ Important Exclusion Rule: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit scholarship calculation. Maintain at least 9–12 credits of regular fresh courses to protect your waiver eligibility!'
+        ? '🏆 UIU Tuition Waiver & Trimester Merit Scholarship Guidance:\n'
+          '• General Tuition Waiver Maintenance: Requires maintaining cumulative CGPA ≥ 3.50.\n'
+          '• Trimester Merit Scholarship (Top 10% Students): Performance-based award given every trimester:\n'
+          '  - Top 2%: 100% Tuition Waiver | Next 4%: 50% Waiver | Next 4%: 25% Waiver.\n'
+          '• ⚠️ Important Exclusion Rule: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit scholarship calculation. Maintain at least 9–12 credits of regular fresh courses to protect your scholarship eligibility!'
         : null;
 
     // Strictly filter out any course that matches an ongoing course

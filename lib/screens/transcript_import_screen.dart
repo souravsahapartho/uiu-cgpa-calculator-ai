@@ -136,7 +136,9 @@ class _TranscriptImportScreenState extends State<TranscriptImportScreen> {
                 subtitle: semesters.isEmpty
                     ? 'No recorded trimesters yet'
                     : () {
-                        final ongoingCredits = semesters.fold(0.0, (sum, s) => sum + s.courses.where((c) => c.isOngoing).fold(0.0, (ss, c) => ss + c.credit));
+                        final ongoingCredits = semesters
+                            .where((s) => s.isOngoing)
+                            .fold(0.0, (sum, s) => sum + s.totalEnrolledCredits);
                         return ongoingCredits > 0
                             ? '${semesters.length} Terms • ${totalCompletedCredits.toStringAsFixed(1)} Cr (+${ongoingCredits.toStringAsFixed(1)} Enrolled)'
                             : '${semesters.length} Terms • ${totalCompletedCredits.toStringAsFixed(1)} Credits Completed';

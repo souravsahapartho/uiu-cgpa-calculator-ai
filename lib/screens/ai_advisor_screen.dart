@@ -1693,16 +1693,19 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
       items.add(_buildAdvisorExpandableCard(
         icon: Icons.military_tech_rounded,
         accentColor: const Color(0xFFEAB308),
-        question: 'UIU Trimester Merit Scholarship & Tuition Waiver: How do I qualify?',
-        summary: 'Top 10% students receive tuition waivers each trimester (100%, 50%, 25%). Minimum 3.50 SGPA required.',
+        question: 'UIU Tuition Waiver vs Trimester Merit Scholarship: How do they work?',
+        summary: 'Waiver maintenance requires CGPA ≥ 3.50; Trimester Merit Scholarship is awarded to the Top 10% students each trimester.',
         detailedAnswer:
-            'Official UIU Trimester Merit Scholarship Policy:\n\n'
-            '• **Waiver Tiers (Top 10% in Program)**:\n'
+            'UIU Tuition Waiver & Scholarship Policies:\n\n'
+            '• **Tuition Waiver Maintenance**:\n'
+            '  - If you hold an admission/freedom fighter/sibling/special tuition waiver, you must maintain a cumulative **CGPA ≥ 3.50** to retain it each trimester.\n\n'
+            '• **Trimester Merit Scholarship (Top 10% Students)**:\n'
+            '  - Awarded dynamically each trimester to the highest-performing students in the department:\n'
             '  - **Top 2%**: 100% Tuition Waiver\n'
             '  - **Next 4%**: 50% Tuition Waiver\n'
             '  - **Next 4%**: 25% Tuition Waiver\n'
-            '• **Key Requirements**: Minimum **3.50 SGPA** and regular credit completion (12+ credits in undergraduate).\n'
-            '• **⚠️ Exclusion Rule**: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit calculation. Maintain at least 9–12 credits of regular fresh courses to preserve waiver eligibility!\n'
+            '  - **Eligibility**: Minimum **3.50 SGPA** and regular credit completion (12+ fresh credits in undergraduate).\n\n'
+            '• **⚠️ Exclusion Rule**: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit calculation. Maintain at least 9–12 credits of regular fresh courses to preserve your merit scholarship eligibility!\n\n'
             '• **Convocation Honors**:\n'
             '  - **Summa Cum Laude**: CGPA 3.90 – 4.00\n'
             '  - **Magna Cum Laude**: CGPA 3.80 – 3.89\n'

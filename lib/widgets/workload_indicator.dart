@@ -26,21 +26,21 @@ class WorkloadIndicator extends StatelessWidget {
 
   /// Official UIU Credit Capacity by CGPA Policy:
   /// - 3.00 to 4.00: 16 Credits max
-  /// - 2.50 to 3.00: 14 Credits max
-  /// - 2.00 to 2.49: 12 Credits max
-  /// - Below 2.00: 10 Credits max
+  /// - 2.50 to 2.99: 12 Credits max
+  /// - 2.00 to 2.49: 10 Credits max
+  /// - Below 2.00 (Academic Probation): 6 to 9 Credits max (advisor approval)
   static double getUIUCreditCap(double currentCGPA) {
     if (currentCGPA >= 3.00) return 16.0;
-    if (currentCGPA >= 2.50) return 14.0;
-    if (currentCGPA >= 2.00) return 12.0;
-    return 10.0;
+    if (currentCGPA >= 2.50) return 12.0;
+    if (currentCGPA >= 2.00) return 10.0;
+    return 9.0;
   }
 
   static String getUIUCapTier(double currentCGPA) {
     if (currentCGPA >= 3.00) return '3.00 - 4.00 (Max 16 Cr)';
-    if (currentCGPA >= 2.50) return '2.50 - 2.99 (Max 14 Cr)';
-    if (currentCGPA >= 2.00) return '2.00 - 2.49 (Max 12 Cr)';
-    return '< 2.00 (Max 10 Cr)';
+    if (currentCGPA >= 2.50) return '2.50 - 2.99 (Max 12 Cr)';
+    if (currentCGPA >= 2.00) return '2.00 - 2.49 (Max 10 Cr)';
+    return '< 2.00 Probation (6-9 Cr)';
   }
 
   double get maxAllowedCap => getUIUCreditCap(cgpa ?? 3.50);

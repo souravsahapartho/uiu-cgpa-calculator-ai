@@ -541,8 +541,8 @@ class UserProfileProvider extends ChangeNotifier {
       final updatedCourses = List<Course>.from(_semesters[sIdx].courses);
       updatedCourses.removeWhere(
         (c) =>
-            c.code.trim().toUpperCase() == course.code.trim().toUpperCase() &&
-            c.title.trim().toLowerCase() == course.title.trim().toLowerCase(),
+            (course.code.trim().isNotEmpty && c.code.trim().toUpperCase() == course.code.trim().toUpperCase()) ||
+            (c.title.trim().toLowerCase() == course.title.trim().toLowerCase()),
       );
       if (updatedCourses.isEmpty) {
         _semesters.removeAt(sIdx);
