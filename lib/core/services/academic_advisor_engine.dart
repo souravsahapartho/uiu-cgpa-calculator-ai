@@ -417,7 +417,7 @@ class AcademicAdvisorEngine {
       for (final c in uiuCurriculum) {
         if (!c.isElective && !c.isGedOptional) {
           final isDone = bestAttemptsMap.values.any((comp) =>
-              (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
+              (comp.gradePoint ?? 0.0) > 0.0 && _isCourseMatch(comp.code, comp.title, c.code, c.title));
           final isOngoing = ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title));
           if (!isDone && !isOngoing && c.trimester < earliestIncompleteCoreTrimester) {
             earliestIncompleteCoreTrimester = c.trimester;
@@ -635,9 +635,10 @@ class AcademicAdvisorEngine {
         continue;
       }
 
-      // Skip if already passed with gp >= 2.50!
+      // Skip if already passed!
+      // Any course completed with gradePoint > 0.0 or passed is already finished.
       if (bestAttemptsMap.values.any((comp) =>
-          (comp.gradePoint ?? 0.0) >= 2.50 &&
+          (comp.gradePoint ?? 0.0) > 0.0 &&
           _isCourseMatch(comp.code, comp.title, c.code, c.title))) {
         continue;
       }
@@ -654,7 +655,8 @@ class AcademicAdvisorEngine {
       }
 
       // Curriculum milestone bound:
-      // Prevent jumping forward more than 1 trimester beyond earliest incomplete core milestone!
+      // Strictly prevent jumping ahead beyond earliest incomplete core milestone!
+      // Student must take their backlog / remaining lower trimester courses first.
       if (!isEstimatedFromProfileCredits && !isBrandNewStudent && c.trimester > (earliestIncompleteCoreTrimester + 1)) {
         continue;
       }
@@ -665,8 +667,12 @@ class AcademicAdvisorEngine {
       }
     }
 
-    // Sort eligible core courses: prioritize earliest trimesters
-    eligibleCourses.sort((a, b) => a.trimester.compareTo(b.trimester));
+    // Sort eligible core courses: prioritize earliest trimesters first!
+    eligibleCourses.sort((a, b) {
+      final triCmp = a.trimester.compareTo(b.trimester);
+      if (triCmp != 0) return triCmp;
+      return a.sl.compareTo(b.sl);
+    });
 
     // 7. Select balanced set of courses adhering to UIU Credit Capacity policy:
     // UIU Official Credit Limits:
@@ -682,13 +688,13 @@ class AcademicAdvisorEngine {
             : (realCGPA >= 2.50 ? 12.0 : (realCGPA >= 2.00 ? 10.0 : 9.0)));
 
     // Recommendation Pool Target:
-    // We suggest an expanded pool of ~175% of the student's credit capacity
-    // (e.g. for a 16 Cr student, we generate ~22-26 Credits of valid courses across Core, GED, FYDP and Electives)
-    // so the student can select their preferred courses for registration!
+    // Suggest 160% of the student's credit capacity
+    // (e.g. for a 10 Cr limit student, suggest 16 Cr; for 16 Cr student, suggest ~25-26 Cr)
+    // so the student can select their desired courses for registration!
     // For brand new 1st trimester students: strictly 9.0 Credits.
     final double targetPoolCredits = isBrandNewStudent
         ? 9.0
-        : (maxCreditCap * 1.75).clamp(12.0, 26.0);
+        : (maxCreditCap * 1.60).roundToDouble().clamp(14.0, 26.0);
 
     final recommended = <CourseRecommendation>[...retakeRecommendations];
     double currentAccumulatedCredits = recommended.fold(0.0, (sum, r) => sum + r.course.credit);
@@ -716,7 +722,7 @@ class AcademicAdvisorEngine {
     final bool canInjectGed = gedChoiceRec != null &&
         completedGedOptionalCount < 3 &&
         (realCompletedCredits + ongoingCredits >= 50.0 || earliestIncompleteCoreTrimester >= 8 || estimatedTrimester >= 8) &&
-        (currentAccumulatedCredits + 3.0 <= maxCreditCap);
+        (currentAccumulatedCredits + 3.0 <= targetPoolCredits);
 
     if (canInjectGed) {
       recommended.add(gedChoiceRec);
@@ -729,7 +735,7 @@ class AcademicAdvisorEngine {
     final bool canInjectElective = electiveChoiceRec != null &&
         completedElectiveCount < 5 &&
         (realCompletedCredits + ongoingCredits >= 70.0 || earliestIncompleteCoreTrimester >= 9 || estimatedTrimester >= 10) &&
-        (currentAccumulatedCredits + 3.0 <= maxCreditCap);
+        (currentAccumulatedCredits + 3.0 <= targetPoolCredits);
 
     if (canInjectElective) {
       recommended.add(electiveChoiceRec);
@@ -759,7 +765,7 @@ class AcademicAdvisorEngine {
         nextFydp = uiuCurriculum.firstWhere((c) => c.code == 'CSE 4000C');
       }
 
-      if (nextFydp != null && (currentAccumulatedCredits + nextFydp.credit <= maxCreditCap)) {
+      if (nextFydp != null && (currentAccumulatedCredits + nextFydp.credit <= targetPoolCredits)) {
         if (!recommended.any((r) => r.course.code == nextFydp!.code)) {
           recommended.add(CourseRecommendation(
             course: Course(
@@ -816,7 +822,7 @@ class AcademicAdvisorEngine {
     // PASS 1: STRICT SINGLE EXAM PER DAY (ZERO SAME-DAY EXAMS)
     for (final c in eligibleCourses) {
       if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) continue;
-      if (bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title))) continue;
+      if (bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) > 0.0 && _isCourseMatch(comp.code, comp.title, c.code, c.title))) continue;
       if (recommended.any((r) => _isCourseMatch(r.course.code, r.course.title, c.code, c.title))) continue;
       if (c.isGedOptional && (completedGedOptionalCount + recommendedGedCount >= 3)) continue;
       if (c.isElective && (completedElectiveCount + recommendedElectiveCount >= 5)) continue;
@@ -875,7 +881,7 @@ class AcademicAdvisorEngine {
     if (currentAccumulatedCredits < targetPoolCredits) {
       for (final c in eligibleCourses) {
         if (ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title))) continue;
-        if (bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title))) continue;
+        if (bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) > 0.0 && _isCourseMatch(comp.code, comp.title, c.code, c.title))) continue;
         if (recommended.any((r) => _isCourseMatch(r.course.code, r.course.title, c.code, c.title))) continue;
         if (c.isGedOptional && (completedGedOptionalCount + recommendedGedCount >= 3)) continue;
         if (c.isElective && (completedElectiveCount + recommendedElectiveCount >= 5)) continue;
@@ -937,7 +943,7 @@ class AcademicAdvisorEngine {
       final eligibleFallbacks = uiuCurriculum
           .where((c) =>
               !ongoingCourses.any((o) => _isCourseMatch(o.code, o.title, c.code, c.title)) &&
-              !bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) >= 2.50 && _isCourseMatch(comp.code, comp.title, c.code, c.title)) &&
+              !bestAttemptsMap.values.any((comp) => (comp.gradePoint ?? 0.0) > 0.0 && _isCourseMatch(comp.code, comp.title, c.code, c.title)) &&
               (!isEstimatedFromProfileCredits || c.trimester >= estimatedTrimester))
           .toList();
       eligibleFallbacks.sort((a, b) => a.trimester.compareTo(b.trimester));
@@ -1091,10 +1097,11 @@ class AcademicAdvisorEngine {
     final bool isMeritScholarshipEligible = realCGPA >= 3.50;
     final String? meritScholarshipNotice = isMeritScholarshipEligible
         ? '🏆 UIU Tuition Waiver & Trimester Merit Scholarship Guidance:\n'
+          '• Minimum Credit Requirement: Minimum 9.0 credits must be completed in the trimester for waiver retention and scholarship eligibility.\n'
           '• General Tuition Waiver Maintenance: Requires maintaining cumulative CGPA ≥ 3.50.\n'
           '• Trimester Merit Scholarship (Top 10% Students): Performance-based award given every trimester:\n'
           '  - Top 2%: 100% Tuition Waiver | Next 4%: 50% Waiver | Next 4%: 25% Waiver.\n'
-          '• ⚠️ Important Exclusion Rule: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit scholarship calculation. Maintain at least 9–12 credits of regular fresh courses to protect your scholarship eligibility!'
+          '• ⚠️ Important Exclusion Rule: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit scholarship calculation. Maintain at least 9 credits of regular fresh courses to protect your scholarship eligibility!'
         : null;
 
     // Strictly filter out any course that matches an ongoing course

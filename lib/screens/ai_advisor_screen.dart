@@ -1576,7 +1576,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
       final retakeLines = candidateRetakes.take(4).map((c) {
         final gp = c.gradePoint ?? 0.0;
         final grade = c.grade ?? 'D';
-        return '• **${c.code}** (${c.title}): Current Grade **$grade** (${gp.toStringAsFixed(2)} GP). Retaking and scoring A (3.67) adds **+${((3.67 - gp) * c.credit).toStringAsFixed(2)} net points**!';
+        return '• **${c.code}** (${c.title}): Current Grade **$grade** (${gp.toStringAsFixed(2)} GP). Retaking and scoring A (4.00) adds **+${((4.00 - gp) * c.credit).toStringAsFixed(2)} net points**!';
       }).join('\n');
 
       items.add(_buildAdvisorExpandableCard(
@@ -1678,7 +1678,7 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
             '• **Mathematical Requirement**: Over your remaining ${remainingCredits.toInt()} credits, you need an average SGPA of **${requiredPace.toStringAsFixed(2)}**.\n'
             '• **Advisor Recommendation**: ' +
             (achievable
-                ? 'Register for ${(report.suggestedCreditLoad).toInt()} credits per trimester. Focus on 3-credit core theory courses where you have strong domain foundations to consistently secure A (3.67) and A (4.00) grades.'
+                ? 'Register for ${(report.suggestedCreditLoad).toInt()} credits per trimester. Focus on 3-credit core theory courses where you have strong domain foundations to consistently secure A- (3.67) and A (4.00) grades.'
                 : 'Since the remaining credits alone cannot bridge the gap to ${targetCGPA.toStringAsFixed(2)}, retaking low-grade courses (such as D or C) is your best mathematical option, as replacing a low grade adds instant net grade points without needing extra credits!'),
         surface: surface,
         borderClr: borderClr,
@@ -1694,18 +1694,20 @@ class _AIAdvisorScreenState extends State<AIAdvisorScreen> {
         icon: Icons.military_tech_rounded,
         accentColor: const Color(0xFFEAB308),
         question: 'UIU Tuition Waiver vs Trimester Merit Scholarship: How do they work?',
-        summary: 'Waiver maintenance requires CGPA ≥ 3.50; Trimester Merit Scholarship is awarded to the Top 10% students each trimester.',
+        summary: 'Waiver maintenance requires CGPA ≥ 3.50; Trimester Merit Scholarship requires minimum 9 completed credits and top 10% performance.',
         detailedAnswer:
             'UIU Tuition Waiver & Scholarship Policies:\n\n'
+            '• **Minimum Credit Requirement (Crucial)**:\n'
+            '  - To retain tuition waivers or qualify for the Trimester Merit Scholarship, a student must complete a **minimum of 9 credits** in that trimester.\n\n'
             '• **Tuition Waiver Maintenance**:\n'
-            '  - If you hold an admission/freedom fighter/sibling/special tuition waiver, you must maintain a cumulative **CGPA ≥ 3.50** to retain it each trimester.\n\n'
+            '  - If you hold an admission/freedom fighter/sibling/special tuition waiver, you must maintain a cumulative **CGPA ≥ 3.50** and complete at least 9 credits each trimester.\n\n'
             '• **Trimester Merit Scholarship (Top 10% Students)**:\n'
             '  - Awarded dynamically each trimester to the highest-performing students in the department:\n'
             '  - **Top 2%**: 100% Tuition Waiver\n'
             '  - **Next 4%**: 50% Tuition Waiver\n'
             '  - **Next 4%**: 25% Tuition Waiver\n'
-            '  - **Eligibility**: Minimum **3.50 SGPA** and regular credit completion (12+ fresh credits in undergraduate).\n\n'
-            '• **⚠️ Exclusion Rule**: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit calculation. Maintain at least 9–12 credits of regular fresh courses to preserve your merit scholarship eligibility!\n\n'
+            '  - **Eligibility**: Minimum **3.50 SGPA** and minimum **9 fresh credits** completed in undergraduate coursework.\n\n'
+            '• **⚠️ Exclusion Rule**: Retake, Repeat, Project (FYDP), Internship, and Thesis courses are EXCLUDED from the merit calculation. Maintain at least 9 credits of regular fresh theory/lab courses to preserve your merit scholarship eligibility!\n\n'
             '• **Convocation Honors**:\n'
             '  - **Summa Cum Laude**: CGPA 3.90 – 4.00\n'
             '  - **Magna Cum Laude**: CGPA 3.80 – 3.89\n'

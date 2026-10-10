@@ -51,26 +51,34 @@ class WorkloadIndicator extends StatelessWidget {
   String get workloadLevel {
     if (workloadIndex != null) return workloadIndex!;
     final cap = maxAllowedCap;
-    if (effectiveTotalCredits > cap) return 'Exceeds UIU Cap (Approval Needed)';
+    // When effectiveTotalCredits is the recommended course pool (~160% of cap),
+    // label it as the Curated Recommendation Pool with balanced distribution.
+    if (effectiveTotalCredits > cap) {
+      return 'Balanced Selection Pool (${effectiveTotalCredits.toInt()} Cr Options)';
+    }
     if (effectiveTotalCredits == cap) return 'Maximum Capacity Utilized';
     if (effectiveTotalCredits >= 12.0 && (cgpa ?? 0.0) >= 3.50) return 'Optimal Scholarship Load';
     if (effectiveTotalCredits >= 12.0) return 'Regular Full Load';
-    if (effectiveTotalCredits >= 10.0) return 'Balanced Load';
-    if (effectiveTotalCredits >= 7.0) return 'Moderate Load';
+    if (effectiveTotalCredits >= 9.0) return 'Balanced Load';
+    if (effectiveTotalCredits >= 6.0) return 'Moderate Load';
     return 'Light Workload';
   }
 
   Color get workloadColor {
     final cap = maxAllowedCap;
-    if (effectiveTotalCredits > cap) return AppColors.danger;
+    if (effectiveTotalCredits > cap) return const Color(0xFF10B981);
     if (effectiveTotalCredits == cap) return const Color(0xFF0284C7);
     if (effectiveTotalCredits >= 12.0 && (cgpa ?? 0.0) >= 3.50) return const Color(0xFF10B981);
-    if (effectiveTotalCredits >= 10.0) return AppColors.success;
-    if (effectiveTotalCredits >= 7.0) return AppColors.warning;
+    if (effectiveTotalCredits >= 9.0) return AppColors.success;
+    if (effectiveTotalCredits >= 6.0) return AppColors.warning;
     return AppColors.info;
   }
 
-  double get progressRatio => (effectiveTotalCredits / maxAllowedCap).clamp(0.0, 1.0);
+  double get progressRatio {
+    // Fill nicely proportional to the 160% capacity pool
+    final poolCap = maxAllowedCap * 1.60;
+    return (effectiveTotalCredits / poolCap).clamp(0.0, 1.0);
+  }
 
   @override
   Widget build(BuildContext context) {
